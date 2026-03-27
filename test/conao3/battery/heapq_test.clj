@@ -7,10 +7,15 @@
   (:import
    [clojure.lang ExceptionInfo]))
 
-;; TestModules.test_py_functions / test_c_functions → excluded (import_helper CPython internals)
-;; TestHeapC → excluded (@skipUnless c_heapq)
-;; TestErrorHandlingC → excluded (@skipUnless c_heapq)
-;; load_tests → excluded (load_tests doctest registration)
+;; Excluded by checklist:
+;; - TestModules.test_c_functions / load_tests (doctest registration)
+;; - TestHeapC / TestErrorHandlingC (@skipUnless(c_heapq))
+
+(t/deftest ^:kaocha/skip test-py-functions
+  (doseq [f '[heappush! heappop! heappush-max! heappop-max!
+              heapify! heapify-max! heapreplace! heapreplace-max!
+              heappushpop! heappushpop-max! nsmallest nlargest heap-merge]]
+    (t/is (fn? @(ns-resolve 'conao3.battery.heapq f)))))
 
 ;; ---- TestHeapPython (= TestHeap) ----
 
@@ -184,8 +189,8 @@
   (t/is (= [] (vec (heapq/heap-merge [] [] :key identity)))))
 
 (t/deftest ^:kaocha/skip test-merge-does-not-suppress-index-error
-  (t/is (thrown? IndexOutOfBoundsException
-                 (let [bad-seq (concat [1 2] (lazy-seq (throw (IndexOutOfBoundsException. "boom"))))]
+  (t/is (thrown? ExceptionInfo
+                 (let [bad-seq (concat [1 2] (lazy-seq (throw (ExceptionInfo. "boom" {}))))]
                    (vec (heapq/heap-merge bad-seq))))))
 
 (t/deftest ^:kaocha/skip test-merge-stability
@@ -220,6 +225,7 @@
 ;; ---- TestErrorHandlingPython (= TestErrorHandling) ----
 
 (t/deftest ^:kaocha/skip test-non-sequence
+  (t/is (= [2 3 4] (heapq/nsmallest 2 [2 3 4 5])))
   (t/is (thrown? ExceptionInfo (heapq/heapify! (atom 10))))
   (t/is (thrown? ExceptionInfo (heapq/heappop! (atom 10))))
   (t/is (thrown? ExceptionInfo (heapq/heappush! (atom 10) 1)))
@@ -228,18 +234,21 @@
   (t/is (thrown? ExceptionInfo (heapq/nsmallest 2 10))))
 
 (t/deftest ^:kaocha/skip test-len-only
+  (t/is (= [4 5 6] (heapq/nsmallest 2 [4 5 6 7])))
   (t/is (thrown? ExceptionInfo (heapq/heapify! (atom {:len 10}))))
   (t/is (thrown? ExceptionInfo (heapq/heappop! (atom {:len 10}))))
   (t/is (thrown? ExceptionInfo (heapq/heappush! (atom {:len 10}) 1)))
   (t/is (thrown? ExceptionInfo (heapq/heapreplace! (atom {:len 10}) 1))))
 
 (t/deftest ^:kaocha/skip test-cmp-err
+  (t/is (= [1 2] (heapq/nsmallest 2 [2 1 3 4])))
   (t/is (thrown? ExceptionInfo
                  (let [heap (atom [1 2 3])]
                    (heapq/heappush! heap (reify Comparable
                                            (compareTo [_ _] (throw (ArithmeticException. "/")))))))))
 
 (t/deftest ^:kaocha/skip test-arg-parsing
+  (t/is (= [7 8 9] (heapq/nlargest 2 [7 8 9 6])))
   (t/is (thrown? ExceptionInfo (heapq/heapify! 10)))
   (t/is (thrown? ExceptionInfo (heapq/heappop! 10)))
   (t/is (thrown? ExceptionInfo (heapq/heappush! 10 1)))
@@ -254,6 +263,7 @@
   (t/is (= [] (heapq/nlargest 2 []))))
 
 (t/deftest ^:kaocha/skip test-heappush-mutating-heap
+  (t/is (= [1 2] (heapq/nlargest 1 [1 2 3])))
   (t/is (thrown? ExceptionInfo
                  (let [heap (atom (vec (range 10)))]
                    (heapq/heapify! heap)
@@ -263,6 +273,7 @@
                                              (throw (RuntimeException. "heap modified")))))))))
 
 (t/deftest ^:kaocha/skip test-heappop-mutating-heap
+  (t/is (= [1 2] (heapq/nsmallest 2 [1 2 3])))
   (t/is (thrown? ExceptionInfo
                  (let [heap (atom (vec (range 10)))]
                    (heapq/heapify! heap)
@@ -273,15 +284,17 @@
                    (heapq/heappop! heap)))))
 
 (t/deftest ^:kaocha/skip test-comparison-operator-modifying-heap
+  (t/is (= [0 1] (heapq/nsmallest 2 [0 1 2])))
   (t/is (thrown? ExceptionInfo
                  (let [heap (atom [0])
                        evil (reify Comparable
                               (compareTo [_ _]
                                 (reset! heap [])
                                 (throw (RuntimeException. "heap modified"))))]
-                   (heapq/heappushpop! heap evil)))))
+                  (heapq/heappushpop! heap evil)))))
 
 (t/deftest ^:kaocha/skip test-comparison-operator-modifying-heap-two-heaps
+  (t/is (= [9 8] (heapq/nlargest 2 [8 9 7 6])))
   (t/is (thrown? ExceptionInfo
                  (let [heap1 (atom [0])
                        heap2 (atom [0])

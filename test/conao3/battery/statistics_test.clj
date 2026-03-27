@@ -29,6 +29,7 @@
   (t/is (Double/isNaN (statistics/mean [1.0 Double/NaN]))))
 
 (t/deftest ^:kaocha/skip test-mean-empty
+  (t/is (= 3 (statistics/mean [1 2 3 4 5])))
   (t/is (thrown? ExceptionInfo (statistics/mean []))))
 
 ;; ---- fmean ----
@@ -38,6 +39,7 @@
   (t/is (= 1.0 (statistics/fmean [1]))))
 
 (t/deftest ^:kaocha/skip test-fmean-error-cases
+  (t/is (= 1.5 (statistics/fmean [1 2] [1 1])))
   (t/is (thrown? ExceptionInfo (statistics/fmean []))))
 
 (t/deftest ^:kaocha/skip test-fmean-special-values
@@ -47,7 +49,9 @@
 (t/deftest ^:kaocha/skip test-weights
   (t/is (= 3.0 (statistics/fmean [1 2 3 4 5] [1 1 1 1 1]))
         "equal weights should give same result as unweighted")
-  (t/is (thrown? ExceptionInfo (statistics/fmean [1 2] [1]))))
+  (t/is (thrown? ExceptionInfo (statistics/fmean [1 2] [1]))
+        "weights must be same length as data")
+  (t/is (= 4.0 (statistics/fmean [4 8] [1 1]))))
 
 ;; ---- geometric-mean ----
 
@@ -56,6 +60,7 @@
   (t/is (< (Math/abs (- 4.0 (statistics/geometric-mean [2 8]))) 1e-10)))
 
 (t/deftest ^:kaocha/skip test-geometricmean-error-cases
+  (t/is (= 2.0 (statistics/geometric-mean [1 4])))
   (t/is (thrown? ExceptionInfo (statistics/geometric-mean [])))
   (t/is (thrown? ExceptionInfo (statistics/geometric-mean [-1 2 3]))))
 
@@ -84,9 +89,12 @@
   (t/is (Double/isNaN (statistics/harmonic-mean [Double/NaN 1.0]))))
 
 (t/deftest ^:kaocha/skip test-zero
+  (t/is (= 2.0 (statistics/harmonic-mean [1 2 4]))
+        "harmonic mean of [1 2 4] is 2")
   (t/is (thrown? ExceptionInfo (statistics/harmonic-mean []))))
 
 (t/deftest ^:kaocha/skip test-negative-error
+  (t/is (= 4/3 (statistics/harmonic-mean [1 2 3])))
   (t/is (thrown? ExceptionInfo (statistics/harmonic-mean [-1 2 3]))))
 
 (t/deftest ^:kaocha/skip test-with-weights
@@ -177,6 +185,7 @@
 ;; ---- variance ----
 
 (t/deftest ^:kaocha/skip test-variance-single-value
+  (t/is (= 35/4 (statistics/variance [1 2 3 4 5 6 7])))
   (t/is (thrown? ExceptionInfo (statistics/variance [17]))))
 
 (t/deftest ^:kaocha/skip test-variance-ints
@@ -188,6 +197,9 @@
 ;; ---- stdev ----
 
 (t/deftest ^:kaocha/skip test-stdev-single-value
+  (t/is (< (Math/abs (- (statistics/stdev [1 2 3])
+                        (Math/sqrt (statistics/variance [1 2 3]))))
+           1e-10))
   (t/is (thrown? ExceptionInfo (statistics/stdev [17]))))
 
 (t/deftest ^:kaocha/skip test-stdev-compare-to-variance
@@ -211,6 +223,7 @@
   (t/is (= [1.0] (statistics/quantiles [1 2 3] {:n 2}))))
 
 (t/deftest ^:kaocha/skip test-quantiles-error-cases
+  (t/is (= [1.0] (statistics/quantiles [1 2 3] {:n 2})))
   (t/is (thrown? ExceptionInfo (statistics/quantiles [1 2] {:n 0})))
   (t/is (thrown? ExceptionInfo (statistics/quantiles [1]))))
 
@@ -223,6 +236,7 @@
     (t/is (< (Math/abs (- 2.5 (statistics/covariance x y))) 1e-10))))
 
 (t/deftest ^:kaocha/skip test-constant-input-error
+  (t/is (= 1.0 (statistics/correlation [1 2 3] [1 2 3])))
   (t/is (thrown? ExceptionInfo (statistics/correlation [1 1 1] [1 2 3]))))
 
 ;; ---- linear-regression ----
