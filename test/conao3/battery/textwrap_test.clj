@@ -49,21 +49,21 @@
 
 ;; WrapTestCase
 
-(t/deftest ^:kaocha/skip test-wrap-simple
+(t/deftest test-wrap-simple
   (let [text "Hello there, how are you this fine day?  I'm glad to hear it!"]
     (check-wrap text 12 ["Hello there," "how are you" "this fine" "day?  I'm" "glad to hear" "it!"])
     (check-wrap text 42 ["Hello there, how are you this fine day?" "I'm glad to hear it!"])
     (check-wrap text 80 [text])))
 
-(t/deftest ^:kaocha/skip test-wrap-empty-string
+(t/deftest test-wrap-empty-string
   (check-wrap "" 6 [])
   (check-wrap "" 6 [] {:drop-whitespace false}))
 
-(t/deftest ^:kaocha/skip test-wrap-empty-string-with-initial-indent
+(t/deftest test-wrap-empty-string-with-initial-indent
   (check-wrap "" 6 [] {:initial-indent "++"})
   (check-wrap "" 6 [] {:initial-indent "++" :drop-whitespace false}))
 
-(t/deftest ^:kaocha/skip test-wrap-whitespace
+(t/deftest test-wrap-whitespace
   (let [text "This is a paragraph that already has\nline breaks.  But some of its lines are much longer than the others,\nso it needs to be wrapped.\nSome lines are \ttabbed too.\nWhat a mess!\n"
         expect ["This is a paragraph that already has line"
                 "breaks.  But some of its lines are much"
@@ -77,7 +77,7 @@
     (check-wrap "\tTest\tdefault\t\ttabsize." 80 ["        Test    default         tabsize."])
     (check-wrap "\tTest\tcustom\t\ttabsize." 80 ["    Test    custom      tabsize."] {:tabsize 4})))
 
-(t/deftest ^:kaocha/skip test-wrap-fix-sentence-endings
+(t/deftest test-wrap-fix-sentence-endings
   (let [wrapper {:width 60 :fix-sentence-endings true}]
     (let [text "A short line. Note the single space."
           expect ["A short line.  Note the single space."]]
@@ -100,12 +100,12 @@
              (textwrap/wrap text 60 :fix-sentence-endings true)))
     (check ["File stdio.h is nice."] (textwrap/wrap "File stdio.h is nice." 60 :fix-sentence-endings true))))
 
-(t/deftest ^:kaocha/skip test-wrap-wrap-short
+(t/deftest test-wrap-wrap-short
   (let [text "This is a\nshort paragraph."]
     (check-wrap text 20 ["This is a short" "paragraph."])
     (check-wrap text 40 ["This is a short paragraph."])))
 
-(t/deftest ^:kaocha/skip test-wrap-wrap-short-1line
+(t/deftest test-wrap-wrap-short-1line
   (let [text "This is a short line."]
     (check-wrap text 30 ["This is a short line."])
     (check-wrap text 30 ["(1) This is a short line."] {:initial-indent "(1) "})))
@@ -199,34 +199,34 @@
     (check-split wrapper "foo (bar) baz" ["foo" " " "(bar)" " " "baz"])
     (check-split wrapper "blah (ding dong), wubba" ["blah" " " "(ding" " " "dong)," " " "wubba"])))
 
-(t/deftest ^:kaocha/skip test-wrap-drop-whitespace-false
+(t/deftest test-wrap-drop-whitespace-false
   (check-wrap " This is a    sentence with     much whitespace." 10
              [" This is a" "    " "sentence " "with     " "much white" "space."]
              {:drop-whitespace false}))
 
-(t/deftest ^:kaocha/skip test-wrap-drop-whitespace-false-whitespace-only
+(t/deftest test-wrap-drop-whitespace-false-whitespace-only
   (check-wrap "   " 6 ["   "] {:drop-whitespace false}))
 
-(t/deftest ^:kaocha/skip test-wrap-drop-whitespace-false-whitespace-only-with-indent
+(t/deftest test-wrap-drop-whitespace-false-whitespace-only-with-indent
   (check-wrap "   " 6 ["     "] {:drop-whitespace false :initial-indent "  "}))
 
-(t/deftest ^:kaocha/skip test-wrap-drop-whitespace-whitespace-only
+(t/deftest test-wrap-drop-whitespace-whitespace-only
   (check-wrap "  " 6 []))
 
-(t/deftest ^:kaocha/skip test-wrap-drop-whitespace-leading-whitespace
+(t/deftest test-wrap-drop-whitespace-leading-whitespace
   (let [text " This is a sentence with leading whitespace."]
     (check-wrap text 50 [" This is a sentence with leading whitespace."])
     (check-wrap text 30 [" This is a sentence with" "leading whitespace."])))
 
-(t/deftest ^:kaocha/skip test-wrap-drop-whitespace-whitespace-line
+(t/deftest test-wrap-drop-whitespace-whitespace-line
   (let [text "abcd    efgh"]
     (check-wrap text 6 ["abcd" "    " "efgh"] {:drop-whitespace false})
     (check-wrap text 6 ["abcd" "efgh"])))
 
-(t/deftest ^:kaocha/skip test-wrap-drop-whitespace-whitespace-only-with-indent-2
+(t/deftest test-wrap-drop-whitespace-whitespace-only-with-indent-2
   (check-wrap "  " 6 [] {:initial-indent "++"}))
 
-(t/deftest ^:kaocha/skip test-wrap-drop-whitespace-whitespace-indent
+(t/deftest test-wrap-drop-whitespace-whitespace-indent
   (check-wrap "abcd efgh" 6 ["  abcd" "  efgh"] {:initial-indent "  " :subsequent-indent "  "}))
 
 (t/deftest ^:kaocha/skip test-wrap-split
@@ -235,19 +235,19 @@
         expected ["Hello" " " "there" " " "--" " " "you" " " "goof-" "ball," " " "use" " " "the" " " "-b" " " "option!"]]
     (check-split wrapper text expected)))
 
-(t/deftest ^:kaocha/skip test-wrap-break-on-hyphens
+(t/deftest test-wrap-break-on-hyphens
   (check-wrap "yaba daba-doo" 10 ["yaba daba-" "doo"] {:break-on-hyphens true})
   (check-wrap "yaba daba-doo" 10 ["yaba" "daba-doo"] {:break-on-hyphens false}))
 
-(t/deftest ^:kaocha/skip test-wrap-bad-width
+(t/deftest test-wrap-bad-width
   (let [text "Whatever, it doesn't matter."]
     (t/is (thrown? ExceptionInfo (textwrap/wrap text 0)))
     (t/is (thrown? ExceptionInfo (textwrap/wrap text -1)))))
 
-(t/deftest ^:kaocha/skip test-wrap-no-split-at-umlaut
+(t/deftest test-wrap-no-split-at-umlaut
   (check-wrap "Die Empfänger-Auswahl" 13 ["Die" "Empfänger-" "Auswahl"]))
 
-(t/deftest ^:kaocha/skip test-wrap-umlaut-followed-by-dash
+(t/deftest test-wrap-umlaut-followed-by-dash
   (check-wrap "aa ää-ää" 7 ["aa ää-" "ää"]))
 
 (t/deftest ^:kaocha/skip test-wrap-non-breaking-space
@@ -264,7 +264,7 @@
 
 ;; MaxLinesTestCase
 
-(t/deftest ^:kaocha/skip test-max-lines-simple
+(t/deftest test-max-lines-simple
   (let [text "Hello there, how are you this fine day?  I'm glad to hear it!"]
     (check-wrap text 12 ["Hello [...]"] {:max-lines 0})
     (check-wrap text 12 ["Hello [...]"] {:max-lines 1})
@@ -273,14 +273,14 @@
     (check-wrap text 80 [text] {:max-lines 1})
     (check-wrap text 12 ["Hello there," "how are you" "this fine" "day?  I'm" "glad to hear" "it!"] {:max-lines 6})))
 
-(t/deftest ^:kaocha/skip test-max-lines-spaces
+(t/deftest test-max-lines-spaces
   (let [text "Hello there, how are you this fine day?  I'm glad to hear it!"]
     (check-wrap text 12 ["Hello there," "how are you" "this fine" "day? [...]"] {:max-lines 4})
     (check-wrap text 6 ["Hello" "[...]"] {:max-lines 2})
     (check-wrap (str text (str/join (repeat 10 " "))) 12
                ["Hello there," "how are you" "this fine" "day?  I'm" "glad to hear" "it!"] {:max-lines 6})))
 
-(t/deftest ^:kaocha/skip test-max-lines-placeholder
+(t/deftest test-max-lines-placeholder
   (let [text "Hello there, how are you this fine day?  I'm glad to hear it!"]
     (check-wrap text 12 ["Hello..."] {:max-lines 1 :placeholder "..."})
     (check-wrap text 12 ["Hello there," "how are..."] {:max-lines 2 :placeholder "..."})
@@ -292,17 +292,17 @@
                {:max-lines 1 :initial-indent "  " :subsequent-indent "    " :placeholder " [truncated]..."})
     (check-wrap text 80 [text] {:placeholder (str (repeat 1000 "."))})))
 
-(t/deftest ^:kaocha/skip test-max-lines-placeholder-backtrack
+(t/deftest test-max-lines-placeholder-backtrack
   (check-wrap "Good grief Python features are advancing quickly!" 12 ["Good grief" "Python*****"]
              {:max-lines 3 :placeholder "*****"}))
 
 ;; LongWordTestCase
 
-(t/deftest ^:kaocha/skip test-long-word-break-long
+(t/deftest test-long-word-break-long
   (let [text "Did you say \"supercalifragilisticexpialidocious?\"\nHow *do* you spell that odd word, anyways?\n"]
     (check-wrap text 30 ["Did you say \"supercalifragilis" "ticexpialidocious?\" How *do*" "you spell that odd word," "anyways?"])
     (check-wrap text 50 ["Did you say \"supercalifragilisticexpialidocious?\"" "How *do* you spell that odd word, anyways?"])
-    (check-wrap (str (repeat 10 "-") "hello") 10 ["----------"
+    (check-wrap "----------hello" 10 ["----------"
                         "               h"
                         "               e"
                         "               l"
@@ -376,7 +376,7 @@
 (defn- assert-unchanged [text]
   (check text (textwrap/dedent text)))
 
-(t/deftest ^:kaocha/skip test-dedent-type-error
+(t/deftest test-dedent-type-error
   (t/is (thrown? ExceptionInfo (textwrap/dedent 0)))
   (t/is (thrown? ExceptionInfo (textwrap/dedent (byte-array 0)))))
 
@@ -391,29 +391,29 @@
   (check "\n\n\n\n\n" (textwrap/dedent "\r\n"))
   (check "\n\n\n\n\n\n" (textwrap/dedent "    \n\t\n  \n\t\t\n\n\n       ")))
 
-(t/deftest ^:kaocha/skip test-dedent-nomargin
+(t/deftest test-dedent-nomargin
   (assert-unchanged "Hello there.\nHow are you?\nOh good, I'm glad.")
   (assert-unchanged "Hello there.\n\nBoo!")
   (assert-unchanged "Hello there.\n  This is indented.")
   (assert-unchanged "Hello there.\n\n  Boo!\n"))
 
-(t/deftest ^:kaocha/skip test-dedent-even
+(t/deftest test-dedent-even
   (check "Hello there.\nHow are ya?\nOh good." (textwrap/dedent "  Hello there.\n  How are ya?\n  Oh good."))
   (check "Hello there.\n\nHow are ya?\nOh good.\n" (textwrap/dedent "  Hello there.\n\n  How are ya?\n  Oh good.\n"))
   (check "Hello there.\n\nHow are ya?\nOh good.\n" (textwrap/dedent "  Hello there.\n  \n  How are ya?\n  Oh good.\n")))
 
-(t/deftest ^:kaocha/skip test-dedent-uneven
+(t/deftest test-dedent-uneven
   (let [text (str "        def foo():\n            while 1:\n                return foo\n")]
     (check "def foo():\n    while 1:\n        return foo\n" (textwrap/dedent text)))
   (check "Foo\n  Bar\n\n Baz\n" (textwrap/dedent "  Foo\n    Bar\n\n   Baz\n"))
   (check "Foo\n  Bar\n\n Baz\n" (textwrap/dedent "  Foo\n    Bar\n \n   Baz\n")))
 
-(t/deftest ^:kaocha/skip test-dedent-declining
+(t/deftest test-dedent-declining
   (check " Foo\nBar\n" (textwrap/dedent "     Foo\n    Bar\n"))
   (check " Foo\n\nBar\n" (textwrap/dedent "     Foo\n\n    Bar\n"))
   (check " Foo\n\nBar\n" (textwrap/dedent "     Foo\n    \n    Bar\n")))
 
-(t/deftest ^:kaocha/skip test-dedent-preserve-internal-tabs
+(t/deftest test-dedent-preserve-internal-tabs
   (let [text "  hello\tthere\n  how are\tyou?"
         expect "hello\tthere\nhow are\tyou?"]
     (check expect (textwrap/dedent text))
@@ -450,35 +450,35 @@
           ["Hi.\r\nThis is a test.\r\nTesting.\r\n"
            "\nHi.\r\nThis is a test.\n\r\nTesting.\r\n\n"]))
 
-(t/deftest ^:kaocha/skip test-indent-nomargin-default
+(t/deftest test-indent-nomargin-default
   (doseq [text indent-cases]
     (check text (textwrap/indent text ""))))
 
-(t/deftest ^:kaocha/skip test-indent-nomargin-explicit-default
+(t/deftest test-indent-nomargin-explicit-default
   (doseq [text indent-cases]
     (check text (textwrap/indent text "" nil))))
 
-(t/deftest ^:kaocha/skip test-indent-nomargin-all-lines
+(t/deftest test-indent-nomargin-all-lines
   (doseq [text indent-cases]
     (check text (textwrap/indent text "" (constantly true)))))
 
-(t/deftest ^:kaocha/skip test-indent-no-lines
+(t/deftest test-indent-no-lines
   (doseq [text indent-cases]
     (check text (textwrap/indent text "    " (constantly false)))))
 
-(t/deftest ^:kaocha/skip test-roundtrip-spaces
+(t/deftest test-roundtrip-spaces
   (doseq [text indent-roundtrip-cases]
     (check text (textwrap/dedent (textwrap/indent text "    ")))))
 
-(t/deftest ^:kaocha/skip test-roundtrip-tabs
+(t/deftest test-roundtrip-tabs
   (doseq [text indent-roundtrip-cases]
     (check text (textwrap/dedent (textwrap/indent text "\t\t")))))
 
-(t/deftest ^:kaocha/skip test-roundtrip-mixed
+(t/deftest test-roundtrip-mixed
   (doseq [text indent-roundtrip-cases]
     (check text (textwrap/dedent (textwrap/indent text " \t  \t ")))))
 
-(t/deftest ^:kaocha/skip test-indent-default
+(t/deftest test-indent-default
   (let [prefix "  "
         expected ["  Hi.\n  This is a test.\n  Testing."
                   "  Hi.\n  This is a test.\n\n  Testing."
@@ -488,7 +488,7 @@
     (doseq [[text expect] (map vector indent-cases expected)]
       (check expect (textwrap/indent text prefix)))))
 
-(t/deftest ^:kaocha/skip test-indent-explicit-default
+(t/deftest test-indent-explicit-default
   (let [prefix "  "
         expected ["  Hi.\n  This is a test.\n  Testing."
                   "  Hi.\n  This is a test.\n\n  Testing."
@@ -498,7 +498,7 @@
     (doseq [[text expect] (map vector indent-cases expected)]
       (check expect (textwrap/indent text prefix nil)))))
 
-(t/deftest ^:kaocha/skip test-indent-all-lines
+(t/deftest test-indent-all-lines
   (let [prefix "  "
         expected ["  Hi.\n  This is a test.\n  Testing."
                   "  Hi.\n  This is a test.\n  \n  Testing."
