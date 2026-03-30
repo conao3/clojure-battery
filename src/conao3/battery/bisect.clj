@@ -12,7 +12,12 @@
   (when (and (contains? opts :key) (not (fn? (:key opts))))
     (throw (ex-info "key must be a callable function" {:key (:key opts)}))))
 
+(defn- validate-sequence! [a]
+  (when-not (sequential? a)
+    (throw (ex-info (str "a must be a sequence, got " (type a)) {:a a}))))
+
 (defn bisect-left [a x & args]
+  (validate-sequence! a)
   (let [opts (parse-opts args)
         _ (validate-key opts)
         lo (get opts :lo 0)
@@ -29,6 +34,7 @@
         lo))))
 
 (defn bisect-right [a x & args]
+  (validate-sequence! a)
   (let [opts (parse-opts args)
         _ (validate-key opts)
         lo (get opts :lo 0)
@@ -48,6 +54,7 @@
   (let [opts (parse-opts args)
         _ (validate-key opts)
         vec-a (if (instance? clojure.lang.Atom a) @a a)
+        _ (validate-sequence! vec-a)
         i (apply bisect-left vec-a x args)]
     (when (instance? clojure.lang.Atom a)
       (swap! a (fn [v] (into (conj (subvec v 0 i) x) (subvec v i)))))))
@@ -56,6 +63,7 @@
   (let [opts (parse-opts args)
         _ (validate-key opts)
         vec-a (if (instance? clojure.lang.Atom a) @a a)
+        _ (validate-sequence! vec-a)
         i (apply bisect-right vec-a x args)]
     (when (instance? clojure.lang.Atom a)
       (swap! a (fn [v] (into (conj (subvec v 0 i) x) (subvec v i)))))))

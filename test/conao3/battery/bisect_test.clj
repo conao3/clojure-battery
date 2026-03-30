@@ -494,32 +494,32 @@
     (insort-right m insert-fn 5)
     (t/is (= @lst-data [5 10]))))
 
-(t/deftest ^:kaocha/skip test-non-sequence-python
+(t/deftest test-non-sequence-python
   (let [m (module->env :python)]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f 10 10))))))
 
-(t/deftest ^:kaocha/skip test-non-sequence-c
+(t/deftest test-non-sequence-c
   (let [m (module->env :python)]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f 10 10))))))
 
-(t/deftest ^:kaocha/skip test-len-only-python
+(t/deftest test-len-only-python
   (let [m (module->env :python)]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f (->LenOnly) 10))))))
 
-(t/deftest ^:kaocha/skip test-len-only-c
+(t/deftest test-len-only-c
   (let [m (module->env :python)]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f (->LenOnly) 10))))))
 
-(t/deftest ^:kaocha/skip test-get-only-python
+(t/deftest test-get-only-python
   (let [m (module->env :python)]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f (->GetOnly) 10))))))
 
-(t/deftest ^:kaocha/skip test-get-only-c
+(t/deftest test-get-only-c
   (let [m (module->env :python)]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f (->GetOnly) 10))))))
