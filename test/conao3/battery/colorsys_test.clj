@@ -15,7 +15,7 @@
   (t/is (< (abs (- (nth tr1 1) (nth tr2 1))) 1e-7))
   (t/is (< (abs (- (nth tr1 2) (nth tr2 2))) 1e-7)))
 
-(t/deftest ^:kaocha/skip test-hsv-roundtrip
+(t/deftest test-hsv-roundtrip
   (doseq [r (frange 0.0 1.0 0.2)
           g (frange 0.0 1.0 0.2)
           b (frange 0.0 1.0 0.2)]
@@ -23,22 +23,22 @@
           hsv (apply colorsys/rgb-to-hsv rgb)]
       (assert-triple-equal rgb (apply colorsys/hsv-to-rgb hsv)))))
 
-(t/deftest ^:kaocha/skip test-hsv-values
+(t/deftest test-hsv-values
   (let [values
         [[ [0.0 0.0 0.0] [0 0.0 0.0]]
-         [[0.0 0.0 1.0] [(4/6) 1.0 1.0]]
-         [[0.0 1.0 0.0] [(2/6) 1.0 1.0]]
-         [[0.0 1.0 1.0] [(3/6) 1.0 1.0]]
+         [[0.0 0.0 1.0] [4/6 1.0 1.0]]
+         [[0.0 1.0 0.0] [2/6 1.0 1.0]]
+         [[0.0 1.0 1.0] [3/6 1.0 1.0]]
          [[1.0 0.0 0.0] [0 1.0 1.0]]
-         [[1.0 0.0 1.0] [(5/6) 1.0 1.0]]
-         [[1.0 1.0 0.0] [(1/6) 1.0 1.0]]
+         [[1.0 0.0 1.0] [5/6 1.0 1.0]]
+         [[1.0 1.0 0.0] [1/6 1.0 1.0]]
          [[1.0 1.0 1.0] [0 0.0 1.0]]
          [[0.5 0.5 0.5] [0 0.0 0.5]]]]
     (doseq [[rgb hsv] values]
       (assert-triple-equal hsv (apply colorsys/rgb-to-hsv rgb))
       (assert-triple-equal rgb (apply colorsys/hsv-to-rgb hsv)))))
 
-(t/deftest ^:kaocha/skip test-hls-roundtrip
+(t/deftest test-hls-roundtrip
   (doseq [r (frange 0.0 1.0 0.2)
           g (frange 0.0 1.0 0.2)
           b (frange 0.0 1.0 0.2)]
@@ -46,15 +46,15 @@
           hls (apply colorsys/rgb-to-hls rgb)]
       (assert-triple-equal rgb (apply colorsys/hls-to-rgb hls)))))
 
-(t/deftest ^:kaocha/skip test-hls-values
+(t/deftest test-hls-values
   (let [values
         [[ [0.0 0.0 0.0] [0 0.0 0.0]]
-         [[0.0 0.0 1.0] [(4/6) 1/2 1.0]]
-         [[0.0 1.0 0.0] [(2/6) 1/2 1.0]]
-         [[0.0 1.0 1.0] [(3/6) 1/2 1.0]]
+         [[0.0 0.0 1.0] [4/6 1/2 1.0]]
+         [[0.0 1.0 0.0] [2/6 1/2 1.0]]
+         [[0.0 1.0 1.0] [3/6 1/2 1.0]]
          [[1.0 0.0 0.0] [0 1/2 1.0]]
-         [[1.0 0.0 1.0] [(5/6) 1/2 1.0]]
-         [[1.0 1.0 0.0] [(1/6) 1/2 1.0]]
+         [[1.0 0.0 1.0] [5/6 1/2 1.0]]
+         [[1.0 1.0 0.0] [1/6 1/2 1.0]]
          [[1.0 1.0 1.0] [0 1.0 0.0]]
          [[0.5 0.5 0.5] [0 1/2 0.0]]]]
     (doseq [[rgb hls] values]
@@ -69,7 +69,7 @@
       (assert-triple-equal hls (apply colorsys/rgb-to-hls rgb))
       (assert-triple-equal [1.0 1.0 1.0] (apply colorsys/hls-to-rgb hls)))))
 
-(t/deftest ^:kaocha/skip test-yiq-roundtrip
+(t/deftest test-yiq-roundtrip
   (doseq [r (frange 0.0 1.0 0.2)
           g (frange 0.0 1.0 0.2)
           b (frange 0.0 1.0 0.2)]
@@ -77,7 +77,7 @@
           yiq (apply colorsys/rgb-to-yiq rgb)]
       (assert-triple-equal rgb (apply colorsys/yiq-to-rgb yiq)))))
 
-(t/deftest ^:kaocha/skip test-yiq-values
+(t/deftest test-yiq-values
   (let [values
         [[ [0.0 0.0 0.0] [0.0 0.0 0.0]]
          [[0.0 0.0 1.0] [0.11 -0.3217 0.3121]]
