@@ -33,27 +33,27 @@
 ;; - test_multiset_operations_equivalent_to_set_operations (complex combinatorial)
 ;; - test_eq, test_le, test_lt, test_ge, test_gt (Counter comparison operators, Python-specific)
 
-(t/deftest ^:kaocha/skip test-test-chain-map-basics
+(t/deftest test-test-chain-map-basics
   (t/is (= {"a" 1 "b" 20 "c" 30}
            (collections/chain-map {"b" 20 "c" 30} {"a" 1 "b" 2}))))
 
-(t/deftest ^:kaocha/skip test-ordering
+(t/deftest test-ordering
   (let [baseline {"music" "bach" "art" "rembrandt"}
         adjustments {"art" "van gogh" "opera" "carmen"}]
     (t/is (= (merge baseline adjustments)
              (collections/chain-map adjustments baseline)))))
 
-(t/deftest ^:kaocha/skip test-constructor
+(t/deftest test-constructor
   (t/is (= {} (collections/chain-map)))
   (t/is (= {1 2} (collections/chain-map {1 2}))))
 
-(t/deftest ^:kaocha/skip test-bool
+(t/deftest test-bool
   (t/is (empty? (collections/chain-map)))
   (t/is (empty? (collections/chain-map {} {})))
   (t/is (not (empty? (collections/chain-map {1 2} {}))))
   (t/is (not (empty? (collections/chain-map {} {1 2})))))
 
-(t/deftest ^:kaocha/skip test-test-chain-map-order-preservation
+(t/deftest test-test-chain-map-order-preservation
   (let [c (collections/chain-map
             {"j" 0 "h" 88888}
             {}
@@ -74,21 +74,21 @@
     (t/is (= 9999 (get c "i")))
     (t/is (= 0 (get c "j")))))
 
-(t/deftest ^:kaocha/skip test-dict-coercion
+(t/deftest test-dict-coercion
   (t/is (= {"a" 1 "b" 2 "c" 30}
            (collections/chain-map {"a" 1 "b" 2} {"b" 20 "c" 30}))))
 
-(t/deftest ^:kaocha/skip test-test-counter-basics
+(t/deftest test-test-counter-basics
   (t/is (= {\a 3 \b 2 \c 1} (collections/counter "abcaba")))
   (t/is (= 3 (count (collections/counter "abcaba"))))
   (t/is (= 6 (reduce + (vals (collections/counter "abcaba")))))
   (t/is (= 2 (get (collections/counter "abcaba") \b 0)))
   (t/is (= 0 (get (collections/counter "abcaba") \z 0))))
 
-(t/deftest ^:kaocha/skip test-total
+(t/deftest test-total
   (t/is (= 15 (collections/counter-total {\a 10 \b 5 \c 0}))))
 
-(t/deftest ^:kaocha/skip test-test-counter-order-preservation
+(t/deftest test-test-counter-order-preservation
   (let [c (collections/counter "abracadabra")]
     (t/is (= 5 (get c \a)))
     (t/is (= 2 (get c \b)))
@@ -96,25 +96,25 @@
     (t/is (= 1 (get c \c)))
     (t/is (= 1 (get c \d)))))
 
-(t/deftest ^:kaocha/skip test-conversions
+(t/deftest test-conversions
   (let [s "she sells sea shells by the sea shore"]
     (t/is (= (sort (seq s))
              (sort (collections/counter-elements (collections/counter s)))))
     (t/is (= (set (seq s))
              (set (keys (collections/counter s)))))))
 
-(t/deftest ^:kaocha/skip test-invariant-for-the-in-operator
+(t/deftest test-invariant-for-the-in-operator
   (let [c {\a 10 \b -2 \c 0}]
     (doseq [elem (keys c)]
       (t/is (contains? c elem)))))
 
-(t/deftest ^:kaocha/skip test-subtract
+(t/deftest test-subtract
   (let [c {\a -5 \b 0 \c 5 \d 10 \e 15 \g 40}
         other {\a 1 \b 2 \c -3 \d 10 \e 20 \f 30 \h -50}]
     (t/is (= {\a -6 \b -2 \c 8 \d 0 \e -5 \f -30 \g 40 \h 50}
              (collections/counter-subtract c other)))))
 
-(t/deftest ^:kaocha/skip test-unary
+(t/deftest test-unary
   (let [c {\a -5 \b 0 \c 5 \d 10 \e 15 \g 40}]
     (t/is (= {\c 5 \d 10 \e 15 \g 40} (collections/counter-pos c)))
     (t/is (= {\a 5} (collections/counter-neg c)))))
