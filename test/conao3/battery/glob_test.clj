@@ -24,16 +24,16 @@
   (t/is (= (seq (->bytes "[?]")) (seq (glob/escape (->bytes "?")))))
   (t/is (= (seq (->bytes "[*]")) (seq (glob/escape (->bytes "*"))))))
 
-(t/deftest ^:kaocha/skip test-translate-matching
+(t/deftest test-translate-matching
   (let [to-regex #(re-pattern (glob/translate %))]
     (t/is (not (nil? (re-matches (to-regex "*") "foo")))
           "glob translate should be compilable")
     (t/is (not (nil? (re-matches (to-regex "foo.bar") "foo.bar")))
           "dot should be matched by wildcard pattern")
-    (t/is (not (nil? (re-matches (glob/translate "**" :recursive true) "foo")))
+    (t/is (not (nil? (re-matches (re-pattern (glob/translate "**" :recursive true)) "foo")))
           "recursive glob should match nested paths")
-    (t/is (nil? (re-matches (glob/translate ".*" :recursive true) ".foo")))
-    (t/is (not (nil? (re-matches (glob/translate (str "foo" "/" "bar") :seps "/") "foo/bar"))))))
+    (t/is (nil? (re-matches (re-pattern (glob/translate ".*" :recursive true)) ".foo")))
+    (t/is (not (nil? (re-matches (re-pattern (glob/translate (str "foo" "/" "bar") :seps "/")) "foo/bar"))))))
 
 (t/deftest  test-translate
   (t/is (= "(?s:foo)\\z" (glob/translate "foo" :seps "/")))
