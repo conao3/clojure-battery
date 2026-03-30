@@ -9,26 +9,26 @@
 
 ;; BasicTestCase / RawConfigParserTestCase
 
-(t/deftest ^:kaocha/skip test-basic
+(t/deftest test-basic
   (let [cfg (configparser/read-string "[Foo Bar]\nfoo=bar1\n[Spacey Bar]\nfoo = bar2\n")]
     (t/is (= "bar1" (configparser/get cfg "Foo Bar" "foo")))
     (t/is (= "bar2" (configparser/get cfg "Spacey Bar" "foo")))))
 
-(t/deftest ^:kaocha/skip test-sections
+(t/deftest test-sections
   (let [cfg (configparser/read-string "[section1]\nfoo=bar\n[section2]\nbaz=qux\n")]
     (t/is (= (sort ["section1" "section2"]) (sort (configparser/sections cfg))))))
 
-(t/deftest ^:kaocha/skip test-items
+(t/deftest test-items
   (let [cfg (configparser/read-string "[section1]\nfoo=bar\nbaz=qux\n")]
     (t/is (= (sort [["foo" "bar"] ["baz" "qux"]]) (sort (configparser/items cfg "section1"))))))
 
-(t/deftest ^:kaocha/skip test-types
+(t/deftest test-types
   (let [cfg (configparser/read-string "[Types]\nint=42\nfloat=0.44\nboolean=off\n")]
     (t/is (= 42 (configparser/get-int cfg "Types" "int")))
     (t/is (< (Math/abs (- 0.44 (configparser/get-float cfg "Types" "float"))) 1e-10))
     (t/is (false? (configparser/get-boolean cfg "Types" "boolean")))))
 
-(t/deftest ^:kaocha/skip test-boolean-values
+(t/deftest test-boolean-values
   (let [cfg (configparser/read-string "[b]\nt1=1\nt2=yes\nt3=true\nt4=on\nf1=0\nf2=no\nf3=false\nf4=off\n")]
     (t/is (true? (configparser/get-boolean cfg "b" "t1")))
     (t/is (true? (configparser/get-boolean cfg "b" "t2")))
@@ -39,50 +39,50 @@
     (t/is (false? (configparser/get-boolean cfg "b" "f3")))
     (t/is (false? (configparser/get-boolean cfg "b" "f4")))))
 
-(t/deftest ^:kaocha/skip test-case-sensitivity
+(t/deftest test-case-sensitivity
   (let [cfg (configparser/read-string "[section1]\nFoo=bar\n")]
     (t/is (= "bar" (configparser/get cfg "section1" "foo")))))
 
-(t/deftest ^:kaocha/skip test-has-section
+(t/deftest test-has-section
   (let [cfg (configparser/read-string "[section1]\nfoo=bar\n")]
     (t/is (true? (configparser/has-section cfg "section1")))
     (t/is (false? (configparser/has-section cfg "section2")))))
 
-(t/deftest ^:kaocha/skip test-has-option
+(t/deftest test-has-option
   (let [cfg (configparser/read-string "[section1]\nfoo=bar\n")]
     (t/is (true? (configparser/has-option cfg "section1" "foo")))
     (t/is (false? (configparser/has-option cfg "section1" "baz")))))
 
-(t/deftest ^:kaocha/skip test-no-section-error
+(t/deftest test-no-section-error
   (let [cfg (configparser/read-string "[section1]\nfoo=bar\n")]
     (t/is (thrown? ExceptionInfo (configparser/get cfg "no-such-section" "foo")))))
 
-(t/deftest ^:kaocha/skip test-no-option-error
+(t/deftest test-no-option-error
   (let [cfg (configparser/read-string "[section1]\nfoo=bar\n")]
     (t/is (thrown? ExceptionInfo (configparser/get cfg "section1" "no-such-option")))))
 
-(t/deftest ^:kaocha/skip test-fallback
+(t/deftest test-fallback
   (let [cfg (configparser/read-string "[section1]\nfoo=bar\n")]
     (t/is (= "bar" (configparser/get cfg "section1" "foo" "fallback")))
     (t/is (= "fallback" (configparser/get cfg "section1" "no-such" "fallback")))
     (t/is (= "fallback" (configparser/get cfg "no-such-section" "foo" "fallback")))))
 
-(t/deftest ^:kaocha/skip test-multiline-values
+(t/deftest test-multiline-values
   (let [cfg (configparser/read-string "[section1]\nfoo=this line is much, much longer\n    than my editor\n    likes it.\n")]
     (t/is (= "this line is much, much longer\nthan my editor\nlikes it." (configparser/get cfg "section1" "foo")))))
 
-(t/deftest ^:kaocha/skip test-comment-prefixes
+(t/deftest test-comment-prefixes
   (let [cfg (configparser/read-string "[section1]\nfoo=bar  ; inline comment\nbaz=qux  # another comment\n")]
     (t/is (= "bar" (configparser/get cfg "section1" "foo")))
     (t/is (= "qux" (configparser/get cfg "section1" "baz")))))
 
-(t/deftest ^:kaocha/skip test-remove-section
+(t/deftest test-remove-section
   (let [cfg (configparser/read-string "[section1]\nfoo=bar\n[section2]\nbaz=qux\n")]
     (t/is (true? (configparser/remove-section cfg "section1")))
     (t/is (false? (configparser/has-section cfg "section1")))
     (t/is (false? (configparser/remove-section cfg "section1")))))
 
-(t/deftest ^:kaocha/skip test-remove-option
+(t/deftest test-remove-option
   (let [cfg (configparser/read-string "[section1]\nfoo=bar\nbaz=qux\n")]
     (t/is (true? (configparser/remove-option cfg "section1" "foo")))
     (t/is (false? (configparser/has-option cfg "section1" "foo")))
