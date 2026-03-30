@@ -13,7 +13,7 @@
 
 ;; Excluded: all filesystem-dependent tests (require real directory structure)
 
-(t/deftest ^:kaocha/skip test-escape
+(t/deftest  test-escape
   (t/is (= "abc" (glob/escape "abc")))
   (t/is (= "[[]" (glob/escape "[")))
   (t/is (= "[?]" (glob/escape "?")))
@@ -35,23 +35,23 @@
     (t/is (nil? (re-matches (glob/translate ".*" :recursive true) ".foo")))
     (t/is (not (nil? (re-matches (glob/translate (str "foo" "/" "bar") :seps "/") "foo/bar"))))))
 
-(t/deftest ^:kaocha/skip test-translate
+(t/deftest  test-translate
   (t/is (= "(?s:foo)\\z" (glob/translate "foo" :seps "/")))
   (t/is (= "(?s:foo/bar)\\z" (glob/translate "foo/bar" :seps "/")))
   (t/is (= "(?s:(?!\\.)[^/]*)\\z" (glob/translate "**" :seps "/")))
   (t/is (str/includes? (glob/translate "a?" :seps "/") "a")))
 
-(t/deftest ^:kaocha/skip test-translate-include-hidden
+(t/deftest  test-translate-include-hidden
   (t/is (= "(?s:[^/]+)\\z" (glob/translate "*" :include-hidden true :seps "/")))
   (t/is (= "(?s:[^/]*)\\z" (glob/translate "**" :include-hidden true :seps "/")))
   (t/is (not= (glob/translate "*" :include-hidden true :seps "/")
               (glob/translate "*" :seps "/"))))
 
-(t/deftest ^:kaocha/skip test-translate-recursive
+(t/deftest  test-translate-recursive
   (t/is (= "(?s:[^/]+)\\z" (glob/translate "*" :recursive true :include-hidden true :seps "/")))
   (t/is (= "(?s:.*)\\z" (glob/translate "**" :recursive true :include-hidden true :seps "/"))))
 
-(t/deftest ^:kaocha/skip test-translate-seps
+(t/deftest  test-translate-seps
   (let [translated (glob/translate (str "foo" "/" "bar" "/" "baz") :recursive true :include-hidden true :seps ["/" "\\"])]
     (t/is (re-matches (re-pattern translated) "foo/bar/baz"))
     (t/is (str/includes? translated "/"))))
