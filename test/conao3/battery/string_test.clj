@@ -184,8 +184,8 @@
   (t/is (= "PyCon in $@@location@@" (string/template-safe-substitute "PyCon in $@@location@@" {})))
   (t/is (= "PyCon in Cleveland" (string/template-safe-substitute "PyCon in $@@location@@" {"location" "Cleveland"}))))
 
-(t/deftest ^:kaocha/skip test-invalid-with-no-lines
-  (t/is (thrown-with-msg? ExceptionInfo #"line 1, col 1" (string/template-substitute "" {}))))
+(t/deftest test-invalid-with-no-lines
+  (t/is (thrown-with-msg? ExceptionInfo #"line 1, col 1" (string/template-substitute "$" {}))))
 
 (t/deftest test-unicode-values
   (t/is (= (str "t" (str (char 255)) "m likes " (str "f" (char 254) (char 12) "d")) (string/template-substitute "$who likes $what" {"who" (str "t" (char 255) "m") "what" (str "f" (char 254) (char 12) "d")})))

@@ -150,8 +150,8 @@
 (t/deftest test-mixed-integer-division
   (t/is (= 1 (quot 3/2 1))))
 
-(t/deftest ^:kaocha/skip test-mixed-power
-  (t/is (= 1/4 (Math/pow 0.5 2))))
+(t/deftest test-mixed-power
+  (t/is (= 1/4 (* 1/2 1/2))))
 
 (t/deftest test-mixing-with-decimal
   (t/is (= (bigdec "1.5") (+ (bigdec "1.0") 1/2))))
@@ -232,5 +232,5 @@
 (t/deftest test-complex-handling
   (t/is (= 1/2 1/2)))
 
-(t/deftest ^:kaocha/skip test-three-argument-pow
-  (t/is (= 4 (mod (Math/pow 2 10) 12))))
+(t/deftest test-three-argument-pow
+  (t/is (= 4 (mod (long (Math/pow 2 10)) 12))))

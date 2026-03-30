@@ -61,7 +61,11 @@
                 (.append sb (str "${" braced "}")))
               (.append sb (str v))))
           (some? invalid)
-          (throw (ex-info "Invalid placeholder in string" {})))))
+          (let [pos (.start m)
+                prefix (.substring tmpl 0 pos)
+                line (inc (count (re-seq #"\n" prefix)))
+                col (- pos (or (clojure.string/last-index-of prefix "\n") -1))]
+            (throw (ex-info (str "Invalid placeholder in string: line " line ", col " col) {}))))))
     (.append sb (.substring tmpl @last-end))
     (.toString sb)))
 

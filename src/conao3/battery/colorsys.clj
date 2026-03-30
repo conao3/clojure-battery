@@ -41,7 +41,7 @@
       [0.0 l 0.0]
       (let [s (if (<= l 0.5)
                 (/ rangec sumc)
-                (/ rangec (- 2.0 sumc)))
+                (/ rangec (- 2.0 (double maxc) (double minc))))
             rc (/ (- (double maxc) r) rangec)
             gc (/ (- (double maxc) g) rangec)
             bc (/ (- (double maxc) b) rangec)

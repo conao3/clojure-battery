@@ -61,7 +61,7 @@
       (assert-triple-equal hls (apply colorsys/rgb-to-hls rgb))
       (assert-triple-equal rgb (apply colorsys/hls-to-rgb hls)))))
 
-(t/deftest ^:kaocha/skip test-hls-nearwhite
+(t/deftest test-hls-nearwhite
   (let [values
         [[[0.9999999999999999 1 1] [1/2 1.0 1.0]]
          [[1 0.9999999999999999 0.9999999999999999] [0 1.0 1.0]]]]
