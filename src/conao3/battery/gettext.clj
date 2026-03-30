@@ -61,7 +61,11 @@
 
 (defn NullTranslations
   []
-  (translation-template :null))
+  (assoc (translation-template :null)
+         :gettext (fn [message] message)
+         :ngettext (fn [singular plural n] (if (= n 1) singular plural))
+         :pgettext (fn [_context message] message)
+         :npgettext (fn [_context singular plural n] (if (= n 1) singular plural))))
 
 (defn translation
   [domain localedir & {:keys [class_ class fallback]}]
@@ -109,31 +113,33 @@
 
 (defn gettext
   [message]
-  (not-implemented (str "gettext: " message)))
+  message)
 
 (defn ngettext
   [singular plural n]
-  (not-implemented (str "ngettext: " singular plural n)))
+  (when-not (integer? n)
+    (throw (ex-info (str "plural count must be integer, got: " (type n)) {:n n})))
+  (if (= n 1) singular plural))
 
 (defn pgettext
-  [context message]
-  (not-implemented (str "pgettext: " context message)))
+  [_context message]
+  message)
 
 (defn dpgettext
-  [domain context message]
-  (not-implemented (str "dpgettext: " domain context message)))
+  [_domain _context message]
+  message)
 
 (defn dgettext
-  [domain message]
-  (not-implemented (str "dgettext: " domain message)))
+  [_domain message]
+  message)
 
 (defn dngettext
-  [domain singular plural n]
-  (not-implemented (str "dngettext: " domain singular plural n)))
+  [_domain singular plural n]
+  (if (= n 1) singular plural))
 
 (defn dnpgettext
-  [domain context singular plural n]
-  (not-implemented (str "dnpgettext: " domain context singular plural n)))
+  [_domain _context singular plural n]
+  (if (= n 1) singular plural))
 
 (defn c2py
   [expression]

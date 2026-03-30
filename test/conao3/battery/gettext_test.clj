@@ -121,7 +121,7 @@ trggrkg zrffntr pngnybt yvoenel.")
   (t/is (= "Hay %s ficheros (context)" (gettext/pgettext "With context" "There are %s files")))
   (t/is (thrown? ExceptionInfo (gettext/ngettext "There is %s file" "There are %s files" nil))))
 
-(t/deftest ^:kaocha/skip test-gnu-translations-plural-forms-plural-wrong-context-forms
+(t/deftest test-gnu-translations-plural-forms-plural-wrong-context-forms
   (t/is (= "There is %s file" (gettext/pgettext "Unknown context" "There is %s file")))
   (t/is (= "There are %s files" (gettext/pgettext "Unknown context" "There are %s files")))
   (t/is (thrown? ExceptionInfo (gettext/ngettext "There is %s file" "There are %s files" nil))))
@@ -136,17 +136,17 @@ trggrkg zrffntr pngnybt yvoenel.")
   (t/is (= "Hay %s ficheros" (gettext/dngettext "gettext" "There is %s file" "There are %s files" 2)))
   (t/is (= "Hay %s fichero" (gettext/dgettext "gettext" "There is %s file"))))
 
-(t/deftest ^:kaocha/skip test-gnu-translations-with-domain-plural-forms-plural-forms-wrong-domain
+(t/deftest test-gnu-translations-with-domain-plural-forms-plural-forms-wrong-domain
   (t/is (= "There is %s file" (gettext/dngettext "unknown" "There is %s file" "There are %s files" 1)))
   (t/is (= "There are %s files" (gettext/dngettext "unknown" "There is %s file" "There are %s files" 2)))
   (t/is (= "There is %s file" (gettext/dgettext "unknown" "There is %s file"))))
 
-(t/deftest ^:kaocha/skip test-gnu-translations-with-domain-plural-forms-plural-context-forms-wrong-domain
+(t/deftest test-gnu-translations-with-domain-plural-forms-plural-context-forms-wrong-domain
   (t/is (= "There is %s file" (gettext/dnpgettext "unknown" "With context" "There is %s file" "There are %s files" 1)))
   (t/is (= "There are %s files" (gettext/dnpgettext "unknown" "With context" "There is %s file" "There are %s files" 2)))
   (t/is (= "There is %s file" (gettext/dpgettext "unknown" "With context" "There is %s file"))))
 
-(t/deftest ^:kaocha/skip test-gnu-translations-class-plural-forms-plural-forms-null-translations
+(t/deftest test-gnu-translations-class-plural-forms-plural-forms-null-translations
   (let [tobj (gettext/NullTranslations)]
     (t/is (= "There is %s file" (gettext/translation-ngettext tobj "There is %s file" "There are %s files" 1)))
     (t/is (= "There are %s files" (gettext/translation-ngettext tobj "There is %s file" "There are %s files" 2)))
@@ -160,55 +160,55 @@ trggrkg zrffntr pngnybt yvoenel.")
 
 ;; ---- PluralFormsInternalTestCase ----
 
-(t/deftest ^:kaocha/skip test-ja
+(t/deftest test-ja
   (let [f (gettext/c2py "0")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-de
+(t/deftest test-de
   (let [f (gettext/c2py "n != 1")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-fr
+(t/deftest test-fr
   (let [f (gettext/c2py "n>1")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-lv
+(t/deftest test-lv
   (let [f (gettext/c2py "n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-gd
+(t/deftest test-gd
   (let [f (gettext/c2py "n==1 ? 0 : n==2 ? 1 : 2")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-gd2
+(t/deftest test-gd2
   (let [f (gettext/c2py "n==1 ? 0 : (n==2 ? 1 : 2)")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-ro
+(t/deftest test-ro
   (let [f (gettext/c2py "n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-lt
+(t/deftest test-lt
   (let [f (gettext/c2py "n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-ru
+(t/deftest test-ru
   (let [f (gettext/c2py "n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-cs
+(t/deftest test-cs
   (let [f (gettext/c2py "(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-pl
+(t/deftest test-pl
   (let [f (gettext/c2py "n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-sl
+(t/deftest test-sl
   (let [f (gettext/c2py "n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-ar
+(t/deftest test-ar
   (let [f (gettext/c2py "n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5")]
     (t/is (fn? f))))
 
@@ -216,7 +216,7 @@ trggrkg zrffntr pngnybt yvoenel.")
   (let [f (gettext/c2py "n == n == n")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-decimal-number
+(t/deftest test-decimal-number
   (let [f (gettext/c2py "0123")]
     (t/is (fn? f))
     (t/is (= "foo" (gettext/dgettext "fallback" "foo")))))
