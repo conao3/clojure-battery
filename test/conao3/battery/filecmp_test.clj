@@ -118,7 +118,7 @@
     (filecmp/clear-cache)
     (t/is (= 0 (count @filecmp/_cache)))))
 
-(t/deftest ^:kaocha/skip test-default-ignores
+(t/deftest test-default-ignores
   (t/is (contains? filecmp/default-ignores ".hg")))
 
 (t/deftest ^:kaocha/skip test-cmpfiles

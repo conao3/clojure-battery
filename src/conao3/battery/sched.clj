@@ -7,13 +7,14 @@
   ([timefunc delayfunc]
    (atom {:timefunc timefunc
           :delayfunc delayfunc
+          :seq-counter 0
           :queue (sorted-set-by
                    (fn [a b]
                      (let [c (compare (:time a) (:time b))]
                        (if (zero? c)
                          (let [c2 (compare (:priority a) (:priority b))]
                            (if (zero? c2)
-                             (compare (System/identityHashCode a) (System/identityHashCode b))
+                             (compare (:seq a) (:seq b))
                              c2))
                          c))))})))
 
@@ -23,9 +24,16 @@
   ([s time priority action args]
    (enterabs! s time priority action args {}))
   ([s time priority action args kwargs]
-   (let [event {:time time :priority priority :action action :args args :kwargs kwargs}]
-     (swap! s update :queue conj event)
-     event)))
+   (let [result (volatile! nil)]
+     (swap! s (fn [state]
+                (let [seq-n (:seq-counter state)
+                      event {:time time :priority priority :action action
+                             :args args :kwargs kwargs :seq seq-n}]
+                  (vreset! result event)
+                  (-> state
+                      (update :seq-counter inc)
+                      (update :queue conj event)))))
+     @result)))
 
 (defn enter!
   ([s delay priority action]
