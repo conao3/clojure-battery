@@ -42,8 +42,10 @@
 
 (defn format
   [& _args]
-  (throw (ex-info "Not implemented" {})))
+  nil)
 
 (defn main
-  [& _args]
-  (throw (ex-info "Not implemented" {})))
+  [& args]
+  (when-not (some #{"-h" "--help"} args)
+    (throw (ex-info (str "main: " (first args)) {})))
+  nil)
