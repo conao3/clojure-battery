@@ -221,7 +221,7 @@ trggrkg zrffntr pngnybt yvoenel.")
     (t/is (fn? f))
     (t/is (= "foo" (gettext/dgettext "fallback" "foo")))))
 
-(t/deftest ^:kaocha/skip test-invalid-syntax
+(t/deftest test-invalid-syntax
   (let [invalid-expressions ["x>1" "(n>1" "n>1)" "42**42**42" "0xa" "1.0" "1e2"
                             "n>0x1" "+n" "-n" "n()" "n(1)" "1+" "nn" "n n" "n ? 1 2"]]
     (doseq [expr invalid-expressions]

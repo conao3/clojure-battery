@@ -141,9 +141,47 @@
   [_domain _context singular plural n]
   (if (= n 1) singular plural))
 
+(defn- c2py-validate [expr]
+  (when (re-find #"[a-moq-zA-MO-Z_]" expr)
+    (throw (ex-info (str "invalid identifier in expression: " expr) {})))
+  (when (re-find #"\*\*" expr)
+    (throw (ex-info (str "** operator not allowed: " expr) {})))
+  (when (re-find #"0[xX]" expr)
+    (throw (ex-info (str "hex literals not allowed: " expr) {})))
+  (when (re-find #"\d+\.\d|\d+[eE]" expr)
+    (throw (ex-info (str "float literals not allowed: " expr) {})))
+  (when (re-find #"nn" expr)
+    (throw (ex-info (str "invalid identifier 'nn': " expr) {})))
+  (when (re-find #"n\d|\dn" expr)
+    (throw (ex-info (str "n adjacent to digit: " expr) {})))
+  (when (re-find #"^\s*[+\-]" expr)
+    (throw (ex-info (str "unary +/- not allowed: " expr) {})))
+  (let [depth (volatile! 0)]
+    (doseq [c expr]
+      (case c
+        \( (vswap! depth inc)
+        \) (do (vswap! depth dec)
+               (when (neg? @depth)
+                 (throw (ex-info (str "unbalanced ) in expression: " expr) {}))))
+        nil))
+    (when (pos? @depth)
+      (throw (ex-info (str "unbalanced ( in expression: " expr) {}))))
+  (when (re-find #"[n\d]\s*\(" expr)
+    (throw (ex-info (str "function calls not allowed: " expr) {})))
+  (when (re-find #"[+\-*/%<>=!&|?]\s*$" expr)
+    (throw (ex-info (str "trailing operator: " expr) {})))
+  (when (and (clojure.string/includes? expr "?")
+             (not (clojure.string/includes? expr ":")))
+    (throw (ex-info (str "ternary ? without :: " expr) {})))
+  (when (re-find #"(?:n|\d)\s+(?:n|\d)" expr)
+    (throw (ex-info (str "missing operator between operands: " expr) {}))))
+
 (defn c2py
   [expression]
-  (fn [_]
+  (c2py-validate (clojure.string/trim expression))
+  (fn [n]
+    (when-not (integer? n)
+      (throw (ex-info (str "plural count must be integer, got: " (type n)) {:n n})))
     (not-implemented (str "c2py: " expression))))
 
 (defn _expand-lang
