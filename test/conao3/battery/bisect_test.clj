@@ -53,84 +53,83 @@
 
 (defn- precomputed-cases
   [module]
-  [[(partial module :bisect-right) [] 1 0]
-   [(partial module :bisect-right) [1] 0 0]
-   [(partial module :bisect-right) [1] 1 1]
-   [(partial module :bisect-right) [1] 2 1]
-   [(partial module :bisect-right) [1 1] 0 0]
-   [(partial module :bisect-right) [1 1] 1 2]
-   [(partial module :bisect-right) [1 1] 2 2]
-   [(partial module :bisect-right) [1 1 1] 0 0]
-   [(partial module :bisect-right) [1 1 1] 1 3]
-   [(partial module :bisect-right) [1 1 1] 2 3]
-   [(partial module :bisect-right) [1 1 1 1] 0 0]
-   [(partial module :bisect-right) [1 1 1 1] 1 4]
-   [(partial module :bisect-right) [1 1 1 1] 2 4]
-   [(partial module :bisect-right) [1 2] 0 0]
-   [(partial module :bisect-right) [1 2] 1 1]
-   [(partial module :bisect-right) [1 2] 1.5 1]
-   [(partial module :bisect-right) [1 2] 2 2]
-   [(partial module :bisect-right) [1 2] 3 2]
-   [(partial module :bisect-right) [1 1 2 2] 0 0]
-   [(partial module :bisect-right) [1 1 2 2] 1 2]
-   [(partial module :bisect-right) [1 1 2 2] 1.5 2]
-   [(partial module :bisect-right) [1 1 2 2] 2 4]
-   [(partial module :bisect-right) [1 1 2 2] 3 4]
-   [(partial module :bisect-right) [1 2 3] 0 0]
-   [(partial module :bisect-right) [1 2 3] 1 1]
-   [(partial module :bisect-right) [1 2 3] 1.5 1]
-   [(partial module :bisect-right) [1 2 3] 2 2]
-   [(partial module :bisect-right) [1 2 3] 2.5 2]
-   [(partial module :bisect-right) [1 2 3] 3 3]
-   [(partial module :bisect-right) [1 2 3] 4 3]
-   [(partial module :bisect-right) [1 2 3] [1 2 2 3 3 3 4 4 4 4] 0 0]
-   [(partial module :bisect-right) [1 2 2 3 3 3 4 4 4 4] 1 1]
-   [(partial module :bisect-right) [1 2 2 3 3 3 4 4 4 4] 1.5 1]
-   [(partial module :bisect-right) [1 2 2 3 3 3 4 4 4 4] 2 3]
-   [(partial module :bisect-right) [1 2 2 3 3 3 4 4 4 4] 2.5 3]
-   [(partial module :bisect-right) [1 2 2 3 3 3 4 4 4 4] 3 6]
-   [(partial module :bisect-right) [1 2 2 3 3 3 4 4 4 4] 3.5 6]
-   [(partial module :bisect-right) [1 2 2 3 3 3 4 4 4 4] 4 10]
-   [(partial module :bisect-right) [1 2 2 3 3 3 4 4 4 4] 5 10]
-   [(partial module :bisect-left) [] 1 0]
-   [(partial module :bisect-left) [1] 0 0]
-   [(partial module :bisect-left) [1] 1 0]
-   [(partial module :bisect-left) [1] 2 1]
-   [(partial module :bisect-left) [1 1] 0 0]
-   [(partial module :bisect-left) [1 1] 1 0]
-   [(partial module :bisect-left) [1 1] 2 2]
-   [(partial module :bisect-left) [1 1 1] 0 0]
-   [(partial module :bisect-left) [1 1 1] 1 0]
-   [(partial module :bisect-left) [1 1 1] 2 3]
-   [(partial module :bisect-left) [1 1 1 1] 0 0]
-   [(partial module :bisect-left) [1 1 1 1] 1 0]
-   [(partial module :bisect-left) [1 1 1 1] 2 4]
-   [(partial module :bisect-left) [1 2] 0 0]
-   [(partial module :bisect-left) [1 2] 1 0]
-   [(partial module :bisect-left) [1 2] 1.5 1]
-   [(partial module :bisect-left) [1 2] 2 1]
-   [(partial module :bisect-left) [1 2] 3 2]
-   [(partial module :bisect-left) [1 1 2 2] 0 0]
-   [(partial module :bisect-left) [1 1 2 2] 1 0]
-   [(partial module :bisect-left) [1 1 2 2] 1.5 2]
-   [(partial module :bisect-left) [1 1 2 2] 2 2]
-   [(partial module :bisect-left) [1 1 2 2] 3 4]
-   [(partial module :bisect-left) [1 2 3] 0 0]
-   [(partial module :bisect-left) [1 2 3] 1 0]
-   [(partial module :bisect-left) [1 2 3] 1.5 1]
-   [(partial module :bisect-left) [1 2 3] 2 1]
-   [(partial module :bisect-left) [1 2 3] 2.5 2]
-   [(partial module :bisect-left) [1 2 3] 3 2]
-   [(partial module :bisect-left) [1 2 3] 4 3]
-   [(partial module :bisect-left) [1 2 2 3 3 3 4 4 4 4] 0 0]
-   [(partial module :bisect-left) [1 2 2 3 3 3 4 4 4 4] 1 0]
-   [(partial module :bisect-left) [1 2 2 3 3 3 4 4 4 4] 1.5 1]
-   [(partial module :bisect-left) [1 2 2 3 3 3 4 4 4 4] 2 1]
-   [(partial module :bisect-left) [1 2 2 3 3 3 4 4 4 4] 2.5 3]
-   [(partial module :bisect-left) [1 2 2 3 3 3 4 4 4 4] 3 3]
-   [(partial module :bisect-left) [1 2 2 3 3 3 4 4 4 4] 3.5 6]
-   [(partial module :bisect-left) [1 2 2 3 3 3 4 4 4 4] 4 6]
-   [(partial module :bisect-left) [1 2 2 3 3 3 4 4 4 4] 5 10]])
+  [[(:bisect-right module) [] 1 0]
+   [(:bisect-right module) [1] 0 0]
+   [(:bisect-right module) [1] 1 1]
+   [(:bisect-right module) [1] 2 1]
+   [(:bisect-right module) [1 1] 0 0]
+   [(:bisect-right module) [1 1] 1 2]
+   [(:bisect-right module) [1 1] 2 2]
+   [(:bisect-right module) [1 1 1] 0 0]
+   [(:bisect-right module) [1 1 1] 1 3]
+   [(:bisect-right module) [1 1 1] 2 3]
+   [(:bisect-right module) [1 1 1 1] 0 0]
+   [(:bisect-right module) [1 1 1 1] 1 4]
+   [(:bisect-right module) [1 1 1 1] 2 4]
+   [(:bisect-right module) [1 2] 0 0]
+   [(:bisect-right module) [1 2] 1 1]
+   [(:bisect-right module) [1 2] 1.5 1]
+   [(:bisect-right module) [1 2] 2 2]
+   [(:bisect-right module) [1 2] 3 2]
+   [(:bisect-right module) [1 1 2 2] 0 0]
+   [(:bisect-right module) [1 1 2 2] 1 2]
+   [(:bisect-right module) [1 1 2 2] 1.5 2]
+   [(:bisect-right module) [1 1 2 2] 2 4]
+   [(:bisect-right module) [1 1 2 2] 3 4]
+   [(:bisect-right module) [1 2 3] 0 0]
+   [(:bisect-right module) [1 2 3] 1 1]
+   [(:bisect-right module) [1 2 3] 1.5 1]
+   [(:bisect-right module) [1 2 3] 2 2]
+   [(:bisect-right module) [1 2 3] 2.5 2]
+   [(:bisect-right module) [1 2 3] 3 3]
+   [(:bisect-right module) [1 2 3] 4 3]
+   [(:bisect-right module) [1 2 2 3 3 3 4 4 4 4] 1 1]
+   [(:bisect-right module) [1 2 2 3 3 3 4 4 4 4] 1.5 1]
+   [(:bisect-right module) [1 2 2 3 3 3 4 4 4 4] 2 3]
+   [(:bisect-right module) [1 2 2 3 3 3 4 4 4 4] 2.5 3]
+   [(:bisect-right module) [1 2 2 3 3 3 4 4 4 4] 3 6]
+   [(:bisect-right module) [1 2 2 3 3 3 4 4 4 4] 3.5 6]
+   [(:bisect-right module) [1 2 2 3 3 3 4 4 4 4] 4 10]
+   [(:bisect-right module) [1 2 2 3 3 3 4 4 4 4] 5 10]
+   [(:bisect-left module) [] 1 0]
+   [(:bisect-left module) [1] 0 0]
+   [(:bisect-left module) [1] 1 0]
+   [(:bisect-left module) [1] 2 1]
+   [(:bisect-left module) [1 1] 0 0]
+   [(:bisect-left module) [1 1] 1 0]
+   [(:bisect-left module) [1 1] 2 2]
+   [(:bisect-left module) [1 1 1] 0 0]
+   [(:bisect-left module) [1 1 1] 1 0]
+   [(:bisect-left module) [1 1 1] 2 3]
+   [(:bisect-left module) [1 1 1 1] 0 0]
+   [(:bisect-left module) [1 1 1 1] 1 0]
+   [(:bisect-left module) [1 1 1 1] 2 4]
+   [(:bisect-left module) [1 2] 0 0]
+   [(:bisect-left module) [1 2] 1 0]
+   [(:bisect-left module) [1 2] 1.5 1]
+   [(:bisect-left module) [1 2] 2 1]
+   [(:bisect-left module) [1 2] 3 2]
+   [(:bisect-left module) [1 1 2 2] 0 0]
+   [(:bisect-left module) [1 1 2 2] 1 0]
+   [(:bisect-left module) [1 1 2 2] 1.5 2]
+   [(:bisect-left module) [1 1 2 2] 2 2]
+   [(:bisect-left module) [1 1 2 2] 3 4]
+   [(:bisect-left module) [1 2 3] 0 0]
+   [(:bisect-left module) [1 2 3] 1 0]
+   [(:bisect-left module) [1 2 3] 1.5 1]
+   [(:bisect-left module) [1 2 3] 2 1]
+   [(:bisect-left module) [1 2 3] 2.5 2]
+   [(:bisect-left module) [1 2 3] 3 2]
+   [(:bisect-left module) [1 2 3] 4 3]
+   [(:bisect-left module) [1 2 2 3 3 3 4 4 4 4] 0 0]
+   [(:bisect-left module) [1 2 2 3 3 3 4 4 4 4] 1 0]
+   [(:bisect-left module) [1 2 2 3 3 3 4 4 4 4] 1.5 1]
+   [(:bisect-left module) [1 2 2 3 3 3 4 4 4 4] 2 1]
+   [(:bisect-left module) [1 2 2 3 3 3 4 4 4 4] 2.5 3]
+   [(:bisect-left module) [1 2 2 3 3 3 4 4 4 4] 3 3]
+   [(:bisect-left module) [1 2 2 3 3 3 4 4 4 4] 3.5 6]
+   [(:bisect-left module) [1 2 2 3 3 3 4 4 4 4] 4 6]
+   [(:bisect-left module) [1 2 2 3 3 3 4 4 4 4] 5 10]])
 
 (defn- lookup-func
   [module f]
@@ -181,20 +180,20 @@
   [module data x & args]
   (apply (:insort module) data x args))
 
-(t/deftest ^:kaocha/skip test-precomputed-python
-  (run-precomputed (module->env :python)))
+(t/deftest test-precomputed-python
+  (run-precomputed :python))
 
-(t/deftest ^:kaocha/skip test-precomputed-c
-  (run-precomputed (module->env :python)))
+(t/deftest test-precomputed-c
+  (run-precomputed :python))
 
-(t/deftest ^:kaocha/skip test-negative-lo-python
+(t/deftest test-negative-lo-python
   (let [m (module->env :python)]
     (t/is (thrown? ExceptionInfo (bisect-left m [1 2 3] 5 -1 3)))
     (t/is (thrown? ExceptionInfo (bisect-right m [1 2 3] 5 -1 3)))
     (t/is (thrown? ExceptionInfo (insort-left m [1 2 3] 5 -1 3)))
     (t/is (thrown? ExceptionInfo (insort-right m [1 2 3] 5 -1 3)))))
 
-(t/deftest ^:kaocha/skip test-negative-lo-c
+(t/deftest test-negative-lo-c
   (let [m (module->env :python)]
     (t/is (thrown? ExceptionInfo (bisect-left m [1 2 3] 5 -1 3)))
     (t/is (thrown? ExceptionInfo (bisect-right m [1 2 3] 5 -1 3)))
@@ -249,7 +248,7 @@
     (range-insert data x2 x2)
     (t/is (= @(:last-insert data) [x2 x2]))))
 
-(t/deftest ^:kaocha/skip test-random-python
+(t/deftest test-random-python
   (let [m (module->env :python)
         n 25
         rand-int-even #(-> (rand-int n) (* 2))]
@@ -270,7 +269,7 @@
           (when (> ip' 0)
             (t/is (<= (nth data (dec ip')) elem))))))))
 
-(t/deftest ^:kaocha/skip test-random-c
+(t/deftest test-random-c
   (let [m (module->env :python)
         n 25
         rand-int-even #(-> (rand-int n) (* 2))]
@@ -332,7 +331,7 @@
                     (t/is (<= (range-nth data (dec ip)) elem)))
                   (t/is (= ip (max lo' (min hi' expected)))))))))))))
 
-(t/deftest ^:kaocha/skip test-backcompatibility-python
+(t/deftest test-backcompatibility-python
   (let [m (module->env :python)]
     (t/is (= (:bisect m) (:bisect-right m)))))
 
@@ -362,7 +361,7 @@
     (insort m data 25 :lo 1 :hi 3)
     (t/is (= data [10 20 25 25 25 30 40 50]))))
 
-(t/deftest ^:kaocha/skip test-lookups-with-key-function-python
+(t/deftest test-lookups-with-key-function-python
   (let [m (module->env :python)
         keyfunc #(Math/abs (double %))
         arr (sort-by keyfunc [2 -4 6 8 -10])
@@ -371,7 +370,7 @@
       (t/is (= (bisect-left m arr x :key keyfunc) (bisect-left m (vec precomputed-arr) x)))
       (t/is (= (bisect-right m arr x :key keyfunc) (bisect-right m (vec precomputed-arr) x))))))
 
-(t/deftest ^:kaocha/skip test-lookups-with-key-function-c
+(t/deftest test-lookups-with-key-function-c
   (let [m (module->env :python)
         keyfunc str/lower-case
         arr (sort-by keyfunc ["aBcDeEfgHhiIiij"])
@@ -380,7 +379,7 @@
       (t/is (= (bisect-left m arr x :key keyfunc) (bisect-left m (vec precomputed-arr) x)))
       (t/is (= (bisect-right m arr x :key keyfunc) (bisect-right m (vec precomputed-arr) x))))))
 
-(t/deftest ^:kaocha/skip test-insort-python
+(t/deftest test-insort-python
   (let [m (module->env :python)
         data (shuffle (concat (range -10 11) (range -20 20 2)))
         keyfunc #(Math/abs (double %))
@@ -406,14 +405,14 @@
       (insort-right m target x :key keyfunc)
       (t/is (= (sort-by keyfunc @target) @target)))))
 
-(t/deftest ^:kaocha/skip test-insort-keynot-none-python
+(t/deftest test-insort-keynot-none-python
   (let [m (module->env :python)
         x []
         y {"a" 2 "b" 1}]
     (doseq [f [(:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f x y :key "b"))))))
 
-(t/deftest ^:kaocha/skip test-insort-keynot-none-c
+(t/deftest test-insort-keynot-none-c
   (let [m (module->env :python)
         x []
         y {"a" 2 "b" 1}]
@@ -468,11 +467,11 @@
           (insort-right m insorted digit))))
     (t/is (= (sort insorted) insorted))))
 
-(t/deftest ^:kaocha/skip test-backcompatibility-insort-python
+(t/deftest test-backcompatibility-insort-python
   (let [m (module->env :python)]
     (t/is (= (:insort m) (:insort-right m)))))
 
-(t/deftest ^:kaocha/skip test-backcompatibility-insort-c
+(t/deftest test-backcompatibility-insort-c
   (let [m (module->env :python)]
     (t/is (= (:insort m) (:insort-right m)))))
 
@@ -544,19 +543,19 @@
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f 10))))))
 
-(t/deftest ^:kaocha/skip test-grades-python
+(t/deftest test-grades-python
   (let [m (module->env :python)
         grade (fn [score] (get "FDCBA" (bisect-right m [60 70 80 90] score)))]
-    (t/is (= ["F" "A" "C" "C" "B" "A" "A"]
+    (t/is (= [\F \A \C \C \B \A \A]
              (map grade [33 99 77 70 89 90 100])))))
 
-(t/deftest ^:kaocha/skip test-grades-c
+(t/deftest test-grades-c
   (let [m (module->env :python)
         grade (fn [score] (get "FDCBA" (bisect-right m [60 70 80 90] score)))]
-    (t/is (= ["F" "A" "C" "C" "B" "A" "A"]
+    (t/is (= [\F \A \C \C \B \A \A]
              (map grade [33 99 77 70 89 90 100])))))
 
-(t/deftest ^:kaocha/skip test-colors-python
+(t/deftest test-colors-python
   (let [m (module->env :python)
         data [["red" 5] ["blue" 1] ["yellow" 8] ["black" 0]]
         sorted-data (sort-by second data)
@@ -566,7 +565,7 @@
     (t/is (= (nth sorted-data (bisect-left m keys 5)) ["red" 5]))
     (t/is (= (nth sorted-data (bisect-left m keys 8)) ["yellow" 8]))))
 
-(t/deftest ^:kaocha/skip test-colors-c
+(t/deftest test-colors-c
   (let [m (module->env :python)
         data [["red" 5] ["blue" 1] ["yellow" 8] ["black" 0]]
         sorted-data (sort-by second data)
