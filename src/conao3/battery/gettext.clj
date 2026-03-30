@@ -142,14 +142,30 @@
 
 (defn _expand-lang
   [locale]
-  [locale])
+  (let [result (volatile! [locale])
+        wo-modifier (if (clojure.string/includes? locale "@")
+                      (subs locale 0 (clojure.string/index-of locale "@"))
+                      locale)
+        _ (when (not= wo-modifier locale) (vswap! result conj wo-modifier))
+        wo-encoding (if (clojure.string/includes? wo-modifier ".")
+                      (subs wo-modifier 0 (clojure.string/index-of wo-modifier "."))
+                      wo-modifier)
+        _ (when (not= wo-encoding wo-modifier) (vswap! result conj wo-encoding))
+        wo-territory (if (clojure.string/includes? wo-encoding "_")
+                       (subs wo-encoding 0 (clojure.string/index-of wo-encoding "_"))
+                       wo-encoding)]
+    (when (not= wo-territory wo-encoding) (vswap! result conj wo-territory))
+    @result))
 
 (defn find
   [domain & {:keys [localedir languages all]}]
   (let [locale-root (or localedir ".")
         locale-list (or languages ["C"])
-        paths (->> locale-list
-                   (distinct)
+        expanded (->> locale-list
+                      (mapcat _expand-lang)
+                      (distinct)
+                      vec)
+        paths (->> expanded
                    (map #(str locale-root "/" % "/LC_MESSAGES/" domain ".mo"))
                    vec)]
     (if all

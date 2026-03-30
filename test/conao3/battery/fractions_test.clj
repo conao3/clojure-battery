@@ -92,12 +92,12 @@
   (t/is (= [0 1] (fractions/as-integer-ratio (fractions/fraction 0))))
   (t/is (= [-1 2] (fractions/as-integer-ratio (fractions/fraction -1 2)))))
 
-(t/deftest ^:kaocha/skip test-limit-denominator
-  (t/is (= 3/7 (fractions/limit-denominator (/ 22 7) 7)))
-  (t/is (= 311/99 (fractions/limit-denominator (/ 22 7) 100)))
+(t/deftest test-limit-denominator
+  (t/is (= 22/7 (fractions/limit-denominator (rationalize 3.14159265) 7)))
+  (t/is (= 311/99 (fractions/limit-denominator (rationalize 3.14159265) 100)))
   (t/is (= 1/3 (fractions/limit-denominator (/ 1 3) 10)))
   (t/is (= 1/2 (fractions/limit-denominator (fractions/from-float 0.5) 10)))
-  (t/is (= 355/113 (fractions/limit-denominator (/ 1 7) 1000000))))
+  (t/is (= 3126535/995207 (fractions/limit-denominator (rationalize Math/PI) 1000000))))
 
 (t/deftest test-conversions
   (t/is (= 3 (int (fractions/fraction 7 2))))

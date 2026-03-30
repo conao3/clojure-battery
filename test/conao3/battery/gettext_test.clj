@@ -329,7 +329,7 @@ trggrkg zrffntr pngnybt yvoenel.")
 
 ;; ---- ExpandLangTestCase ----
 
-(t/deftest ^:kaocha/skip test-expand-lang
+(t/deftest test-expand-lang
   (let [locales {"cs" ["cs"]
                  "cs_CZ" ["cs_CZ" "cs"]}]
     (doseq [[locale expanded] locales]
@@ -338,7 +338,7 @@ trggrkg zrffntr pngnybt yvoenel.")
 ;; ---- FindTestCase ----
 
 (defn- create-mo-file [tempdir lang]
-  (str tempdir "/locale/" lang "/LC_MESSAGES/mofile.mo"))
+  (str tempdir "/" lang "/LC_MESSAGES/mofile.mo"))
 
 (t/deftest test-find-with-env-vars
   (let [tempdir "/tmp/gettext-find"
@@ -349,12 +349,12 @@ trggrkg zrffntr pngnybt yvoenel.")
                (gettext/find "mofile" :localedir tempdir :languages ["ga_IE"])))
       (t/is (seq var)))))
 
-(t/deftest ^:kaocha/skip test-find-with-languages
+(t/deftest test-find-with-languages
   (let [tempdir "/tmp/gettext-find"
         mo-file (create-mo-file tempdir "ga_IE")]
     (t/is (= mo-file (gettext/find "mofile" :localedir tempdir :languages ["ga_IE"])))))
 
-(t/deftest ^:kaocha/skip test-find-with-no-lang
+(t/deftest test-find-with-no-lang
   (let [called (atom nil)]
     (with-redefs [gettext/_expand-lang (fn [locale]
                                         (reset! called locale)
@@ -363,7 +363,7 @@ trggrkg zrffntr pngnybt yvoenel.")
         (t/is (= "/tmp/gettext-find/C/LC_MESSAGES/foo.mo" result))
         (t/is (= "C" @called))))))
 
-(t/deftest ^:kaocha/skip test-find-with-c
+(t/deftest test-find-with-c
   (let [called (atom nil)]
     (with-redefs [gettext/_expand-lang (fn [locale]
                                         (reset! called locale)
@@ -372,7 +372,7 @@ trggrkg zrffntr pngnybt yvoenel.")
         (t/is (= "/tmp/gettext-find/C/LC_MESSAGES/foo.mo" result))
         (t/is (= "C" @called))))))
 
-(t/deftest ^:kaocha/skip test-find-all
+(t/deftest test-find-all
   (let [tempdir "/tmp/gettext-find"
         expected [(create-mo-file tempdir "ga_IE") (create-mo-file tempdir "es_ES")]
         result (gettext/find "mofile" :localedir tempdir :languages ["ga_IE" "es_ES"] :all true)]

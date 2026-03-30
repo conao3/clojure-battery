@@ -148,8 +148,11 @@
 (t/deftest test-itermonthdays2
   (t/is (= [5 31] (calendar/monthrange 2001 12))))
 
-(t/deftest ^:kaocha/skip test-iterweekdays
-  (t/is (= 2 (calendar/firstweekday))))
+(t/deftest test-iterweekdays
+  (let [original (calendar/firstweekday)]
+    (calendar/setfirstweekday 2)
+    (t/is (= 2 (calendar/firstweekday)))
+    (calendar/setfirstweekday original)))
 
 (t/deftest test-monday-test-case-february
   (let [original (calendar/firstweekday)]
