@@ -213,5 +213,7 @@
                    (map #(str locale-root "/" % "/LC_MESSAGES/" domain ".mo"))
                    vec)]
     (if all
-      paths
+      (->> locale-list
+           (distinct)
+           (mapv (fn [lang] (str locale-root "/" lang "/LC_MESSAGES/" domain ".mo"))))
       (first paths))))

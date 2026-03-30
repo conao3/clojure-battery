@@ -381,7 +381,7 @@ trggrkg zrffntr pngnybt yvoenel.")
                         (create-mo-file tempdir "es_ES")
                         )))))
 
-(t/deftest ^:kaocha/skip test-find-deduplication
+(t/deftest test-find-deduplication
   (let [tempdir "/tmp/gettext-find"
         expected [(create-mo-file tempdir "ga_IE")]
         result (gettext/find "mofile" :localedir tempdir :languages ["ga_IE" "ga_IE"] :all true)]
