@@ -22,11 +22,10 @@
   [year month]
   (when (or (< month 1) (> month 12))
     (throw (ex-info (str "bad month number " month) {})))
-  (let [cal (doto (java.util.GregorianCalendar.)
-              (.set year (dec month) 1))
-        dow (.get cal java.util.Calendar/DAY_OF_WEEK)
-        weekday (mod (- dow 2) 7)
-        days (.getActualMaximum cal java.util.Calendar/DAY_OF_MONTH)]
+  (let [date (java.time.LocalDate/of year month 1)
+        dow (.getValue (.getDayOfWeek date))
+        weekday (mod (- dow 1) 7)
+        days (.lengthOfMonth date)]
     [weekday days]))
 
 (defn leapdays

@@ -180,7 +180,7 @@
   (t/is (<= 1/2 0.5))
   (t/is (<= 1/2 1)))
 
-(t/deftest ^:kaocha/skip test-big-float-comparisons
+(t/deftest test-big-float-comparisons
   (let [big (.pow (biginteger 10) 300)]
     (t/is (> (/ 1 big) 0.0))
     (t/is (< (/ -1 big) 0.0))))

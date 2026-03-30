@@ -255,7 +255,7 @@
 (t/deftest test-output-year
   (t/is (= [6 29] (calendar/monthrange 2004 2))))
 
-(t/deftest ^:kaocha/skip test-output-month
+(t/deftest test-output-month
   (t/is (= [1 29] (calendar/monthrange 0 2))))
 
 (t/deftest test-option-encoding

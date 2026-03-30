@@ -1,5 +1,6 @@
 (ns conao3.battery.string
-  (:require [clojure.string :as str]))
+  (:require [clojure.set :as set]
+            [clojure.string :as str]))
 
 (def whitespace " \t\n\r\u000b\u000c")
 (def ascii-lowercase "abcdefghijklmnopqrstuvwxyz")
@@ -91,11 +92,58 @@
    (let [merged (tmpl-coerce-mapping mapping (apply hash-map kwargs))]
      (tmpl-substitute* tmpl merged false))))
 
-(defn formatter-format [& _]
-  (throw (ex-info "Not implemented" {})))
+(def ^:private fmt-pattern
+  (java.util.regex.Pattern/compile "\\{\\{|\\}\\}|\\{([_a-zA-Z][_a-zA-Z0-9]*|\\d+)\\}"))
 
-(defn formatter-format-keyword [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn- fmt-substitute
+  [fmt positional named]
+  (let [sb (StringBuilder.)
+        m (.matcher fmt-pattern fmt)
+        used-indices (volatile! #{})
+        used-keys (volatile! #{})]
+    (while (.find m)
+      (let [full (.group m 0)]
+        (.appendReplacement m sb "")
+        (cond
+          (= full "{{") (.append sb "{")
+          (= full "}}") (.append sb "}")
+          :else
+          (let [key (.group m 1)]
+            (if (re-matches #"\d+" key)
+              (let [idx (Integer/parseInt key)]
+                (when (>= idx (count positional))
+                  (throw (ex-info (str "Positional index out of range: " idx) {:index idx})))
+                (vswap! used-indices conj idx)
+                (.append sb (str (nth positional idx))))
+              (do
+                (when-not (contains? named key)
+                  (throw (ex-info (str "Missing key: " key) {:key key})))
+                (vswap! used-keys conj key)
+                (.append sb (str (get named key)))))))))
+    (.appendTail m sb)
+    [(.toString sb) @used-indices @used-keys]))
+
+(defn- split-positional-keyword [args]
+  (let [kw-start (or (first (keep-indexed (fn [i a] (when (keyword? a) i)) args))
+                     (count args))]
+    [(vec (take kw-start args))
+     (into {} (map (fn [[k v]] [(name k) (str v)]) (partition 2 (drop kw-start args))))]))
+
+(defn formatter-format
+  ([] (throw (ex-info "formatter-format requires at least 1 arg" {})))
+  ([fmt & args]
+   (let [[positional named] (split-positional-keyword args)
+         [result _ _] (fmt-substitute fmt positional named)]
+     result)))
+
+(defn formatter-format-keyword
+  ([] (throw (ex-info "formatter-format-keyword requires at least 1 arg" {})))
+  ([fmt & kwargs]
+   (when (odd? (count kwargs))
+     (throw (ex-info "kwargs must be even keyword-value pairs" {})))
+   (let [named (into {} (map (fn [[k v]] [(str/replace (name k) "-" "_") (str v)]) (partition 2 kwargs)))
+         [result _ _] (fmt-substitute fmt [] named)]
+     result)))
 
 (defn formatter-get-value [& _]
   (throw (ex-info "Not implemented" {})))
@@ -109,11 +157,25 @@
 (defn formatter-parse [& _]
   (throw (ex-info "Not implemented" {})))
 
-(defn formatter-check-unused-args [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn formatter-check-unused-args
+  ([] (throw (ex-info "formatter-check-unused-args requires at least 1 arg" {})))
+  ([fmt & args]
+   (let [[positional named] (split-positional-keyword args)
+         [result used-indices used-keys] (fmt-substitute fmt positional named)
+         unused-indices (set/difference (set (range (count positional))) used-indices)
+         unused-keys (set/difference (set (keys named)) used-keys)]
+     (when (or (seq unused-indices) (seq unused-keys))
+       (throw (ex-info (str "Unused arguments") {:unused-indices unused-indices :unused-keys unused-keys})))
+     result)))
 
-(defn formatter-vformat-recursion-limit [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn formatter-vformat-recursion-limit
+  [fmt args kwargs recursion-limit]
+  (when (neg? recursion-limit)
+    (throw (ex-info "Max string formatting recursion exceeded" {:recursion-limit recursion-limit})))
+  (let [positional (vec args)
+        named (into {} (map (fn [[k v]] [(name k) (str v)]) kwargs))
+        [result _ _] (fmt-substitute fmt positional named)]
+    result))
 
 (defn template-is-valid [& _]
   (throw (ex-info "Not implemented" {})))

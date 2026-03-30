@@ -36,7 +36,7 @@
   (t/is (thrown? ExceptionInfo (string/formatter-format)))
   (t/is (thrown? ExceptionInfo (string/formatter-format-keyword))))
 
-(t/deftest ^:kaocha/skip test-format-keyword-arguments
+(t/deftest test-format-keyword-arguments
   (t/is (= "-test-" (string/formatter-format-keyword "-{arg}-" :arg "test")))
   (t/is (thrown? ExceptionInfo (string/formatter-format-keyword "-{arg}-")))
   (t/is (= "-test-" (string/formatter-format-keyword "-{self}-" :self "test")))
@@ -92,7 +92,7 @@
   (t/is (= "*   foo    *" (string/formatter-parse "*|+0:^10s|*" "foo")))
   (t/is (thrown? ExceptionInfo (string/formatter-parse ""))))
 
-(t/deftest ^:kaocha/skip test-check-unused-args
+(t/deftest test-check-unused-args
   (t/is (= "10" (string/formatter-check-unused-args "{0}" 10)))
   (t/is (= "10100" (string/formatter-check-unused-args "{0}{i}" 10 :i 100)))
   (t/is (= "1010020" (string/formatter-check-unused-args "{0}{i}{1}" 10 20 :i 100)))
@@ -101,7 +101,7 @@
   (t/is (thrown? ExceptionInfo (string/formatter-check-unused-args "{0}" 10 20 :i 100)))
   (t/is (thrown? ExceptionInfo (string/formatter-check-unused-args "{i}" 10 20 :i 100))))
 
-(t/deftest ^:kaocha/skip test-vformat-recursion-limit
+(t/deftest test-vformat-recursion-limit
   (t/is (thrown? ExceptionInfo (string/formatter-vformat-recursion-limit "{i}" () {:i 100} -1)))
   (t/is (string? (string/formatter-vformat-recursion-limit "{i}" () {:i 100} 10))))
 
