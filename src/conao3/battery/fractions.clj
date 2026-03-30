@@ -1,13 +1,33 @@
 (ns conao3.battery.fractions
   (:require [clojure.string :as str]))
 
+(defn- double->exact-ratio
+  [^double f]
+  (when (Double/isInfinite f)
+    (throw (ex-info "cannot convert Infinity to integer ratio" {:type :overflow-error})))
+  (when (Double/isNaN f)
+    (throw (ex-info "cannot convert NaN to integer ratio" {:type :value-error})))
+  (let [bits (Double/doubleToRawLongBits f)
+        negative? (neg? bits)
+        mantissa-stored (bit-and bits 0x000fffffffffffff)
+        exp-biased (int (bit-and (unsigned-bit-shift-right bits 52) 0x7FF))
+        [mantissa exp] (if (zero? exp-biased)
+                         [(bigint mantissa-stored) -1022]
+                         [(bigint (bit-or mantissa-stored (bit-shift-left 1 52)))
+                          (- exp-biased 1023)])
+        mantissa (if negative? (- mantissa) mantissa)
+        exp-shift (- exp 52)]
+    (if (neg? exp-shift)
+      (/ mantissa (.shiftLeft BigInteger/ONE (- exp-shift)))
+      (* mantissa (.shiftLeft BigInteger/ONE exp-shift)))))
+
 (defn fraction
   "Create a fraction. Uses Clojure's native ratio type."
   ([] 0)
   ([n]
    (cond
      (ratio? n) n
-     (float? n) (rationalize n)
+     (float? n) (double->exact-ratio n)
      (instance? BigDecimal n) (rationalize n)
      (vector? n) (/ (first n) (second n))
      :else (long n)))
@@ -28,13 +48,11 @@
   [(frac-num f) (frac-den f)])
 
 (defn from-float
-  "Create exact fraction from float using rationalize."
+  "Create exact fraction from float using IEEE754 bit representation."
   [f]
-  (when (Double/isInfinite f)
-    (throw (ex-info "cannot convert Infinity to integer ratio" {:type :overflow-error})))
-  (when (Double/isNaN f)
-    (throw (ex-info "cannot convert NaN to integer ratio" {:type :value-error})))
-  (rationalize f))
+  (cond
+    (integer? f) (long f)
+    :else (double->exact-ratio (double f))))
 
 (defn from-decimal
   "Create fraction from BigDecimal."

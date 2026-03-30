@@ -20,7 +20,7 @@
   (t/is (= [-9 5] (fractions/components (fractions/fraction 2 (fractions/fraction -10 9)))))
   (t/is (thrown? ArithmeticException (fractions/fraction 12 0))))
 
-(t/deftest ^:kaocha/skip test-init-from-float
+(t/deftest test-init-from-float
   (t/is (= [5 2] (fractions/components (fractions/fraction 2.5))))
   (t/is (= [0 1] (fractions/components (fractions/fraction -0.0))))
   (t/is (= [3602879701896397 36028797018963968]
@@ -52,7 +52,7 @@
   (let [r (fractions/fraction 7 3)]
     (t/is (= [7 3] (fractions/components r)))))
 
-(t/deftest ^:kaocha/skip test-from-float
+(t/deftest test-from-float
   ;; Note: Python's from_float uses exact IEEE 754 binary representation.
   ;; Clojure's rationalize uses BigDecimal.valueOf (shortest decimal string).
   ;; They agree on exactly-representable floats like -2.5, but not on 3.2.
