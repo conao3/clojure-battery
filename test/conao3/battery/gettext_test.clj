@@ -27,7 +27,7 @@ fhccbeg sbe lbhe Clguba cebtenzf ol cebivqvat na vagresnpr gb gur TAH
 trggrkg zrffntr pngnybt yvoenel.")
 
 (defn- fallback-translation [name]
-  {:type :fallback
+  {:type name
    :gettext (fn [message]
               (str name ": " message))
    :ngettext (fn [msgid1 msgid2 n]
@@ -65,10 +65,10 @@ trggrkg zrffntr pngnybt yvoenel.")
 
 ;; ---- GettextTestCase2 ----
 
-(t/deftest ^:kaocha/skip test-bindtextdomain
+(t/deftest test-bindtextdomain
   (t/is (= "." (gettext/bindtextdomain "gettext" "."))))
 
-(t/deftest ^:kaocha/skip test-textdomain
+(t/deftest test-textdomain
   (gettext/textdomain "gettext")
   (t/is (= "gettext" (gettext/textdomain))))
 
@@ -79,14 +79,14 @@ trggrkg zrffntr pngnybt yvoenel.")
 (t/deftest ^:kaocha/skip test-bad-major-version
   (t/is (thrown? ExceptionInfo (gettext/GNUTranslations mofile-bad-major-version))))
 
-(t/deftest ^:kaocha/skip test-bad-minor-version
+(t/deftest test-bad-minor-version
   (let [obj (gettext/GNUTranslations mofile-bad-minor-version)]
     (t/is (map? obj))))
 
 (t/deftest ^:kaocha/skip test-corrupt-file
   (t/is (thrown? ExceptionInfo (gettext/GNUTranslations mofile-corrupt))))
 
-(t/deftest ^:kaocha/skip test-big-endian-file
+(t/deftest test-big-endian-file
   (let [tobj (gettext/GNUTranslations mofile-big-endian)]
     (t/is (map? tobj))))
 
@@ -212,7 +212,7 @@ trggrkg zrffntr pngnybt yvoenel.")
   (let [f (gettext/c2py "n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-chained-comparison
+(t/deftest test-chained-comparison
   (let [f (gettext/c2py "n == n == n")]
     (t/is (fn? f))))
 
@@ -227,29 +227,29 @@ trggrkg zrffntr pngnybt yvoenel.")
     (doseq [expr invalid-expressions]
       (t/is (thrown? ExceptionInfo (gettext/c2py expr))))))
 
-(t/deftest ^:kaocha/skip test-negation
+(t/deftest test-negation
   (let [f (gettext/c2py "!!!n")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-nested-condition-operator
+(t/deftest test-nested-condition-operator
   (let [f (gettext/c2py "n?1?2:3:4")]
     (t/is (fn? f))))
 
-(t/deftest ^:kaocha/skip test-division
+(t/deftest test-division
   (let [f (gettext/c2py "2/n*3")]
     (t/is (fn? f))
     (t/is (thrown? ExceptionInfo (f 0)))))
 
-(t/deftest ^:kaocha/skip test-plural-number
+(t/deftest test-plural-number
   (let [f (gettext/c2py "n != 1")]
     (t/is (fn? f))
     (t/is (thrown? ExceptionInfo (f "2")))))
 
-(t/deftest ^:kaocha/skip test-plural-form-error-issue17898
+(t/deftest test-plural-form-error-issue17898
   (let [tobj (gettext/GNUTranslations mofile)]
     (t/is (map? tobj))))
 
-(t/deftest ^:kaocha/skip test-ignore-comments-in-headers-issue36239
+(t/deftest test-ignore-comments-in-headers-issue36239
   (let [tobj (gettext/GNUTranslations mofile)
         info (gettext/translation-info tobj)]
     (t/is (= "nplurals=2; plural=(n != 1);" (get info "plural-forms")))))
@@ -261,17 +261,17 @@ trggrkg zrffntr pngnybt yvoenel.")
   (let [tobj (gettext/GNUTranslations umo-file)]
     (t/is (string? ((:gettext tobj) "ab\u00de")))))
 
-(t/deftest ^:kaocha/skip test-unicode-translations-unicode-context-msgstr
+(t/deftest test-unicode-translations-unicode-context-msgstr
   (let [tobj (gettext/GNUTranslations umo-file)]
     (t/is (fn? (:gettext tobj)))))
 
 ;; ---- UnicodeTranslationsPluralTest ----
 
-(t/deftest ^:kaocha/skip test-unicode-translations-plural-unicode-msgid
+(t/deftest test-unicode-translations-plural-unicode-msgid
   (let [tobj (gettext/GNUTranslations umo-file)]
     (t/is (fn? (:gettext tobj)))))
 
-(t/deftest ^:kaocha/skip test-unicode-translations-plural-unicode-context-msgid
+(t/deftest test-unicode-translations-plural-unicode-context-msgid
   (let [tobj (gettext/GNUTranslations umo-file)]
     (t/is (fn? (:gettext tobj)))))
 
@@ -291,7 +291,7 @@ trggrkg zrffntr pngnybt yvoenel.")
     (t/is (= "John Doe <jdoe@example.com>\nJane Foobar <jfoobar@example.com>"
              (get info "last-translator")))))
 
-(t/deftest ^:kaocha/skip test-cache
+(t/deftest test-cache
   (gettext/reset-gettext)
   (let [count-before (count @gettext/_translations)
         t1 (gettext/translation "gettext" ".")
@@ -306,20 +306,20 @@ trggrkg zrffntr pngnybt yvoenel.")
     (t/is (= 2 (count @gettext/_translations)))
     (t/is (= :fake-gnu (:type t2)))))
 
-(t/deftest ^:kaocha/skip test-null-translations-fallback
+(t/deftest test-null-translations-fallback
   (let [fallback (fallback-translation "fallback")
         t1 (gettext/NullTranslations)
         t2 (gettext/add-fallback t1 fallback)]
     (t/is (= 1 (count (:fallbacks t2))))
-    (t/is (= "gettext: foo" ((:gettext fallback) "foo")))))
+    (t/is (= "fallback: foo" ((:gettext fallback) "foo")))))
 
-(t/deftest ^:kaocha/skip test-gnu-translations-fallback
+(t/deftest test-gnu-translations-fallback
   (let [fallback (fallback-translation "fallback")
         t (gettext/add-fallback (gettext/GNUTranslations mofile) fallback)]
     (t/is (= 1 (count (:fallbacks t))))
     (t/is (= "fallback: foo" ((:gettext fallback) "foo")))))
 
-(t/deftest ^:kaocha/skip test-nested-fallbacks
+(t/deftest test-nested-fallbacks
   (let [fallback-a (fallback-translation "a")
         fallback-b (fallback-translation "b")
         t (-> (gettext/NullTranslations)
@@ -340,7 +340,7 @@ trggrkg zrffntr pngnybt yvoenel.")
 (defn- create-mo-file [tempdir lang]
   (str tempdir "/locale/" lang "/LC_MESSAGES/mofile.mo"))
 
-(t/deftest ^:kaocha/skip test-find-with-env-vars
+(t/deftest test-find-with-env-vars
   (let [tempdir "/tmp/gettext-find"
         mo-file (create-mo-file tempdir "ga_IE")
         all-locals ["LANGUAGE" "LC_ALL" "LC_MESSAGES" "LANG"]]
@@ -387,13 +387,13 @@ trggrkg zrffntr pngnybt yvoenel.")
         result (gettext/find "mofile" :localedir tempdir :languages ["ga_IE" "ga_IE"] :all true)]
     (t/is (= expected result))))
 
-(t/deftest ^:kaocha/skip test--all
+(t/deftest test--all
   (let [publics (ns-publics 'conao3.battery.gettext)]
     (t/is (contains? publics 'gettext))
     (t/is (contains? publics 'ngettext))
     (t/is (contains? publics 'dnpgettext))))
 
-(t/deftest ^:kaocha/skip test-translation-fallback
+(t/deftest test-translation-fallback
   (let [tobj (gettext/translation "gettext" "." :fallback true)]
     (t/is (= :null (:type tobj)))
     (t/is (map? tobj))))
