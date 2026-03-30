@@ -7,10 +7,10 @@
   (:import
    [clojure.lang ExceptionInfo]))
 
-(t/deftest ^:kaocha/skip test-split-none
+(t/deftest test-split-none
   (t/is (thrown? ExceptionInfo (shlex/split nil))))
 
-(t/deftest ^:kaocha/skip test-split-posix
+(t/deftest test-split-posix
   (t/are [s expected]
          (= (shlex/split s {:posix true :comments true}) expected)
     "x"                        ["x"]
@@ -26,7 +26,7 @@
     "\\x bar"                  ["x" "bar"]
     "foo#bar\nbaz"             ["foo" "baz"]))
 
-(t/deftest ^:kaocha/skip test-compat
+(t/deftest test-compat
   (t/are [s expected]
          (= (shlex/split s {:posix false}) expected)
     "x"                        ["x"]
@@ -38,7 +38,7 @@
     "''"                       ["''"]
     ":-) ;-)"                  [":" "-" ")" ";" "-" ")"]))
 
-(t/deftest ^:kaocha/skip test-syntax-split-ampersand-and-pipe
+(t/deftest test-syntax-split-ampersand-and-pipe
   (t/are [ss expected]
          (= (shlex/tokenize (shlex/make-shlex ss {:punctuation-chars true})) expected)
     "echo hi && echo bye" ["echo" "hi" "&&" "echo" "bye"]
@@ -46,27 +46,27 @@
     "echo hi & echo bye"  ["echo" "hi" "&" "echo" "bye"]
     "echo hi | echo bye"  ["echo" "hi" "|" "echo" "bye"]))
 
-(t/deftest ^:kaocha/skip test-syntax-split-semicolon
+(t/deftest test-syntax-split-semicolon
   (t/are [ss expected]
          (= (shlex/tokenize (shlex/make-shlex ss {:punctuation-chars true})) expected)
     "echo hi ; echo bye"  ["echo" "hi" ";" "echo" "bye"]
     "echo hi ;; echo bye" ["echo" "hi" ";;" "echo" "bye"]
     "echo hi ;& echo bye" ["echo" "hi" ";&" "echo" "bye"]))
 
-(t/deftest ^:kaocha/skip test-syntax-split-redirect
+(t/deftest test-syntax-split-redirect
   (t/are [ss expected]
          (= (shlex/tokenize (shlex/make-shlex ss {:punctuation-chars true})) expected)
     "echo hi < out"  ["echo" "hi" "<" "out"]
     "echo hi > out"  ["echo" "hi" ">" "out"]
     "echo hi | out"  ["echo" "hi" "|" "out"]))
 
-(t/deftest ^:kaocha/skip test-syntax-split-paren
+(t/deftest test-syntax-split-paren
   (t/are [ss expected]
          (= (shlex/tokenize (shlex/make-shlex ss {:punctuation-chars true})) expected)
     "( echo hi )" ["(" "echo" "hi" ")"]
     "(echo hi)"   ["(" "echo" "hi" ")"]))
 
-(t/deftest ^:kaocha/skip test-syntax-split-custom
+(t/deftest test-syntax-split-custom
   (let [ss "~/a&&b-c --color=auto||d *.py?"
         s1 (shlex/make-shlex ss {:punctuation-chars "|"})
         s2 (assoc s1 :whitespace-split true)]
@@ -75,29 +75,29 @@
     (t/is (= (shlex/tokenize s2)
              ["~/a&&b-c" "--color=auto" "||" "d" "*.py?"]))))
 
-(t/deftest ^:kaocha/skip test-token-types
+(t/deftest test-token-types
   (let [s (shlex/make-shlex "a && b || c" {:punctuation-chars true})
         tokens (shlex/tokenize s)
         punctuation-chars (get-in s [:opts :punctuation-chars])]
     (t/is (= tokens ["a" "&&" "b" "||" "c"]))))
 
-(t/deftest ^:kaocha/skip test-punctuation-in-word-chars
+(t/deftest test-punctuation-in-word-chars
   (let [s (shlex/make-shlex "a_b__c" {:punctuation-chars "_"})]
     (t/is (= (shlex/tokenize s) ["a" "_" "b" "__" "c"]))))
 
-(t/deftest ^:kaocha/skip test-punctuation-with-whitespace-split
+(t/deftest test-punctuation-with-whitespace-split
   (let [s1 (shlex/make-shlex "a  && b  ||  c" {:punctuation-chars "&"})
         s2 (assoc s1 :whitespace-split true)]
     (t/is (= (shlex/tokenize s1) ["a" "&&" "b" "|" "|" "c"]))
     (t/is (= (shlex/tokenize s2) ["a" "&&" "b" "||" "c"]))))
 
-(t/deftest ^:kaocha/skip test-punctuation-with-posix
+(t/deftest test-punctuation-with-posix
   (let [s1 (shlex/make-shlex "f >\"abc\"" {:posix true :punctuation-chars true})
         s2 (shlex/make-shlex "f >\\\"abc\\\"" {:posix true :punctuation-chars true})]
     (t/is (= (shlex/tokenize s1) ["f" ">" "abc"]))
     (t/is (= (shlex/tokenize s2) ["f" ">" "\"abc\""]))))
 
-(t/deftest ^:kaocha/skip test-empty-string-handling
+(t/deftest test-empty-string-handling
   (let [s1 (shlex/make-shlex "'')abc" {:posix true :punctuation-chars false})
         s2 (shlex/make-shlex "'')abc" {:posix true :punctuation-chars true})
         s3 (shlex/make-shlex "'')abc" {:punctuation-chars true})]
@@ -105,14 +105,14 @@
     (t/is (= (shlex/tokenize s2) ["" ")" "abc"]))
     (t/is (= (shlex/tokenize s3) ["''" ")" "abc"]))))
 
-(t/deftest ^:kaocha/skip test-unicode-handling
+(t/deftest test-unicode-handling
   (let [ss "\u2119\u01b4\u2602\u210c\u00f8\u1f24"
         s1 (assoc (shlex/make-shlex ss {:punctuation-chars true}) :whitespace-split true)
         s2 (shlex/make-shlex ss {:punctuation-chars true})]
     (t/is (= (shlex/tokenize s1) [ss]))
     (t/is (= (shlex/tokenize s2) ["\u2119" "\u01b4" "\u2602" "\u210c" "\u00f8" "\u1f24"]))))
 
-(t/deftest ^:kaocha/skip test-quote
+(t/deftest test-quote
   (t/is (= (shlex/quote "") "''"))
   (t/is (= (shlex/quote "test file name") "'test file name'"))
   (t/is (= (shlex/quote "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@%_-+=:,./")
@@ -120,7 +120,7 @@
   (t/is (thrown? ExceptionInfo (shlex/quote 42)))
   (t/is (thrown? ExceptionInfo (shlex/quote (.getBytes "abc" "UTF-8")))))
 
-(t/deftest ^:kaocha/skip test-join
+(t/deftest test-join
   (t/are [tokens expected]
          (= (shlex/join tokens) expected)
     ["a " "b"]    "'a ' b"
@@ -128,7 +128,7 @@
     ["a" " " "b"] "a ' ' b"
     ["\"a" "b\""] "'\"a' 'b\"'"))
 
-(t/deftest ^:kaocha/skip test-join-roundtrip
+(t/deftest test-join-roundtrip
   (t/are [tokens]
          (= tokens (shlex/split (shlex/join tokens) {:posix true}))
     ["foo" "bar"]
@@ -136,6 +136,6 @@
     ["" "nonempty"]
     ["with spaces" "and" "quotes"]))
 
-(t/deftest ^:kaocha/skip test-punctuation-chars-read-only
+(t/deftest test-punctuation-chars-read-only
   (let [s (shlex/make-shlex "" {:punctuation-chars "/|$%^"})]
     (t/is (= (get-in s [:opts :punctuation-chars]) "/|$%^"))))
