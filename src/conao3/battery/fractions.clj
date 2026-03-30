@@ -1,23 +1,24 @@
-(ns conao3.battery.fractions)
+(ns conao3.battery.fractions
+  (:require [clojure.string :as str]))
 
 (defn fraction
   "Create a fraction. Uses Clojure's native ratio type."
   ([] 0)
   ([n]
-   (if (ratio? n)
-     n
-     (/ (if (ratio? n) (numerator n) (long n))
-        (if (ratio? n) (denominator n) 1))))
+   (cond
+     (ratio? n) n
+     (float? n) (rationalize n)
+     (instance? BigDecimal n) (rationalize n)
+     (vector? n) (/ (first n) (second n))
+     :else (long n)))
   ([n d]
    (/ n d)))
 
 (defn- frac-num
-  "Numerator of a fraction (integer or ratio)."
   [f]
   (if (ratio? f) (numerator f) (long f)))
 
 (defn- frac-den
-  "Denominator of a fraction (integer or ratio)."
   [f]
   (if (ratio? f) (denominator f) 1))
 
@@ -27,7 +28,7 @@
   [(frac-num f) (frac-den f)])
 
 (defn from-float
-  "Create exact fraction from float."
+  "Create exact fraction from float using rationalize."
   [f]
   (when (Double/isInfinite f)
     (throw (ex-info "cannot convert Infinity to integer ratio" {:type :overflow-error})))
@@ -38,17 +39,37 @@
 (defn from-decimal
   "Create fraction from BigDecimal."
   [d]
-  (throw (ex-info "Not implemented" {})))
+  (rationalize d))
 
 (defn from-string
   "Create fraction from string representation."
   [s]
-  (throw (ex-info "Not implemented" {})))
+  (let [s (str/trim s)]
+    (cond
+      (re-matches #"-?\d+" s)
+      (Long/parseLong s)
+
+      (re-matches #"-?\d+/\d+" s)
+      (let [[_ n d] (re-matches #"(-?\d+)/(\d+)" s)
+            nd (Long/parseLong n)
+            dd (Long/parseLong d)]
+        (when (zero? dd)
+          (throw (ex-info (str "Fraction('" s "') has zero denominator") {})))
+        (/ nd dd))
+
+      (re-matches #"-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?" s)
+      (rationalize (bigdec s))
+
+      :else
+      (throw (ex-info (str "Invalid literal for Fraction: '" s "'") {})))))
 
 (defn from-number
-  "Create fraction from number."
+  "Create fraction from number (ratio, float, or integer)."
   [n]
-  (throw (ex-info "Not implemented" {})))
+  (cond
+    (ratio? n) n
+    (float? n) (rationalize n)
+    :else (long n)))
 
 (defn is-integer?
   "Return true if fraction has denominator 1."

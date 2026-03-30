@@ -28,15 +28,15 @@
   (t/is (thrown? ExceptionInfo (fractions/fraction Double/NaN)))
   (t/is (thrown? ExceptionInfo (fractions/fraction Double/POSITIVE_INFINITY))))
 
-(t/deftest ^:kaocha/skip test-init-from-decimal
+(t/deftest test-init-from-decimal
   (t/is (= [11 10] (fractions/components (fractions/fraction (bigdec "1.1")))))
   (t/is (= [7 200] (fractions/components (fractions/fraction (bigdec "3.5e-2")))))
   (t/is (= [0 1] (fractions/components (fractions/fraction (bigdec "0.000"))))))
 
-(t/deftest ^:kaocha/skip test-init-from-integer-ratio
+(t/deftest test-init-from-integer-ratio
   (t/is (= [7 3] (fractions/components (fractions/fraction [7 3])))))
 
-(t/deftest ^:kaocha/skip test-from-string
+(t/deftest test-from-string
   (t/is (= [5 1] (fractions/components (fractions/from-string "5"))))
   (t/is (= [3 2] (fractions/components (fractions/from-string "3/2"))))
   (t/is (= [16 5] (fractions/components (fractions/from-string "3.2"))))
@@ -45,10 +45,10 @@
   (t/is (thrown? ExceptionInfo (fractions/from-string "3/0")))
   (t/is (thrown? ExceptionInfo (fractions/from-string "not-a-fraction"))))
 
-(t/deftest ^:kaocha/skip test-limit-int
+(t/deftest test-limit-int
   (t/is (= [111111 1] (fractions/components (fractions/from-string "111111")))))
 
-(t/deftest ^:kaocha/skip test-immutable
+(t/deftest test-immutable
   (let [r (fractions/fraction 7 3)]
     (t/is (= [7 3] (fractions/components r)))))
 
@@ -66,17 +66,17 @@
   (t/is (thrown? ExceptionInfo (fractions/from-float Double/NEGATIVE_INFINITY)))
   (t/is (thrown? ExceptionInfo (fractions/from-float Double/NaN))))
 
-(t/deftest ^:kaocha/skip test-from-decimal
+(t/deftest test-from-decimal
   (t/is (= [10 1] (fractions/components (fractions/from-decimal (bigdec 10)))))
   (t/is (= [1 2] (fractions/components (fractions/from-decimal (bigdec "0.5")))))
   (t/is (= [1 200] (fractions/components (fractions/from-decimal (bigdec "5e-3"))))))
 
-(t/deftest ^:kaocha/skip test-from-number
+(t/deftest test-from-number
   (t/is (= [3 2] (fractions/components (fractions/from-number 3/2))))
   (t/is (= [5 2] (fractions/components (fractions/from-number 2.5))))
   (t/is (= [7 1] (fractions/components (fractions/from-number 7)))))
 
-(t/deftest ^:kaocha/skip test-from-number-subclass
+(t/deftest test-from-number-subclass
   (t/is (= [3 2] (fractions/components (fractions/from-number 3/2)))))
 
 (t/deftest test-is-integer
@@ -99,7 +99,7 @@
   (t/is (= 1/2 (fractions/limit-denominator (fractions/from-float 0.5) 10)))
   (t/is (= 355/113 (fractions/limit-denominator (/ 1 7) 1000000))))
 
-(t/deftest ^:kaocha/skip test-conversions
+(t/deftest test-conversions
   (t/is (= 3 (int (fractions/fraction 7 2))))
   (t/is (= 3.5 (double (fractions/fraction 7 2))))
   (t/is (= "7/2" (str (fractions/fraction 7 2)))))
@@ -108,7 +108,7 @@
   (let [f (fractions/fraction 7 4)]
     (t/is (= 1 (int f)))))
 
-(t/deftest ^:kaocha/skip test-int-guarantees-int-return
+(t/deftest test-int-guarantees-int-return
   (t/is (= 2 (int (fractions/fraction 13 5)))))
 
 (t/deftest ^:kaocha/skip test-bool-guaratees-bool-return
@@ -138,16 +138,16 @@
   (t/is (= 1 (quot 5/3 1)))
   (t/is (= (+ 1/3 2/3) 1)))
 
-(t/deftest ^:kaocha/skip test-mixed-arithmetic
+(t/deftest test-mixed-arithmetic
   (t/is (= 3/2 (+ 1/2 1))))
 
-(t/deftest ^:kaocha/skip test-mixed-multiplication
+(t/deftest test-mixed-multiplication
   (t/is (= 1/2 (* 1/4 2))))
 
-(t/deftest ^:kaocha/skip test-mixed-division
+(t/deftest test-mixed-division
   (t/is (= 1/4 (/ 1/2 2))))
 
-(t/deftest ^:kaocha/skip test-mixed-integer-division
+(t/deftest test-mixed-integer-division
   (t/is (= 1 (quot 3/2 1))))
 
 (t/deftest ^:kaocha/skip test-mixed-power
@@ -166,17 +166,17 @@
   (t/is (< -1/2 1/4))
   (t/is (> 5/4 3/4)))
 
-(t/deftest ^:kaocha/skip test-comparisons-dummy-rational
+(t/deftest test-comparisons-dummy-rational
   (t/is (= 1/2 1/2)))
 
 (t/deftest ^:kaocha/skip test-comparisons-dummy-float
   (t/is (= 1/2 0.5)))
 
-(t/deftest ^:kaocha/skip test-mixed-less
+(t/deftest test-mixed-less
   (t/is (< 1/3 0.5))
   (t/is (< 1/3 1)))
 
-(t/deftest ^:kaocha/skip test-mixed-less-equal
+(t/deftest test-mixed-less-equal
   (t/is (<= 1/2 0.5))
   (t/is (<= 1/2 1)))
 
@@ -185,7 +185,7 @@
     (t/is (> (/ 1 big) 0.0))
     (t/is (< (/ -1 big) 0.0))))
 
-(t/deftest ^:kaocha/skip test-big-complex-comparisons
+(t/deftest test-big-complex-comparisons
   (t/is (= 1/2 1/2)))
 
 (t/deftest ^:kaocha/skip test-mixed-equal
@@ -193,28 +193,28 @@
   (t/is (= 1/1 1))
   (t/is (= 3/2 1.5)))
 
-(t/deftest ^:kaocha/skip test-stringification
+(t/deftest test-stringification
   (t/is (= "1/2" (str 1/2)))
   (t/is (= "7/3" (str 7/3)))
   (t/is (= "0" (str 0)))
   (t/is (= "-1" (str -1))))
 
-(t/deftest ^:kaocha/skip test-hash
+(t/deftest test-hash
   (t/is (= (hash 1/2) (hash 1/2)))
   (t/is (= (hash 1) (hash 1/1))))
 
-(t/deftest ^:kaocha/skip test-approximate-pi
+(t/deftest test-approximate-pi
   (let [pi-approx (fractions/limit-denominator (rationalize Math/PI) 1000000)]
     (t/is (< (abs (- (double pi-approx) Math/PI)) 1e-6))))
 
-(t/deftest ^:kaocha/skip test-approximate-cos1
+(t/deftest test-approximate-cos1
   (let [cos1-approx (fractions/limit-denominator (rationalize (Math/cos 1.0)) 1000000)]
     (t/is (< (abs (- (double cos1-approx) (Math/cos 1.0))) 1e-6))))
 
-(t/deftest ^:kaocha/skip test-int-subclass
+(t/deftest test-int-subclass
   (t/is (= [7 3] (fractions/components (fractions/fraction 7 3)))))
 
-(t/deftest ^:kaocha/skip test-format-no-presentation-type
+(t/deftest test-format-no-presentation-type
   (t/is (= "1/2" (format "%s" 1/2))))
 
 (t/deftest ^:kaocha/skip test-format-e-presentation-type
