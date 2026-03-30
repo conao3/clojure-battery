@@ -23,6 +23,37 @@
     (String. ^bytes x "ISO-8859-1")
     x))
 
+(defn- remove-invalid-ranges [s]
+  (let [n (count s)
+        sb (StringBuilder.)
+        i (atom 0)
+        read-token (fn [idx]
+                     (let [c (nth s idx)]
+                       (if (and (= c \\) (< (inc idx) n))
+                         [(str \\ (nth s (inc idx)))
+                          (int (nth s (inc idx)))
+                          (+ idx 2)]
+                         [(str c) (int c) (inc idx)])))]
+    (when (and (< @i n) (= (nth s @i) \]))
+      (.append sb \])
+      (swap! i inc))
+    (while (< @i n)
+      (let [[tok1 code1 next1] (read-token @i)]
+        (if (and (< next1 n)
+                 (= (nth s next1) \-)
+                 (< (inc next1) n)
+                 (not= (nth s (inc next1)) \]))
+          (let [[tok2 code2 next2] (read-token (inc next1))]
+            (when (<= code1 code2)
+              (.append sb tok1)
+              (.append sb \-)
+              (.append sb tok2))
+            (reset! i next2))
+          (do
+            (.append sb tok1)
+            (reset! i next1)))))
+    (.toString sb)))
+
 (defn _translate [pat star any]
   (let [n (count pat)
         result (atom [])
@@ -51,13 +82,24 @@
             (while (and (< @j n) (not= (nth pat @j) \]))
               (swap! j inc))
             (if (< @j n)
-              (let [stuff (subs pat @i @j)
-                    stuff (str/replace stuff "\\" "\\\\")
-                    stuff (cond
-                            (= (first stuff) \!) (str "^" (subs stuff 1))
-                            (contains? #{\^ \[} (first stuff)) (str "\\" stuff)
-                            :else stuff)]
-                (swap! result conj (str "[" stuff "]"))
+              (let [raw (subs pat @i @j)
+                    negated? (= (first raw) \!)
+                    content (-> (if negated? (subs raw 1) raw)
+                                (str/replace "\\" "\\\\")
+                                remove-invalid-ranges
+                                (str/replace #"&&+" "&"))
+                    class-str (cond
+                                (empty? content)
+                                (if negated? "[\\s\\S]" "(?![\\s\\S])")
+                                negated?
+                                (str "[^" content "]")
+                                (= (first content) \^)
+                                (str "[\\^" (subs content 1) "]")
+                                (= (first content) \[)
+                                (str "[\\" content "]")
+                                :else
+                                (str "[" content "]"))]
+                (swap! result conj class-str)
                 (reset! i (inc @j)))
               (swap! result conj "\\[")))
 

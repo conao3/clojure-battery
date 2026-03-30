@@ -335,31 +335,31 @@
   (let [m (module->env :python)]
     (t/is (= (:bisect m) (:bisect-right m)))))
 
-(t/deftest ^:kaocha/skip test-backcompatibility-c
+(t/deftest test-backcompatibility-c
   (let [m (module->env :python)]
     (t/is (= (:bisect m) (:bisect-right m)))))
 
-(t/deftest ^:kaocha/skip test-keyword-args-python
+(t/deftest test-keyword-args-python
   (let [m (module->env :python)
-        data [10 20 30 40 50]]
-    (t/is (= 2 (bisect-left m data 25 :lo 1 :hi 3)))
-    (t/is (= 2 (bisect-right m data 25 :lo 1 :hi 3)))
-    (t/is (= 2 ( (:bisect m) data 25 :lo 1 :hi 3)))
+        data (atom [10 20 30 40 50])]
+    (t/is (= 2 (bisect-left m @data 25 :lo 1 :hi 3)))
+    (t/is (= 2 (bisect-right m @data 25 :lo 1 :hi 3)))
+    (t/is (= 2 ((:bisect m) @data 25 :lo 1 :hi 3)))
     (insort-left m data 25 :lo 1 :hi 3)
     (insort-right m data 25 :lo 1 :hi 3)
     (insort m data 25 :lo 1 :hi 3)
-    (t/is (= data [10 20 25 25 25 30 40 50]))))
+    (t/is (= @data [10 20 25 25 25 30 40 50]))))
 
-(t/deftest ^:kaocha/skip test-keyword-args-c
+(t/deftest test-keyword-args-c
   (let [m (module->env :python)
-        data [10 20 30 40 50]]
-    (t/is (= 2 (bisect-left m data 25 :lo 1 :hi 3)))
-    (t/is (= 2 (bisect-right m data 25 :lo 1 :hi 3)))
-    (t/is (= 2 ( (:bisect m) data 25 :lo 1 :hi 3)))
+        data (atom [10 20 30 40 50])]
+    (t/is (= 2 (bisect-left m @data 25 :lo 1 :hi 3)))
+    (t/is (= 2 (bisect-right m @data 25 :lo 1 :hi 3)))
+    (t/is (= 2 ((:bisect m) @data 25 :lo 1 :hi 3)))
     (insort-left m data 25 :lo 1 :hi 3)
     (insort-right m data 25 :lo 1 :hi 3)
     (insort m data 25 :lo 1 :hi 3)
-    (t/is (= data [10 20 25 25 25 30 40 50]))))
+    (t/is (= @data [10 20 25 25 25 30 40 50]))))
 
 (t/deftest test-lookups-with-key-function-python
   (let [m (module->env :python)
@@ -392,7 +392,7 @@
       (insort-right m target x :key keyfunc)
       (t/is (= (sort-by keyfunc @target) @target)))))
 
-(t/deftest ^:kaocha/skip test-insort-c
+(t/deftest test-insort-c
   (let [m (module->env :python)
         data (shuffle (concat (range -10 11) (range -20 20 2)))
         keyfunc #(Math/abs (double %))
@@ -443,9 +443,8 @@
     (t/is (= 40 (bisect-left m (vec data) {:val 40})))
     (t/is (= 41 (bisect-right m (vec data) {:val 40})))))
 
-(t/deftest ^:kaocha/skip test-vs-builtin-sort-python
+(t/deftest test-vs-builtin-sort-python
   (let [m (module->env :python)
-        data (repeatedly 500 #(rand-nth (range 10)))
         insorted (atom [])
         digit-fn #(rand-nth "0123456789")]
     (dotimes [_ 500]
@@ -453,11 +452,10 @@
         (if (contains? #{\0 \2 \4 \6 \8} digit)
           (insort-left m insorted digit)
           (insort-right m insorted digit))))
-    (t/is (= (sort insorted) insorted))))
+    (t/is (= (sort @insorted) @insorted))))
 
-(t/deftest ^:kaocha/skip test-vs-builtin-sort-c
+(t/deftest test-vs-builtin-sort-c
   (let [m (module->env :python)
-        data (repeatedly 500 #(rand-nth (range 10)))
         insorted (atom [])
         digit-fn #(rand-nth "0123456789")]
     (dotimes [_ 500]
@@ -465,7 +463,7 @@
         (if (contains? #{\0 \2 \4 \6 \8} digit)
           (insort-left m insorted digit)
           (insort-right m insorted digit))))
-    (t/is (= (sort insorted) insorted))))
+    (t/is (= (sort @insorted) @insorted))))
 
 (t/deftest test-backcompatibility-insort-python
   (let [m (module->env :python)]

@@ -123,7 +123,7 @@
     (check-match "[!" "[!")
     (check-match "[!]" "[!]")))
 
-(t/deftest ^:kaocha/skip test-range
+(t/deftest test-range
   (let [upper-chars (apply str (filter #(Character/isUpperCase ^char %) test-chars))]
     (doseq [c (seq test-chars)]
       (check-match (str c) "[b-d]" (str/includes? "bcd" (str c)))
@@ -171,7 +171,7 @@
   (check-match "t" "[\\t]")
   (check-match "\t" "[\\t]" false))
 
-(t/deftest ^:kaocha/skip test-sep-in-range
+(t/deftest test-sep-in-range
   (check-match "a/b" "a[.-0]b" (not normsep))
   (check-match "a\\b" "a[.-0]b" false)
   (check-match "a\\b" "a[Z-^]b" (not normsep))
@@ -193,7 +193,7 @@
   (check-match "a[Z-\\]b" "a[Z-\\]b" false)
   (check-match "a[Z-/]b" "a[Z-\\]b" false))
 
-(t/deftest ^:kaocha/skip test-warnings
+(t/deftest test-warnings
   (check-match "[" "[[]")
   (check-match "&" "[a&&b]")
   (check-match "|" "[a||b]")
