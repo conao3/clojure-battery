@@ -66,13 +66,13 @@
 (t/deftest ^:kaocha/skip test-deprecation-warning
   (t/is (= [3 31] (calendar/monthrange 2004 1))))
 
-(t/deftest ^:kaocha/skip test-isleap
-  (t/is (= 1 (calendar/isleap 2000)))
-  (t/is (= 0 (calendar/isleap 2001)))
-  (t/is (= 0 (calendar/isleap 2002)))
-  (t/is (= 0 (calendar/isleap 2003))))
+(t/deftest test-isleap
+  (t/is (calendar/isleap 2000))
+  (t/is (not (calendar/isleap 2001)))
+  (t/is (not (calendar/isleap 2002)))
+  (t/is (not (calendar/isleap 2003))))
 
-(t/deftest ^:kaocha/skip test-setfirstweekday
+(t/deftest test-setfirstweekday
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 6)
     (t/is (= 6 (calendar/firstweekday)))
@@ -80,118 +80,118 @@
     (t/is (= 0 (calendar/firstweekday)))
     (calendar/setfirstweekday original)))
 
-(t/deftest ^:kaocha/skip test-illegal-weekday-reported
+(t/deftest test-illegal-weekday-reported
   (t/is (thrown-with-msg? ExceptionInfo
         #"bad weekday number 123"
         (calendar/setfirstweekday 123))))
 
-(t/deftest ^:kaocha/skip test-enumerate-weekdays
-  (t/is (= 1 (calendar/isleap 2000)))
-  (t/is (= 0 (calendar/isleap 2001))))
+(t/deftest test-enumerate-weekdays
+  (t/is (calendar/isleap 2000))
+  (t/is (not (calendar/isleap 2001))))
 
-(t/deftest ^:kaocha/skip test-days
+(t/deftest test-days
   (t/is (= [3 31] (calendar/monthrange 2004 1)))
   (t/is (= [6 29] (calendar/monthrange 2004 2))))
 
-(t/deftest ^:kaocha/skip test-months
+(t/deftest test-months
   (t/is (= [0 28] (calendar/monthrange 2010 2)))
-  (t/is (= [2 31] (calendar/monthrange 2010 10))))
+  (t/is (= [4 31] (calendar/monthrange 2010 10))))
 
-(t/deftest ^:kaocha/skip test-standalone-month-name-and-abbr-C-locale
-  (t/is (= [0 31] (calendar/monthrange 2010 12))))
+(t/deftest test-standalone-month-name-and-abbr-C-locale
+  (t/is (= [2 31] (calendar/monthrange 2010 12))))
 
-(t/deftest ^:kaocha/skip test-locale-text-calendar
+(t/deftest test-locale-text-calendar
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 0)
     (t/is (= 0 (calendar/firstweekday)))
     (calendar/setfirstweekday original)))
 
-(t/deftest ^:kaocha/skip test-locale-html-calendar
+(t/deftest test-locale-html-calendar
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 6)
     (t/is (= 6 (calendar/firstweekday)))
     (calendar/setfirstweekday original)))
 
-(t/deftest ^:kaocha/skip test-locale-calendars-reset-locale-properly
+(t/deftest test-locale-calendars-reset-locale-properly
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 3)
     (t/is (= 3 (calendar/firstweekday)))
     (calendar/setfirstweekday original)))
 
-(t/deftest ^:kaocha/skip test-locale-calendar-formatweekday
-  (t/is (= 1 (calendar/leapdays 2010 2011))))
+(t/deftest test-locale-calendar-formatweekday
+  (t/is (= 0 (calendar/leapdays 2010 2011))))
 
-(t/deftest ^:kaocha/skip test-locale-calendar-short-weekday-names
+(t/deftest test-locale-calendar-short-weekday-names
   (t/is (= 0 (calendar/leapdays 2010 2012))))
 
-(t/deftest ^:kaocha/skip test-locale-calendar-long-weekday-names
+(t/deftest test-locale-calendar-long-weekday-names
   (t/is (= 1 (calendar/leapdays 2012 2013))))
 
-(t/deftest ^:kaocha/skip test-locale-calendar-formatmonthname
+(t/deftest test-locale-calendar-formatmonthname
   (t/is (= [2 30] (calendar/monthrange 2022 6))))
 
-(t/deftest ^:kaocha/skip test-locale-html-calendar-custom-css-class-month-name
+(t/deftest test-locale-html-calendar-custom-css-class-month-name
   (t/is (= [4 31] (calendar/monthrange 2010 10))))
 
-(t/deftest ^:kaocha/skip test-locale-html-calendar-custom-css-class-weekday
+(t/deftest test-locale-html-calendar-custom-css-class-weekday
   (t/is (= [4 31] (calendar/monthrange 2010 1))))
 
-(t/deftest ^:kaocha/skip test-itermonthdays3
+(t/deftest test-itermonthdays3
   (t/is (= 5 (calendar/leapdays 1997 2020))))
 
-(t/deftest ^:kaocha/skip test-itermonthdays4
+(t/deftest test-itermonthdays4
   (t/is (= [3 28] (calendar/monthrange 2001 2))))
 
-(t/deftest ^:kaocha/skip test-itermonthdays
+(t/deftest test-itermonthdays
   (t/is (= [0 31] (calendar/monthrange 2001 1))))
 
-(t/deftest ^:kaocha/skip test-itermonthdays2
+(t/deftest test-itermonthdays2
   (t/is (= [5 31] (calendar/monthrange 2001 12))))
 
 (t/deftest ^:kaocha/skip test-iterweekdays
   (t/is (= 2 (calendar/firstweekday))))
 
-(t/deftest ^:kaocha/skip test-monday-test-case-february
+(t/deftest test-monday-test-case-february
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 0)
     (t/is (= 0 (calendar/firstweekday)))
     (calendar/setfirstweekday original)
     (t/is (= [6 29] (calendar/monthrange 2004 2)))))
 
-(t/deftest ^:kaocha/skip test-monday-test-case-april
+(t/deftest test-monday-test-case-april
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 0)
     (t/is (= 0 (calendar/firstweekday)))
     (calendar/setfirstweekday original)
     (t/is (= [6 30] (calendar/monthrange 1923 4)))))
 
-(t/deftest ^:kaocha/skip test-monday-test-case-december
+(t/deftest test-monday-test-case-december
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 0)
     (t/is (= 0 (calendar/firstweekday)))
     (calendar/setfirstweekday original)
     (t/is (= [0 31] (calendar/monthrange 1980 12)))))
 
-(t/deftest ^:kaocha/skip test-sunday-test-case-february
+(t/deftest test-sunday-test-case-february
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 6)
     (t/is (= 6 (calendar/firstweekday)))
     (calendar/setfirstweekday original)
     (t/is (= [6 28] (calendar/monthrange 2009 2)))))
 
-(t/deftest ^:kaocha/skip test-sunday-test-case-april
+(t/deftest test-sunday-test-case-april
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 6)
     (t/is (= 6 (calendar/firstweekday)))
     (calendar/setfirstweekday original)
     (t/is (= [6 30] (calendar/monthrange 1923 4)))))
 
-(t/deftest ^:kaocha/skip test-sunday-test-case-december
+(t/deftest test-sunday-test-case-december
   (let [original (calendar/firstweekday)]
     (calendar/setfirstweekday 6)
     (t/is (= 6 (calendar/firstweekday)))
     (calendar/setfirstweekday original)
-    (t/is (= [2 31] (calendar/monthrange 2080 12)))))
+    (t/is (= [6 31] (calendar/monthrange 2080 12)))))
 
 (t/deftest ^:kaocha/skip test-timegm
   (t/is (= 0 (calendar/timegm [1970 1 1 0 0 0])))
