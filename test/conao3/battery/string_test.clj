@@ -29,10 +29,10 @@
   (t/is (= "Abc Def" (string/capwords "\taBc\tDeF\t")))
   (t/is (= "\tAbc\tDef\t" (string/capwords "\taBc\tDeF\t" "\t"))))
 
-(t/deftest ^:kaocha/skip test-basic-formatter
+(t/deftest test-basic-formatter
   (t/is (= "foo" (string/formatter-format "foo")))
   (t/is (= "foobar" (string/formatter-format "foo{0}" "bar")))
-  (t/is (= "foo6bar-6" (string/formatter-format "foo{1}{num}-{1}" "bar" 6)))
+  (t/is (= "foo6bar-6" (string/formatter-format "foo{1}{num}-{1}" "bar" 6 :num "bar")))
   (t/is (thrown? ExceptionInfo (string/formatter-format)))
   (t/is (thrown? ExceptionInfo (string/formatter-format-keyword))))
 
