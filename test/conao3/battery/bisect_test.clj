@@ -19,12 +19,14 @@
 
 (defn- range-nth
   [r idx]
-  (let [m @r
-        n (range-len r)
-        idx (if (neg? idx) (+ n idx) idx)]
-    (if (>= idx n)
-      (throw (IndexOutOfBoundsException. (str idx)))
-      (+ (:start m) idx))))
+  (if (vector? r)
+    (nth r idx)
+    (let [m @r
+          n (range-len r)
+          idx (if (neg? idx) (+ n idx) idx)]
+      (if (>= idx n)
+        (throw (IndexOutOfBoundsException. (str idx)))
+        (+ (:start m) idx)))))
 
 (defn- range-insert
   [r idx item]
@@ -290,7 +292,7 @@
           (when (> ip' 0)
             (t/is (<= (nth data (dec ip')) elem))))))))
 
-(t/deftest ^:kaocha/skip test-optional-slicing-python
+(t/deftest test-optional-slicing-python
   (let [m (module->env :python)]
     (doseq [[f data elem expected] (precomputed-cases m)]
       (doseq [lo (range 4)]
@@ -302,14 +304,16 @@
               (if (= f (:bisect-left m))
                 (when (< ip hi')
                   (t/is (<= elem (range-nth data ip))))
-                (t/is (<= elem (or (range-nth data 0) elem))))
+                (when (< ip hi')
+                  (t/is (< elem (range-nth data ip)))))
               (if (= f (:bisect-left m))
                 (when (> ip lo')
                   (t/is (< (range-nth data (dec ip)) elem)))
-                (t/is (<= (range-nth data (dec ip)) elem)))
+                (when (> ip lo')
+                  (t/is (<= (range-nth data (dec ip)) elem))))
               (t/is (= ip (max lo' (min hi' expected)))))))))))
 
-(t/deftest ^:kaocha/skip test-optional-slicing-c
+(t/deftest test-optional-slicing-c
   (let [m (module->env :python)]
     (doseq [[f data elem expected] (precomputed-cases m)]
       (doseq [lo (range 4)]
@@ -318,13 +322,14 @@
             (let [hi' (min (count data) hi)
                   ip (f data elem lo' hi')]
               (t/is (<= lo' ip hi'))
-              (when (= f (:bisect-left m))
-                (when (< ip hi')
-                  (t/is (<= elem (range-nth data ip))))
-                (when (> ip lo')
-                  (t/is (< (range-nth data (dec ip)) elem)))
-                (t/is (= ip (max lo' (min hi' expected))))
-                (when (= f (:bisect-right m))
+              (if (= f (:bisect-left m))
+                (do
+                  (when (< ip hi')
+                    (t/is (<= elem (range-nth data ip))))
+                  (when (> ip lo')
+                    (t/is (< (range-nth data (dec ip)) elem)))
+                  (t/is (= ip (max lo' (min hi' expected)))))
+                (do
                   (when (< ip hi')
                     (t/is (< elem (range-nth data ip))))
                   (when (> ip lo')
