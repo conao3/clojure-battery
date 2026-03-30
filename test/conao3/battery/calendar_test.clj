@@ -193,50 +193,50 @@
     (calendar/setfirstweekday original)
     (t/is (= [6 31] (calendar/monthrange 2080 12)))))
 
-(t/deftest ^:kaocha/skip test-timegm
+(t/deftest test-timegm
   (t/is (= 0 (calendar/timegm [1970 1 1 0 0 0])))
   (t/is (= 1262304000 (calendar/timegm [2010 1 1 0 0 0]))))
 
-(t/deftest ^:kaocha/skip test-january
+(t/deftest test-january
   (t/is (= [3 31] (calendar/monthrange 2004 1))))
 
-(t/deftest ^:kaocha/skip test-february-leap
+(t/deftest test-february-leap
   (t/is (= [6 29] (calendar/monthrange 2004 2))))
 
-(t/deftest ^:kaocha/skip test-february-nonleap
+(t/deftest test-february-nonleap
   (t/is (= [0 28] (calendar/monthrange 2010 2))))
 
-(t/deftest ^:kaocha/skip test-month-range-test-case-december
+(t/deftest test-month-range-test-case-december
   (t/is (= [2 31] (calendar/monthrange 2004 12))))
 
-(t/deftest ^:kaocha/skip test-zeroth-month
+(t/deftest test-zeroth-month
   (t/is (thrown-with-msg? ExceptionInfo
         #"bad month number 0"
         (calendar/monthrange 2004 0))))
 
-(t/deftest ^:kaocha/skip test-thirteenth-month
+(t/deftest test-thirteenth-month
   (t/is (thrown-with-msg? ExceptionInfo
         #"bad month number 13"
         (calendar/monthrange 2004 13))))
 
-(t/deftest ^:kaocha/skip test-illegal-month-reported
+(t/deftest test-illegal-month-reported
   (t/is (thrown-with-msg? ExceptionInfo
         #"bad month number 65"
         (calendar/monthrange 2004 65))))
 
-(t/deftest ^:kaocha/skip test-no-range
+(t/deftest test-no-range
   (t/is (= 0 (calendar/leapdays 2010 2010))))
 
-(t/deftest ^:kaocha/skip test-no-leapdays
+(t/deftest test-no-leapdays
   (t/is (= 0 (calendar/leapdays 2010 2011))))
 
-(t/deftest ^:kaocha/skip test-no-leapdays-upper-boundary
+(t/deftest test-no-leapdays-upper-boundary
   (t/is (= 0 (calendar/leapdays 2010 2012))))
 
-(t/deftest ^:kaocha/skip test-one-leapday-lower-boundary
+(t/deftest test-one-leapday-lower-boundary
   (t/is (= 1 (calendar/leapdays 2012 2013))))
 
-(t/deftest ^:kaocha/skip test-several-leapyears-in-range
+(t/deftest test-several-leapyears-in-range
   (t/is (= 5 (calendar/leapdays 1997 2020))))
 
 (t/deftest ^:kaocha/skip test-help
@@ -246,10 +246,10 @@
   (t/is (thrown? ExceptionInfo (calendar/main "-z")))
   (t/is (thrown? ExceptionInfo (calendar/main "spam"))))
 
-(t/deftest ^:kaocha/skip test-output-current-year
+(t/deftest test-output-current-year
   (t/is (= [3 31] (calendar/monthrange 2004 1))))
 
-(t/deftest ^:kaocha/skip test-output-year
+(t/deftest test-output-year
   (t/is (= [6 29] (calendar/monthrange 2004 2))))
 
 (t/deftest ^:kaocha/skip test-output-month
@@ -284,7 +284,7 @@
   (t/is (thrown? ExceptionInfo (calendar/main "-t")))
   (t/is (thrown? ExceptionInfo (calendar/main "--type" "spam"))))
 
-(t/deftest ^:kaocha/skip test-html-output-current-year
+(t/deftest test-html-output-current-year
   (t/is (= [0 28] (calendar/monthrange 2010 2))))
 
 (t/deftest ^:kaocha/skip test-html-output-year-encoding

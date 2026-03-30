@@ -20,6 +20,8 @@
 
 (defn monthrange
   [year month]
+  (when (or (< month 1) (> month 12))
+    (throw (ex-info (str "bad month number " month) {})))
   (let [cal (doto (java.util.GregorianCalendar.)
               (.set year (dec month) 1))
         dow (.get cal java.util.Calendar/DAY_OF_WEEK)
@@ -32,8 +34,11 @@
   (count (filter isleap (range y1 y2))))
 
 (defn timegm
-  [& _args]
-  (throw (ex-info "Not implemented" {})))
+  [[year month day hour minute second]]
+  (let [cal (doto (java.util.GregorianCalendar. (java.util.TimeZone/getTimeZone "UTC"))
+              (.set year (dec month) day hour minute second)
+              (.set java.util.Calendar/MILLISECOND 0))]
+    (quot (.getTimeInMillis cal) 1000)))
 
 (defn format
   [& _args]
