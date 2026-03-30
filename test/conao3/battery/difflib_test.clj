@@ -22,7 +22,7 @@
 
 ;; ---- TestWithAscii ----
 
-(t/deftest ^:kaocha/skip test-with-ascii-one-insert
+(t/deftest test-with-ascii-one-insert
   (let [seq-a (str/join (repeat 100 "b"))
         seq-b (str "a" seq-a)
         sm (difflib/sequence-matcher nil seq-a seq-b)]
@@ -34,12 +34,12 @@
           sm2 (difflib/sequence-matcher nil seq2-a seq-a)]
       (t/is (< (Math/abs (- (difflib/sequence-matcher-ratio sm2) 0.995)) 1e-3))
       (t/is (= [["equal" 0 50 0 50]
-                ["insert" 50 50 50 51]
-                ["equal" 50 100 51 101]]
+                ["delete" 50 51 50 50]
+                ["equal" 51 101 50 100]]
                (difflib/sequence-matcher-get-opcodes sm2)))
       (t/is (= #{} (difflib/sequence-matcher-bpopular sm2))))))
 
-(t/deftest ^:kaocha/skip test-with-ascii-one-delete
+(t/deftest test-with-ascii-one-delete
   (let [a (str (str/join (repeat 40 "a")) "c" (str/join (repeat 40 "b")))
         b (str (str/join (repeat 40 "a")) (str/join (repeat 40 "b")))
         sm (difflib/sequence-matcher nil a b)]
@@ -49,14 +49,14 @@
               ["equal" 41 81 40 80]]
              (difflib/sequence-matcher-get-opcodes sm)))))
 
-(t/deftest ^:kaocha/skip test-with-ascii-opcode-caching
+(t/deftest test-with-ascii-opcode-caching
   (let [sm (difflib/sequence-matcher nil (str/join (repeat 100 "b")) (str "a" (str/join (repeat 100 "b")))
                               :isjunk #(= % ""))
         op (difflib/sequence-matcher-get-opcodes sm)]
     (t/is (= [["insert" 0 0 0 1] ["equal" 0 100 1 101]] op))
     (t/is (identical? op (difflib/sequence-matcher-get-opcodes sm)))))
 
-(t/deftest ^:kaocha/skip test-with-ascii-bjunk
+(t/deftest test-with-ascii-bjunk
   (let [a (str (str/join (repeat 40 "a")) (str/join (repeat 40 "b"))
                (str/join (repeat 40 "b")))
         b (str (str/join (repeat 44 "a")) (str/join (repeat 40 "b")))]
@@ -68,7 +68,7 @@
 
 ;; ---- TestAutojunk ----
 
-(t/deftest ^:kaocha/skip test-autojunk-one-insert-homogenous-sequence
+(t/deftest test-autojunk-one-insert-homogenous-sequence
   (let [seq1 (str/join (repeat 200 "b"))
         seq2 (str "a" (str/join (repeat 200 "b")))
         sm (difflib/sequence-matcher nil seq1 seq2)
@@ -80,32 +80,32 @@
 
 ;; ---- TestSFbugs ----
 
-(t/deftest ^:kaocha/skip test-ratio-for-null-seqn
+(t/deftest test-ratio-for-null-seqn
   (let [s (difflib/sequence-matcher nil [] [])]
     (t/is (= 1 (difflib/sequence-matcher-ratio s)))
     (t/is (= 1 (difflib/sequence-matcher-quick-ratio s)))
     (t/is (= 1 (difflib/sequence-matcher-real-quick-ratio s)))))
 
-(t/deftest ^:kaocha/skip test-comparing-empty-lists
+(t/deftest test-comparing-empty-lists
   (let [group (difflib/sequence-matcher-get-grouped-opcodes (difflib/sequence-matcher nil [] []))
         diff (difflib/unified-diff [] [])]
     (t/is (thrown? ExceptionInfo (difflib/next-value group)))
     (t/is (thrown? ExceptionInfo (difflib/next-value diff)))))
 
-(t/deftest ^:kaocha/skip test-matching-blocks-cache
+(t/deftest test-matching-blocks-cache
   (let [s (difflib/sequence-matcher "abxcd" "abcd")
         blocks (difflib/sequence-matcher-get-matching-blocks s)
         blocks2 (difflib/sequence-matcher-get-matching-blocks s)]
     (t/is (= (nth (nth blocks 0) 2) (nth (nth blocks2 0) 2)))
     (t/is (= (count blocks) (count blocks2)))))
 
-(t/deftest ^:kaocha/skip test-added-tab-hint
+(t/deftest test-added-tab-hint
   (let [diff (vec (difflib/differ-compare ["\tI am a buggy"] ["\t\tI am a bug"]))]
     (t/is (= "- \tI am a buggy" (nth diff 0)))
     (t/is (= "? \t          --" (nth diff 1)))
     (t/is (= "+ \t\tI am a bug" (nth diff 2)))))
 
-(t/deftest ^:kaocha/skip test-hint-indented-properly-with-tabs
+(t/deftest test-hint-indented-properly-with-tabs
   (let [diff (vec (difflib/differ-compare ["\t \t \t^"] ["\t \t \t^\n"]))]
     (t/is (= "- \t \t \t^" (nth diff 0)))
     (t/is (= "+ \t \t \t^\n" (nth diff 1)))
@@ -123,31 +123,31 @@
         fixture (slurp "/Users/conao/ghq/github.com/python/cpython/Lib/test/test_difflib_expect.html")]
     (t/is (= expect fixture))))
 
-(t/deftest ^:kaocha/skip test-recursion-limit
+(t/deftest test-recursion-limit
   (let [n 2000
         a (vec (for [i (range (* n 2))] (str "K:" i)))
         b (vec (for [i (range (* n 2))] (str "V:" i)))
         sm (difflib/sequence-matcher nil a b)]
     (t/is (not (nil? sm)))))
 
-(t/deftest ^:kaocha/skip test-make-file-default-charset
+(t/deftest test-make-file-default-charset
   (let [i (difflib/html-diff)
         out (difflib/html-diff-make-file i ["a"] ["b"] "from" "to")]
     (t/is (str/includes? out "charset=\"utf-8\""))))
 
-(t/deftest ^:kaocha/skip test-make-file-iso88591-charset
+(t/deftest test-make-file-iso88591-charset
   (let [i (difflib/html-diff)
         out (difflib/html-diff-make-file i ["a"] ["b"] "from" "to" :charset "iso-8859-1")]
     (t/is (str/includes? out "charset=\"iso-8859-1\""))))
 
-(t/deftest ^:kaocha/skip test-make-file-usascii-charset-with-nonascii-input
+(t/deftest test-make-file-usascii-charset-with-nonascii-input
   (let [i (difflib/html-diff)
         out (difflib/html-diff-make-file i ["bügel"] ["bügel2"] "from" "to" :charset "us-ascii")]
     (t/is (str/includes? out "charset=\"us-ascii\""))))
 
 ;; ---- TestDiffer ----
 
-(t/deftest ^:kaocha/skip test-close-matches-aligned
+(t/deftest test-close-matches-aligned
   (let [a ["cat\n" "dog\n" "close match 1\n" "close match 2\n"]
         b ["close match 3\n" "close match 4\n" "kitten\n" "puppy\n"]
         m (vec (difflib/differ-compare a b))]
@@ -155,35 +155,35 @@
     (t/is (= "- cat\n" (nth m 0)))
     (t/is (= "+ puppy\n" (nth m 11)))))
 
-(t/deftest ^:kaocha/skip test-differ-one-insert
-  (let [m (vec (difflib/differ-compare ["bb"] ["abb"]))]
+(t/deftest test-differ-one-insert
+  (let [m (vec (difflib/differ-compare "bb" "abb"))]
     (t/is (= "+ a" (nth m 0)))))
 
-(t/deftest ^:kaocha/skip test-differ-one-delete
-  (let [m (vec (difflib/differ-compare ["abb"] ["bb"]))]
+(t/deftest test-differ-one-delete
+  (let [m (vec (difflib/differ-compare "abb" "bb"))]
     (t/is (= "- a" (nth m 0)))))
 
 ;; ---- TestOutputFormat ----
 
-(t/deftest ^:kaocha/skip test-tab-delimiter
+(t/deftest test-tab-delimiter
   (let [ud (vec (difflib/unified-diff ["one"] ["two"] "Original" "Current" "2005-01-26" "2010-04-02" :lineterm ""))
         cd (vec (difflib/context-diff ["one"] ["two"] "Original" "Current" "2005-01-26" "2010-04-02" :lineterm ""))]
     (t/is (= ["--- Original\t2005-01-26" "+++ Current\t2010-04-02"] (take 2 ud)))
     (t/is (= ["*** Original\t2005-01-26" "--- Current\t2010-04-02"] (take 2 cd)))))
 
-(t/deftest ^:kaocha/skip test-no-trailing-tab-on-empty-filedate
+(t/deftest test-no-trailing-tab-on-empty-filedate
   (let [ud (vec (difflib/unified-diff ["one"] ["two"] "Original" "Current" :lineterm ""))
         cd (vec (difflib/context-diff ["one"] ["two"] "Original" "Current" :lineterm ""))]
     (t/is (= ["--- Original" "+++ Current"] (take 2 ud)))
     (t/is (= ["*** Original" "--- Current"] (take 2 cd)))))
 
-(t/deftest ^:kaocha/skip test-unified-diff-colored-output
+(t/deftest test-unified-diff-colored-output
   (let [actual (vec (difflib/unified-diff ["one" "three"] ["two" "three"] "Original" "Current" :lineterm "" :color true))]
     (t/is (= 6 (count actual)))))
 
 ;; ---- TestBytes ----
 
-(t/deftest ^:kaocha/skip test-byte-content
+(t/deftest test-byte-content
   (let [a [(->bytes "hello" "ISO-8859-1") (.getBytes "andr\u00e9" "ISO-8859-1")]
         bb [(->bytes "hello") (.getBytes "andr\u00e9" "UTF-8")]]
     (doseq [elem (difflib/diff-bytes difflib/unified-diff a a)]
@@ -193,18 +193,19 @@
     (doseq [elem (difflib/diff-bytes difflib/context-diff a bb)]
       (t/is (instance? (class (byte-array 0)) elem)))))
 
-(t/deftest ^:kaocha/skip test-byte-filenames
-  (let [fna (byte-array (map unchecked-byte [(- (byte 0xB3)) 49 50 51 52]))
-        fnb (byte-array (map unchecked-byte [(- (byte 0xC5)) (- (byte 0x82)) 111 100 122 46 116 120 116]))
+(t/deftest test-byte-filenames
+  (let [fna (byte-array (map unchecked-byte [0xB3 49 50 51 52]))
+        fnb (byte-array (map unchecked-byte [0xC5 0x82 111 100 122 46 116 120 116]))
         a [(->bytes "hello")]
         b [(->bytes "hello")]
-        out (difflib/diff-bytes difflib/unified-diff a b fna fnb "2024" "2025" :lineterm (->bytes ""))]
+        out (vec (difflib/diff-bytes difflib/unified-diff a b fna fnb "2024" "2025" :lineterm (->bytes "")))]
+    (t/is (empty? out))
     (doseq [elem out]
       (t/is (instance? (class (byte-array 0)) elem)))))
 
 ;; ---- TestInputTypes ----
 
-(t/deftest ^:kaocha/skip test-input-type-checks
+(t/deftest test-input-type-checks
   (let [unified difflib/unified-diff
         context difflib/context-diff]
     (t/is (thrown? ExceptionInfo (unified "a" ["b"])))
@@ -214,7 +215,7 @@
     (t/is (thrown? ExceptionInfo (unified [(->bytes "hello")] [(->bytes "hello")])))
     (t/is (thrown? ExceptionInfo (unified [(->bytes "hello")] ["hello"])))))
 
-(t/deftest ^:kaocha/skip test-mixed-types-content
+(t/deftest test-mixed-types-content
   (let [a [(->bytes "hello")]
         b ["hello"]
         unified difflib/unified-diff
@@ -222,7 +223,7 @@
     (t/is (thrown? ExceptionInfo (unified a b)))
     (t/is (thrown? ExceptionInfo (context a b)))))
 
-(t/deftest ^:kaocha/skip test-mixed-types-filenames
+(t/deftest test-mixed-types-filenames
   (let [a [(->bytes "hello\n")]
         b [(->bytes "ohell\n")]
         fna (->bytes "ol\u00e9.txt" "ISO-8859-1")
@@ -231,7 +232,7 @@
     (t/is (thrown? ExceptionInfo (unified a b fna fnb)))
     (t/is (thrown? ExceptionInfo (unified b a fna fnb)))))
 
-(t/deftest ^:kaocha/skip test-mixed-types-dates
+(t/deftest test-mixed-types-dates
   (let [a [(->bytes "foo\n")]
         b [(->bytes "bar\n")]
         unified difflib/unified-diff]
@@ -239,29 +240,29 @@
 
 ;; ---- TestJunkAPIs ----
 
-(t/deftest ^:kaocha/skip test-is-line-junk-true
+(t/deftest test-is-line-junk-true
   (doseq [line ["#" "  " " #" "# " " # " ""]]
     (t/is (difflib/is-line-junk line ""))))
 
-(t/deftest ^:kaocha/skip test-is-line-junk-false
+(t/deftest test-is-line-junk-false
   (doseq [line ["##" " ##" "## " "abc " "abc #" "Mr. Moose is up!"]]
     (t/is (not (difflib/is-line-junk line "")))))
 
-(t/deftest ^:kaocha/skip test-is-line-junk-redos
+(t/deftest test-is-line-junk-redos
   (let [x (str/join (repeat 1000000 "\t"))]
     (t/is (not (difflib/is-line-junk x "")))))
 
-(t/deftest ^:kaocha/skip test-is-character-junk-true
+(t/deftest test-is-character-junk-true
   (doseq [ch [" " "\t"]]
     (t/is (difflib/is-character-junk ch ""))))
 
-(t/deftest ^:kaocha/skip test-is-character-junk-false
+(t/deftest test-is-character-junk-false
   (doseq [ch ["a" "#" "\n" "\f" "\r" "\u000B"]]
     (t/is (not (difflib/is-character-junk ch "")))))
 
 ;; ---- TestFindLongest ----
 
-(t/deftest ^:kaocha/skip test-find-longest-default-args
+(t/deftest test-find-longest-default-args
   (let [a "foo bar"
         b "foo baz bar"
         sm (difflib/sequence-matcher :a a :b b)
@@ -271,7 +272,7 @@
     (t/is (= 6 (:size match)))
     (t/is (contains? (set ["foo ba" "foo ba "]) (subs a (:a match) (+ (:a match) (:size match)))))))
 
-(t/deftest ^:kaocha/skip test-find-longest-with-popular-chars
+(t/deftest test-find-longest-with-popular-chars
   (let [a "dabcd"
         b (str (str/join (repeat 100 "d")) "abc" (str/join (repeat 100 "d"))
                )
@@ -283,7 +284,7 @@
 
 ;; ---- TestCloseMatches ----
 
-(t/deftest ^:kaocha/skip test-close-matches-invalid-inputs
+(t/deftest test-close-matches-invalid-inputs
   (let [words ["egg"]]
     (t/is (thrown? ExceptionInfo (difflib/get-close-matches "spam" words 0)))
     (t/is (thrown? ExceptionInfo (difflib/get-close-matches "spam" words -1)))
@@ -292,6 +293,6 @@
 
 ;; ---- TestRestore ----
 
-(t/deftest ^:kaocha/skip test-restore-invalid-input
+(t/deftest test-restore-invalid-input
   (t/is (thrown? ExceptionInfo (str/join "" (difflib/restore [] 0))))
   (t/is (thrown? ExceptionInfo (str/join "" (difflib/restore [] 3)))))
