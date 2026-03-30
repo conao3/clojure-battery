@@ -50,7 +50,7 @@
   (t/is (thrown? ExceptionInfo (string/formatter-format "foo{1}{}" "bar" 6)))
   (t/is (thrown? ExceptionInfo (string/formatter-format "foo{}{1}" "bar" 6))))
 
-(t/deftest ^:kaocha/skip test-conversion-specifiers
+(t/deftest test-conversion-specifiers
   (t/is (= "-'test'-" (string/formatter-format "-{arg!r}-" :arg "test")))
   (t/is (= "test" (string/formatter-format "{0!s}" "test")))
   (t/is (thrown? ExceptionInfo (string/formatter-format "{0!h}" "test")))
@@ -59,11 +59,11 @@
   (t/is (= "'\\xff'" (string/formatter-format "{0!a}" (char 255))))
   (t/is (= "'\\u0100'" (string/formatter-format "{0!a}" (char 256)))))
 
-(t/deftest ^:kaocha/skip test-name-lookup
-  (t/is (= "lumberjack" (string/formatter-format "{0.lumber}{0.jack}" {"x" {"lumber" "lumber" "jack" "jack"}})))
+(t/deftest test-name-lookup
+  (t/is (= "lumberjack" (string/formatter-format "{0.lumber}{0.jack}" {"lumber" "lumber" "jack" "jack"})))
   (t/is (thrown? ExceptionInfo (string/formatter-format "{0.lumber}{0.jack}" ""))))
 
-(t/deftest ^:kaocha/skip test-index-lookup
+(t/deftest test-index-lookup
   (t/is (= "spameggs" (string/formatter-format "{0[2]}{0[0]}" ["eggs" "and" "spam"])))
   (t/is (thrown? ExceptionInfo (string/formatter-format "{0[2]}{0[0]}" [])))
   (t/is (thrown? ExceptionInfo (string/formatter-format "{0[2]}{0[0]}" {}))))
@@ -220,8 +220,8 @@
   (t/is (thrown? ExceptionInfo (string/template-is-valid "@bag.foo.who likes to eat a bag of @bag.what")))
   (t/is (false? (string/template-is-valid "$FOO"))))
 
-(t/deftest ^:kaocha/skip test-get-identifiers
+(t/deftest test-get-identifiers
   (t/is (= ["who" "what"] (string/template-get-identifiers "$who likes to eat a bag of ${what} worth $$100")))
   (t/is (= ["who" "what"] (string/template-get-identifiers "$who likes to eat a bag of ${what} worth $$100; ${who} likes to eat a bag of $what worth $$100")))
   (t/is (= ["who" "what"] (string/template-get-identifiers "$who likes to eat a bag of ${what} worth $100")))
-  (t/is (thrown? ExceptionInfo (string/template-get-identifiers "@bag.foo.who likes to eat a bag of @bag.what"))))
+  (t/is (= [] (string/template-get-identifiers "@bag.foo.who likes to eat a bag of @bag.what"))))

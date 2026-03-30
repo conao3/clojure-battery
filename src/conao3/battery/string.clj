@@ -92,8 +92,41 @@
    (let [merged (tmpl-coerce-mapping mapping (apply hash-map kwargs))]
      (tmpl-substitute* tmpl merged false))))
 
+(defn- string-like? [v]
+  (or (string? v) (instance? Character v)))
+
+(defn- python-repr [v]
+  (if (string-like? v)
+    (str "'" v "'")
+    (str v)))
+
+(defn- python-ascii [v]
+  (if (string-like? v)
+    (let [s (str v)
+          sb (StringBuilder.)]
+      (.append sb "'")
+      (doseq [c s]
+        (let [code (int c)]
+          (cond
+            (< code 0x80) (.append sb c)
+            (< code 0x100) (.append sb (format "\\x%02x" code))
+            (< code 0x10000) (.append sb (format "\\u%04x" code))
+            :else (.append sb (format "\\U%08x" code)))))
+      (.append sb "'")
+      (.toString sb))
+    (str v)))
+
+(defn- apply-conversion [v conv]
+  (cond
+    (nil? conv) (str v)
+    (= conv "s") (str v)
+    (= conv "r") (python-repr v)
+    (= conv "a") (python-ascii v)
+    :else (throw (ex-info (str "Unknown conversion specifier: " conv) {:conv conv}))))
+
 (def ^:private fmt-pattern
-  (java.util.regex.Pattern/compile "\\{\\{|\\}\\}|\\{([_a-zA-Z][_a-zA-Z0-9]*|\\d+)\\}"))
+  (java.util.regex.Pattern/compile
+   "\\{\\{|\\}\\}|\\{([_a-zA-Z][_a-zA-Z0-9]*|\\d+)(?:\\.([_a-zA-Z][_a-zA-Z0-9]*))?(?:\\[(\\d+)\\])?(?:!([a-zA-Z]))?\\}"))
 
 (defn- fmt-substitute
   [fmt positional named]
@@ -108,18 +141,38 @@
           (= full "{{") (.append sb "{")
           (= full "}}") (.append sb "}")
           :else
-          (let [key (.group m 1)]
-            (if (re-matches #"\d+" key)
-              (let [idx (Integer/parseInt key)]
-                (when (>= idx (count positional))
-                  (throw (ex-info (str "Positional index out of range: " idx) {:index idx})))
-                (vswap! used-indices conj idx)
-                (.append sb (str (nth positional idx))))
-              (do
-                (when-not (contains? named key)
-                  (throw (ex-info (str "Missing key: " key) {:key key})))
-                (vswap! used-keys conj key)
-                (.append sb (str (get named key)))))))))
+          (let [key (.group m 1)
+                field (.group m 2)
+                idx-str (.group m 3)
+                conv (.group m 4)
+                base-val (if (re-matches #"\d+" key)
+                           (let [i (Integer/parseInt key)]
+                             (when (>= i (count positional))
+                               (throw (ex-info (str "Positional index out of range: " i) {:index i})))
+                             (vswap! used-indices conj i)
+                             (nth positional i))
+                           (do
+                             (when-not (contains? named key)
+                               (throw (ex-info (str "Missing key: " key) {:key key})))
+                             (vswap! used-keys conj key)
+                             (get named key)))
+                accessed-val (cond
+                               (some? field)
+                               (if (map? base-val)
+                                 (let [v (get base-val field ::missing)]
+                                   (when (= v ::missing)
+                                     (throw (ex-info (str "Field not found: " field) {:field field})))
+                                   v)
+                                 (throw (ex-info (str "Cannot access field on non-map: " (type base-val)) {})))
+                               (some? idx-str)
+                               (let [i (Integer/parseInt idx-str)]
+                                 (if (sequential? base-val)
+                                   (if (< i (count base-val))
+                                     (nth base-val i)
+                                     (throw (ex-info (str "Index out of range: " i) {:index i})))
+                                   (throw (ex-info (str "Cannot index non-sequential: " (type base-val)) {}))))
+                               :else base-val)]
+            (.append sb (apply-conversion accessed-val conv))))))
     (.appendTail m sb)
     [(.toString sb) @used-indices @used-keys]))
 
@@ -177,8 +230,26 @@
         [result _ _] (fmt-substitute fmt positional named)]
     result))
 
-(defn template-is-valid [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn template-is-valid
+  [tmpl]
+  (let [m (.matcher tmpl-re tmpl)]
+    (loop []
+      (if (.find m)
+        (if (some? (.group m "invalid"))
+          false
+          (recur))
+        true))))
 
-(defn template-get-identifiers [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn template-get-identifiers
+  [tmpl]
+  (let [m (.matcher tmpl-re tmpl)
+        seen (volatile! #{})
+        result (volatile! [])]
+    (while (.find m)
+      (let [named (.group m "named")
+            braced (.group m "braced")]
+        (when-let [k (or named braced)]
+          (when-not (contains? @seen k)
+            (vswap! seen conj k)
+            (vswap! result conj k)))))
+    @result))
