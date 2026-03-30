@@ -42,7 +42,7 @@
      (t/is (matcher filename pattern))
      (t/is (not (matcher filename pattern))))))
 
-(t/deftest ^:kaocha/skip test-fnmatch
+(t/deftest test-fnmatch
   (check-match "abc" "abc")
   (check-match "abc" "?*?")
   (check-match "abc" "???*")
@@ -62,18 +62,18 @@
   (check-match "\nfoo" "foo*" false)
   (check-match "\n" "*"))
 
-(t/deftest ^:kaocha/skip test-slow-fnmatch
+(t/deftest test-slow-fnmatch
   (check-match (apply str (repeat 50 "a")) "*a*a*a*a*a*a*a*a*a*a")
   (check-match (str (apply str (repeat 50 "a")) "b")
                "*a*a*a*a*a*a*a*a*a*a" false))
 
-(t/deftest ^:kaocha/skip test-mix-bytes-str
+(t/deftest test-mix-bytes-str
   (t/is (thrown? ExceptionInfo (fnmatch/fnmatch "test" (str->bytes "*"))))
   (t/is (thrown? ExceptionInfo (fnmatch/fnmatch (str->bytes "test") "*")))
   (t/is (thrown? ExceptionInfo (fnmatch/fnmatchcase "test" (str->bytes "*"))))
   (t/is (thrown? ExceptionInfo (fnmatch/fnmatchcase (str->bytes "test") "*"))))
 
-(t/deftest ^:kaocha/skip test-fnmatchcase
+(t/deftest test-fnmatchcase
   (check-match "abc" "abc" true fnmatch/fnmatchcase)
   (check-match "AbC" "abc" false fnmatch/fnmatchcase)
   (check-match "abc" "AbC" false fnmatch/fnmatchcase)
@@ -83,25 +83,25 @@
   (check-match "usr/bin" "usr\\bin" false fnmatch/fnmatchcase)
   (check-match "usr\\bin" "usr\\bin" true fnmatch/fnmatchcase))
 
-(t/deftest ^:kaocha/skip test-bytes
+(t/deftest test-bytes
   (check-match (str->bytes "test") (str->bytes "te*"))
   (check-match (.getBytes (str "test" (char 0xff)) "ISO-8859-1")
                (.getBytes (str "te*" (char 0xff)) "ISO-8859-1"))
   (check-match (str->bytes "foo\nbar") (str->bytes "foo*")))
 
-(t/deftest ^:kaocha/skip test-case
+(t/deftest test-case
   (check-match "abc" "abc")
   (check-match "AbC" "abc" ignorecase)
   (check-match "abc" "AbC" ignorecase)
   (check-match "AbC" "AbC"))
 
-(t/deftest ^:kaocha/skip test-sep
+(t/deftest test-sep
   (check-match "usr/bin" "usr/bin")
   (check-match "usr\\bin" "usr/bin" normsep)
   (check-match "usr/bin" "usr\\bin" normsep)
   (check-match "usr\\bin" "usr\\bin"))
 
-(t/deftest ^:kaocha/skip test-char-set
+(t/deftest test-char-set
   (let [upper-chars (apply str (filter #(Character/isUpperCase ^char %) test-chars))]
     (doseq [c (seq test-chars)]
       (check-match (str c) "[az]" (str/includes? "az" (str c)))
@@ -159,7 +159,7 @@
       (when-not (and normsep (= (str c) "/"))
         (check-match (str c) "[d-b[-^]" (str/includes? "[\\]^" (str c)))))))
 
-(t/deftest ^:kaocha/skip test-sep-in-char-set
+(t/deftest test-sep-in-char-set
   (check-match "/" "[/]")
   (check-match "\\" "[\\]")
   (check-match "/" "[\\]" normsep)
@@ -201,7 +201,7 @@
   (check-match "," "[a-z+--A-Z]")
   (check-match "." "[a-z--/A-Z]"))
 
-(t/deftest ^:kaocha/skip test-translate
+(t/deftest test-translate
   (t/is (= "(?s:.*)\\z" (fnmatch/translate "*")))
   (t/is (= "(?s:.)\\z" (fnmatch/translate "?")))
   (t/is (= "(?s:a.b.*)\\z" (fnmatch/translate "a?b*")))
@@ -225,7 +225,7 @@
     (t/is (re-matches (re-pattern fatre) "cbabcaxc"))
     (t/is (not (re-matches (re-pattern fatre) "dabccbad")))))
 
-(t/deftest ^:kaocha/skip test-translate-wildcards
+(t/deftest test-translate-wildcards
   (t/are [pattern expect] (= expect (fnmatch/translate pattern))
     "ab*" "(?s:ab.*)\\z"
     "ab*cd" "(?s:ab.*cd)\\z"
@@ -243,7 +243,7 @@
     "*ab*cd*12*34" "(?s:(?>.*?ab)(?>.*?cd)(?>.*?12).*34)\\z"
     "*ab*cd*12*34*" "(?s:(?>.*?ab)(?>.*?cd)(?>.*?12)(?>.*?34).*)\\z"))
 
-(t/deftest ^:kaocha/skip test-translate-expressions
+(t/deftest test-translate-expressions
   (t/are [pattern expect] (= expect (fnmatch/translate pattern))
     "[" "(?s:\\[)\\z"
     "[!" "(?s:\\[!)\\z"
@@ -262,11 +262,11 @@
     "[[a]" "(?s:[\\[a])\\z"
     "[[a]]" "(?s:[\\[a]\\])\\z"
     "[[a]b" "(?s:[\\[a]b)\\z"
-    "[\\\\a" "(?s:\\[\\\\a)\\z"
+    "[\\a" "(?s:\\[\\\\a)\\z"
     "[\\]" "(?s:[\\\\])\\z"
     "[\\\\]" "(?s:[\\\\\\\\])\\z"))
 
-(t/deftest ^:kaocha/skip test-star-indices-locations
+(t/deftest test-star-indices-locations
   (let [blocks ["a^b" "***" "?" "?" "[a-z]" "[1-9]" "*" "++" "[[a"]
         [parts star-indices] (fnmatch/_translate (str/join blocks) "*" ".")]
     (t/is (= ["a" "\\^" "b" "*"
@@ -275,43 +275,43 @@
             "\\+" "\\+" "\\[" "\\[" "a"] parts))
     (t/is (= [3 8] star-indices))))
 
-(t/deftest ^:kaocha/skip test-filter
+(t/deftest test-filter
   (t/is (= ["Python" "Perl"] (fnmatch/filter ["Python" "Ruby" "Perl" "Tcl"] "P*")))
   (t/is (= [(byte-vector (str->bytes "Python")) (byte-vector (str->bytes "Perl"))]
          (mapv byte-vector (fnmatch/filter [(str->bytes "Python") (str->bytes "Ruby") (str->bytes "Perl") (str->bytes "Tcl")] (str->bytes "P*"))))))
 
-(t/deftest ^:kaocha/skip test-filter-mix-bytes-str
+(t/deftest test-filter-mix-bytes-str
   (t/is (thrown? ExceptionInfo (fnmatch/filter ["test"] (str->bytes "*"))))
   (t/is (thrown? ExceptionInfo (fnmatch/filter [(str->bytes "test")] "*"))))
 
-(t/deftest ^:kaocha/skip test-filter-case
+(t/deftest test-filter-case
   (t/is (= (if ignorecase ["Test.py" "Test.PL"] ["Test.py"])
          (fnmatch/filter ["Test.py" "Test.rb" "Test.PL"] "*.p*")))
   (t/is (= (if ignorecase ["Test.py" "Test.PL"] ["Test.PL"])
          (fnmatch/filter ["Test.py" "Test.rb" "Test.PL"] "*.P*"))))
 
-(t/deftest ^:kaocha/skip test-filter-sep
+(t/deftest test-filter-sep
   (t/is (= (if normsep ["usr/bin" "usr\\lib"] ["usr/bin"])
          (fnmatch/filter ["usr/bin" "usr" "usr\\lib"] "usr/*")))
   (t/is (= (if normsep ["usr/bin" "usr\\lib"] ["usr\\lib"])
          (fnmatch/filter ["usr/bin" "usr" "usr\\lib"] "usr\\*"))))
 
-(t/deftest ^:kaocha/skip test-filterfalse
+(t/deftest test-filterfalse
   (t/is (= ["Ruby" "Tcl"] (fnmatch/filterfalse ["Python" "Ruby" "Perl" "Tcl"] "P*")))
   (t/is (= [(byte-vector (str->bytes "Ruby")) (byte-vector (str->bytes "Tcl"))]
          (mapv byte-vector (fnmatch/filterfalse [(str->bytes "Python") (str->bytes "Ruby") (str->bytes "Perl") (str->bytes "Tcl")] (str->bytes "P*"))))))
 
-(t/deftest ^:kaocha/skip test-filterfalse-mix-bytes-str
+(t/deftest test-filterfalse-mix-bytes-str
   (t/is (thrown? ExceptionInfo (fnmatch/filterfalse ["test"] (str->bytes "*"))))
   (t/is (thrown? ExceptionInfo (fnmatch/filterfalse [(str->bytes "test")] "*"))))
 
-(t/deftest ^:kaocha/skip test-filterfalse-case
+(t/deftest test-filterfalse-case
   (t/is (= (if ignorecase ["Test.rb"] ["Test.rb" "Test.PL"])
          (fnmatch/filterfalse ["Test.py" "Test.rb" "Test.PL"] "*.p*")))
   (t/is (= (if ignorecase ["Test.rb"] ["Test.py" "Test.rb"])
          (fnmatch/filterfalse ["Test.py" "Test.rb" "Test.PL"] "*.P*"))))
 
-(t/deftest ^:kaocha/skip test-filterfalse-sep
+(t/deftest test-filterfalse-sep
   (t/is (= (if normsep ["usr"] ["usr" "usr\\lib"])
          (fnmatch/filterfalse ["usr/bin" "usr" "usr\\lib"] "usr/*")))
   (t/is (= (if normsep ["usr"] ["usr/bin" "usr"])
