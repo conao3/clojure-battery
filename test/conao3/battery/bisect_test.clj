@@ -519,13 +519,13 @@
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f (->GetOnly) 10))))))
 
-(t/deftest ^:kaocha/skip test-cmp-err-python
+(t/deftest test-cmp-err-python
   (let [m (module->env :python)
         seq [(->CmpErr) (->CmpErr) (->CmpErr)]]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ArithmeticException (f seq 10))))))
 
-(t/deftest ^:kaocha/skip test-cmp-err-c
+(t/deftest test-cmp-err-c
   (let [m (module->env :python)
         seq [(->CmpErr) (->CmpErr) (->CmpErr)]]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]

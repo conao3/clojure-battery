@@ -39,7 +39,7 @@
     (loop [lo lo hi hi]
       (if (< lo hi)
         (let [mid (+ lo (quot (- hi lo) 2))]
-          (if (neg? (compare (key-fn x) (key-fn (nth a mid))))
+          (if (pos? (compare (key-fn (nth a mid)) (key-fn x)))
             (recur lo mid)
             (recur (inc mid) hi)))
         lo))))
