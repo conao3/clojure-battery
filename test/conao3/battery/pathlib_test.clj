@@ -19,22 +19,22 @@
     (t/is (= "//c" (pathlib/divpath (path-f "/a") "//c")))
     (t/is (= "/c" (pathlib/divpath (path-f "//a") "/c")))))
 
-(t/deftest ^:kaocha/skip test-lexical-posix-path-join
+(t/deftest  test-lexical-posix-path-join
   (assert-join pathlib/lexical-posix-path))
 
-(t/deftest ^:kaocha/skip test-lexical-posix-path-div
+(t/deftest  test-lexical-posix-path-div
   (assert-div pathlib/lexical-posix-path))
 
 (when-not pathlib/is-pypi
-  (t/deftest ^:kaocha/skip test-pure-posix-path-join
+  (t/deftest  test-pure-posix-path-join
     (assert-join pathlib/pure-posix-path))
 
-  (t/deftest ^:kaocha/skip test-pure-posix-path-div
+  (t/deftest  test-pure-posix-path-div
     (assert-div pathlib/pure-posix-path))
 
   (when-not pathlib/windows?
-    (t/deftest ^:kaocha/skip test-posix-path-join
+    (t/deftest  test-posix-path-join
       (assert-join pathlib/posix-path))
 
-    (t/deftest ^:kaocha/skip test-posix-path-div
+    (t/deftest  test-posix-path-div
       (assert-div pathlib/posix-path))))

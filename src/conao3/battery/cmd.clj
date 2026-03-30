@@ -20,7 +20,8 @@
       (.write out prompt)
       (let [line (.readLine reader)]
         (if (nil? line)
-          (when-let [stop (eof-handler)]
+          (let [eof-in-map (get handlers "EOF")
+                stop (if eof-in-map (eof-in-map "" out) (eof-handler))]
             (when-not stop
               (recur)))
           (let [[cmd-name & rest-parts] (clojure.string/split (clojure.string/trim line) #"\s+" 2)

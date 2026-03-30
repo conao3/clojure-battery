@@ -1,4 +1,5 @@
-(ns conao3.battery.pathlib)
+(ns conao3.battery.pathlib
+  (:require [clojure.string :as str]))
 
 (def is-pypi false)
 (def windows? false)
@@ -12,13 +13,13 @@
 (defn posix-path [path]
   (str path))
 
-(defn joinpath
-  ([path segment]
-   (throw (ex-info "Not implemented" {})))
-  ([path segment segment2]
-   (throw (ex-info "Not implemented" {})))
-  ([path segment segment2 segment3]
-   (throw (ex-info "Not implemented" {}))))
+(defn joinpath [path & segments]
+  (reduce (fn [base seg]
+            (if (str/starts-with? seg "/")
+              seg
+              (str base "/" seg)))
+          path
+          segments))
 
 (defn divpath [path segment]
-  (throw (ex-info "Not implemented" {})))
+  (joinpath path segment))

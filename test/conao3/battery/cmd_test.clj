@@ -7,14 +7,14 @@
 
 ;; TestAlternateInput
 
-(t/deftest ^:kaocha/skip test-file-with-missing-final-nl
+(t/deftest  test-file-with-missing-final-nl
   (let [handlers {"print" (fn [args out] (.write out (str args "\n")) nil)
                   "EOF"   (fn [_ _] true)}
         c (cmd/make-cmd handlers (fn [] true))
         output (cmd/run-cmdloop c "print test\nprint test2")]
     (t/is (= output "(Cmd) test\n(Cmd) test2\n(Cmd) "))))
 
-(t/deftest ^:kaocha/skip test-input-reset-at-eof
+(t/deftest  test-input-reset-at-eof
   (let [handlers {"print" (fn [args out] (.write out (str args "\n")) nil)
                   "EOF"   (fn [_ out] (.write out "*** Unknown syntax: EOF\n") true)}
         c (cmd/make-cmd handlers (fn [] true))

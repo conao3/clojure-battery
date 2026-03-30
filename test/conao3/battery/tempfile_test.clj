@@ -9,13 +9,13 @@
 ;; - _xxx private API accessors
 ;; - filesystem-dependent tests
 
-(t/deftest ^:kaocha/skip test-exports
+(t/deftest  test-exports
   (let [expected #{'NamedTemporaryFile 'TemporaryFile 'mkstemp 'mkdtemp 'mktemp
                   'TMP_MAX 'gettempprefix 'gettempprefixb 'gettempdir 'gettempdirb
                   'tempdir 'template 'SpooledTemporaryFile 'TemporaryDirectory}]
     (t/is (= expected (set (keys (ns-publics 'conao3.battery.tempfile)))))))
 
-(t/deftest ^:kaocha/skip test-sane-template
+(t/deftest  test-sane-template
   (let [prefix (tempfile/gettempprefix)
         prefix-bytes (tempfile/gettempprefixb)]
     (t/is (string? prefix))
@@ -24,7 +24,7 @@
     (t/is (= (type prefix-bytes) (type (byte-array 0))))
     (t/is (> (alength prefix-bytes) 0))))
 
-(t/deftest ^:kaocha/skip test-same-thing
+(t/deftest  test-same-thing
   (let [a (tempfile/gettempdir)
         b (tempfile/gettempdir)
         c (tempfile/gettempdirb)]
