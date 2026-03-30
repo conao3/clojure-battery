@@ -1,76 +1,154 @@
 (ns conao3.battery.itertools)
 
-(defn accumulate [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn accumulate
+  ([coll] (if-let [s (seq coll)] (reductions + s) []))
+  ([coll func] (if-let [s (seq coll)] (reductions func s) []))
+  ([coll func initial] (reductions func initial coll)))
 
-(defn batched [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn batched [coll n]
+  (when (<= n 0)
+    (throw (ex-info "n must be at least one" {})))
+  (clojure.core/map vec (partition-all n coll)))
 
-(defn chain [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn chain [& colls]
+  (apply concat colls))
 
-(defn chain-from-iterable [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn chain-from-iterable [colls]
+  (apply concat colls))
 
-(defn combinations [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn combinations [coll r]
+  (when (neg? r)
+    (throw (ex-info "r must be non-negative" {})))
+  (let [pool (vec coll)
+        n (clojure.core/count pool)]
+    (cond
+      (= r 0) [[]]
+      (> r n) []
+      :else
+      (for [i (range n)
+            rest-combo (combinations (subvec pool (inc i)) (dec r))]
+        (vec (cons (nth pool i) rest-combo))))))
 
-(defn combinations-with-replacement [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn combinations-with-replacement [coll r]
+  (let [pool (vec coll)]
+    (cond
+      (= r 0) [[]]
+      (empty? pool) []
+      :else
+      (for [i (range (clojure.core/count pool))
+            rest-combo (combinations-with-replacement (subvec pool i) (dec r))]
+        (vec (cons (nth pool i) rest-combo))))))
 
-(defn permutations [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn permutations [coll r]
+  (let [pool (vec coll)
+        n (clojure.core/count pool)]
+    (cond
+      (> r n) []
+      (= r 0) [[]]
+      :else
+      (for [i (range n)
+            perm (permutations (vec (concat (subvec pool 0 i) (subvec pool (inc i)))) (dec r))]
+        (vec (cons (nth pool i) perm))))))
 
-(defn combinatorics [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn combinatorics [coll r]
+  (combinations coll r))
 
-(defn compress [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn compress [data selectors]
+  (->> (clojure.core/map vector data selectors)
+       (clojure.core/filter second)
+       (clojure.core/map first)))
 
-(defn count [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn count
+  ([] (iterate inc 0))
+  ([start] (iterate inc start))
+  ([start step]
+   (if (zero? step)
+     (clojure.core/repeat start)
+     (iterate #(+ % step) start))))
 
-(defn cycle [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn cycle [coll]
+  (clojure.core/cycle coll))
 
-(defn groupby [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn groupby
+  ([coll] (groupby coll identity))
+  ([coll keyfn]
+   (->> coll
+        (partition-by keyfn)
+        (clojure.core/map (fn [group] [(keyfn (first group)) group])))))
 
-(defn filter [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn filter [pred coll]
+  (clojure.core/filter pred coll))
 
-(defn filterfalse [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn filterfalse [pred coll]
+  (remove pred coll))
 
-(defn zip [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn zip [& colls]
+  (if (empty? colls)
+    []
+    (apply clojure.core/map vector colls)))
 
-(defn zip-longest [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn zip-longest [& args]
+  (let [n (clojure.core/count args)
+        has-fillvalue? (and (>= n 2) (= :fillvalue (nth args (- n 2))))
+        [colls fillvalue] (if has-fillvalue?
+                            [(take (- n 2) args) (last args)]
+                            [args nil])]
+    (doseq [c colls]
+      (when-not (sequential? c)
+        (throw (ex-info "zip-longest requires iterables" {}))))
+    (if (empty? colls)
+      []
+      (letfn [(step [seqs]
+                (when (some some? seqs)
+                  (lazy-seq
+                   (cons (mapv #(if (some? %) (first %) fillvalue) seqs)
+                         (step (mapv #(when (some? %) (next %)) seqs))))))]
+        (step (mapv seq colls))))))
 
-(defn pairwise [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn pairwise [coll]
+  (clojure.core/map vector coll (rest coll)))
 
-(defn product [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn product [& colls]
+  (reduce (fn [acc coll]
+            (for [a acc b coll]
+              (conj a b)))
+          [[]]
+          colls))
 
-(defn repeat [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn repeat
+  ([elem] (clojure.core/repeat elem))
+  ([elem n]
+   (if (<= n 0)
+     []
+     (clojure.core/repeat n elem))))
 
-(defn map [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn map [func & colls]
+  (apply clojure.core/map func colls))
 
-(defn starmap [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn starmap [func coll]
+  (clojure.core/map #(apply func %) coll))
 
-(defn islice [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn islice
+  ([coll stop]
+   (if (nil? stop)
+     coll
+     (take stop coll)))
+  ([coll start stop]
+   (islice coll start stop 1))
+  ([coll start stop step]
+   (->> coll
+        (drop start)
+        (take (max 0 (- stop start)))
+        (take-nth step))))
 
-(defn takewhile [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn takewhile [pred coll]
+  (take-while pred coll))
 
-(defn dropwhile [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn dropwhile [pred coll]
+  (drop-while pred coll))
 
-(defn tee [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn tee
+  ([coll] (tee coll 2))
+  ([coll n]
+   (let [s (seq coll)]
+     (vec (clojure.core/repeat n s)))))
