@@ -2,7 +2,7 @@
   (:require [clojure.string :as str]))
 
 (def ^:private wordsep-re
-  #"(?U)(\s+|(?<=[\w\!\"\'\&\.\,\?])-{2,}(?=\w)|(?<=\w)-(?=\w)|[^\s-]*\w+[^0-9\W]-(?=\w+[^0-9\W]))")
+  #"(?U)([\t\n\x0B\f\r ]+|(?<=[\w!\"'&.,?])-{2,}(?=\w)|[^\t\n\x0B\f\r ]+?(?:-(?:(?<=[^\d\W]{2}-)|(?<=[^\d\W]-[^\d\W]-))(?=[^\d\W]-?[^\d\W])|(?=[\t\n\x0B\f\r ]|\z)|(?<=[\w!\"'&.,?])(?=-{2,}\w)))")
 
 (def ^:private sentence-end-re
   #"[a-z][\.\!\?][\"\']?\Z")
@@ -30,19 +30,8 @@
 
 (defn- split-text [text {:keys [break-on-hyphens] :or {break-on-hyphens true}}]
   (if break-on-hyphens
-    (let [chunks (str/split text wordsep-re -1)
-          separators (map first (re-seq wordsep-re text))]
-      (loop [cs chunks seps separators result []]
-        (if (empty? seps)
-          (into result (filter #(not= "" %) cs))
-          (let [chunk (first cs)
-                sep (first seps)]
-            (recur (rest cs) (rest seps)
-                   (cond-> result
-                     (not= chunk "") (conj chunk)
-                     true (conj sep)))))))
-    (let [parts (str/split text #"(\s+)" -1)]
-      (filterv (complement empty?) parts))))
+    (mapv first (re-seq wordsep-re text))
+    (filterv (complement empty?) (re-seq #"[\t\n\x0B\f\r ]+|[^\t\n\x0B\f\r ]+" text))))
 
 (defn- fix-sentence-endings [chunks]
   (loop [i 0 chunks (vec chunks)]
@@ -98,6 +87,7 @@
         (when (and (seq @chunks) (> (count (last @chunks)) width-avail))
           (let [result (handle-long-word @chunks @cur-line width-avail break-long-words)]
             (reset! cur-line (second result))
+            (reset! cur-len (count (str/join (second result))))
             (if (= "" (first result))
               (swap! chunks pop)
               (swap! chunks #(conj (pop %) (first result))))))
@@ -157,7 +147,9 @@
 (defn dedent [text]
   (when-not (string? text)
     (throw (ex-info "dedent requires a string" {})))
-  (let [normalized (str/replace text #"(?m)^[ \t]+$" "")
+  (let [normalized (if (str/includes? text "\n")
+                     (str/replace text #"(?m)^[ \t]+$" "")
+                     text)
         indents (map second (re-seq #"(?m)^([ \t]*)(?:[^ \t\n])" normalized))
         margin (when (seq indents)
                  (reduce (fn [m indent]
