@@ -141,14 +141,22 @@
     :insort-left (:insort-left module)
     :insort-right (:insort-right module)))
 
+(defn- wrap-arity [f min-args]
+  (fn [& args]
+    (when (< (count args) min-args)
+      (throw (ex-info (str "requires at least " min-args " args, got " (count args)) {})))
+    (apply f args)))
+
 (defn- module->env [module]
   (if (= :python module)
-    {:bisect-left bisect/bisect-left
-     :bisect-right bisect/bisect-right
-     :insort-left bisect/insort-left
-     :insort-right bisect/insort-right
-     :insort bisect/insort
-     :bisect bisect/bisect}))
+    (let [bisect-right-w (wrap-arity bisect/bisect-right 2)
+          insort-right-w (wrap-arity bisect/insort-right 2)]
+      {:bisect-left (wrap-arity bisect/bisect-left 2)
+       :bisect-right bisect-right-w
+       :insort-left (wrap-arity bisect/insort-left 2)
+       :insort-right insort-right-w
+       :insort insort-right-w
+       :bisect bisect-right-w})))
 
 (defn- run-precomputed
   [module]
@@ -536,12 +544,12 @@
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ArithmeticException (f seq 10))))))
 
-(t/deftest ^:kaocha/skip test-arg-parsing-python
+(t/deftest test-arg-parsing-python
   (let [m (module->env :python)]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f 10))))))
 
-(t/deftest ^:kaocha/skip test-arg-parsing-c
+(t/deftest test-arg-parsing-c
   (let [m (module->env :python)]
     (doseq [f [(:bisect-left m) (:bisect-right m) (:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f 10))))))
