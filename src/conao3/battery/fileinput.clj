@@ -117,7 +117,7 @@
 
 (defn fileno
   []
-  (or (:fileno (active-state)) -1))
+  (or (:fileno @conao3.battery.fileinput/_state) -1))
 
 (defn isfirstline
   []

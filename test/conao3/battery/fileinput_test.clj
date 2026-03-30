@@ -49,7 +49,7 @@
         t2 (write-tmp "D\nE\nF")]
     (t/is (= [t1 t2] (:files (fileinput/file-input :files [t1 t2] :encoding "utf-8"))))))
 
-(t/deftest ^:kaocha/skip test-fileno
+(t/deftest test-fileno
   (let [t1 (write-tmp "A\nB")
         t2 (write-tmp "C\nD")
         fi (fileinput/file-input :files [t1 t2] :encoding "utf-8")]
