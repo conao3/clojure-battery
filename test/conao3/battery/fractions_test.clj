@@ -153,7 +153,7 @@
 (t/deftest ^:kaocha/skip test-mixed-power
   (t/is (= 1/4 (Math/pow 0.5 2))))
 
-(t/deftest ^:kaocha/skip test-mixing-with-decimal
+(t/deftest test-mixing-with-decimal
   (t/is (= (bigdec "1.5") (+ (bigdec "1.0") 1/2))))
 
 (t/deftest test-comparisons
@@ -217,19 +217,19 @@
 (t/deftest test-format-no-presentation-type
   (t/is (= "1/2" (format "%s" 1/2))))
 
-(t/deftest ^:kaocha/skip test-format-e-presentation-type
+(t/deftest test-format-e-presentation-type
   (t/is (= "5.000000e-01" (format "%.6e" (double 1/2)))))
 
-(t/deftest ^:kaocha/skip test-format-f-presentation-type
+(t/deftest test-format-f-presentation-type
   (t/is (= "0.500000" (format "%.6f" (double 1/2)))))
 
 (t/deftest ^:kaocha/skip test-format-g-presentation-type
   (t/is (= "0.5" (format "%.6g" (double 1/2)))))
 
-(t/deftest ^:kaocha/skip test-invalid-formats
+(t/deftest test-invalid-formats
   (t/is (thrown? ExceptionInfo (fractions/from-string "not/valid"))))
 
-(t/deftest ^:kaocha/skip test-complex-handling
+(t/deftest test-complex-handling
   (t/is (= 1/2 1/2)))
 
 (t/deftest ^:kaocha/skip test-three-argument-pow
