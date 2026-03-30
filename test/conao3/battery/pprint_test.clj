@@ -31,7 +31,7 @@
 ;; - test_default_dict / test_counter / test_chainmap / test_deque (Python-specific collection types)
 ;; - test_user_dict / test_user_list / test_user_string (Python UserDict/UserList/UserString)
 
-(t/deftest ^:kaocha/skip test-basic
+(t/deftest test-basic
   (t/is (false? (pprint/isrecursive 2)))
   (t/is (true? (pprint/isreadable 2)))
   (t/is (false? (pprint/isrecursive [1 2 3])))
@@ -39,14 +39,14 @@
   (t/is (false? (pprint/isrecursive nil)))
   (t/is (true? (pprint/isreadable nil))))
 
-(t/deftest ^:kaocha/skip test-stdout-is-none
+(t/deftest test-stdout-is-none
   (t/is (nil? (pprint/pprint "this should not fail"))))
 
-(t/deftest ^:kaocha/skip test-unreadable
+(t/deftest test-unreadable
   (t/is (false? (pprint/isrecursive (Object.))))
   (t/is (false? (pprint/isreadable (Object.)))))
 
-(t/deftest ^:kaocha/skip test-same-as-repr
+(t/deftest test-same-as-repr
   (t/is (= "42" (pprint/pformat 42)))
   (t/is (= "[]" (pprint/pformat [])))
   (t/is (= "[1 2 3]" (pprint/pformat [1 2 3])))
@@ -56,11 +56,11 @@
   (t/is (= "false" (pprint/pformat false)))
   (t/is (= "nil" (pprint/pformat nil))))
 
-(t/deftest ^:kaocha/skip test-integer
+(t/deftest test-integer
   (t/is (= "42" (pprint/pformat 42))))
 
-(t/deftest ^:kaocha/skip test-mapping-view-subclass-no-mapping
+(t/deftest test-mapping-view-subclass-no-mapping
   (t/is (thrown? ExceptionInfo (pprint/pformat (Object.)))))
 
-(t/deftest ^:kaocha/skip test-str-wrap
+(t/deftest test-str-wrap
   (t/is (= "\"a very long string\"" (pprint/pformat "a very long string"))))

@@ -5,7 +5,7 @@
    [clojure.test :as t]
    [conao3.battery.sched :as sched]))
 
-(t/deftest ^:kaocha/skip test-enter
+(t/deftest test-enter
   (let [results (atom [])
         s (sched/scheduler)]
     (doseq [x [0.5 0.4 0.3 0.2 0.1]]
@@ -13,7 +13,7 @@
     (sched/run! s)
     (t/is (= @results [0.1 0.2 0.3 0.4 0.5]))))
 
-(t/deftest ^:kaocha/skip test-enterabs
+(t/deftest test-enterabs
   (let [results (atom [])
         s (sched/scheduler)]
     (doseq [x [0.05 0.04 0.03 0.02 0.01]]
@@ -21,7 +21,7 @@
     (sched/run! s)
     (t/is (= @results [0.01 0.02 0.03 0.04 0.05]))))
 
-(t/deftest ^:kaocha/skip test-priority
+(t/deftest test-priority
   (let [results (atom [])
         s (sched/scheduler)
         cases [[[1 2 3 4 5] [1 2 3 4 5]]
@@ -40,7 +40,7 @@
       [2 5 3 1 4] [1 2 3 4 5]
       [1 2 3 2 1] [1 1 2 2 3])))
 
-(t/deftest ^:kaocha/skip test-cancel
+(t/deftest test-cancel
   (let [results (atom [])
         s (sched/scheduler)
         now (/ (System/currentTimeMillis) 1000.0)
@@ -54,7 +54,7 @@
     (sched/run! s)
     (t/is (= @results [0.02 0.03 0.04]))))
 
-(t/deftest ^:kaocha/skip test-cancel-correct-event
+(t/deftest test-cancel-correct-event
   (let [events (atom [])
         s (sched/scheduler)
         _ (sched/enterabs! s 1 1 #(swap! events conj "a"))
@@ -64,7 +64,7 @@
     (sched/run! s)
     (t/is (= @events ["a" "c"]))))
 
-(t/deftest ^:kaocha/skip test-empty
+(t/deftest test-empty
   (let [results (atom [])
         s (sched/scheduler)]
     (t/is (sched/sched-empty? s))
@@ -74,7 +74,7 @@
     (sched/run! s)
     (t/is (sched/sched-empty? s))))
 
-(t/deftest ^:kaocha/skip test-queue
+(t/deftest test-queue
   (let [results (atom [])
         s (sched/scheduler)
         now (/ (System/currentTimeMillis) 1000.0)
@@ -85,7 +85,7 @@
         e3 (sched/enterabs! s (+ now 0.03) 1 #(swap! results conj 3))]
     (t/is (= (sched/sched-queue s) [e1 e2 e3 e4 e5]))))
 
-(t/deftest ^:kaocha/skip test-args-kwargs
+(t/deftest test-args-kwargs
   (let [seq-results (atom [])
         s (sched/scheduler)
         now (/ (System/currentTimeMillis) 1000.0)]
@@ -97,7 +97,7 @@
     (t/is (= (set @seq-results)
              #{[[] {}] ['(1 2) {}] ['(:a :b) {}] ['(1 2) {:foo 3}]}))))
 
-(t/deftest ^:kaocha/skip test-run-non-blocking
+(t/deftest test-run-non-blocking
   (let [results (atom [])
         s (sched/scheduler)]
     (doseq [x [10 9 8 7 6]]

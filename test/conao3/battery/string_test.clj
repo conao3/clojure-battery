@@ -7,7 +7,7 @@
   (:import
    [clojure.lang ExceptionInfo]))
 
-(t/deftest ^:kaocha/skip test-attrs
+(t/deftest test-attrs
   (t/is (= " \t\n\r\u000b\u000c" string/whitespace))
   (t/is (= "abcdefghijklmnopqrstuvwxyz" string/ascii-lowercase))
   (t/is (= "ABCDEFGHIJKLMNOPQRSTUVWXYZ" string/ascii-uppercase))
@@ -18,7 +18,7 @@
   (t/is (= "!\u0022#$%&'()*+,-./:;<=>?@[\\]^_`{|}~" string/punctuation))
   (t/is (= (str string/digits string/ascii-lowercase string/ascii-uppercase string/punctuation string/whitespace) string/printable)))
 
-(t/deftest ^:kaocha/skip test-capwords
+(t/deftest test-capwords
   (t/is (= "Abc Def Ghi" (string/capwords "abc def ghi")))
   (t/is (= "Abc Def Ghi" (string/capwords "abc\tdef\nghi")))
   (t/is (= "Abc Def Ghi" (string/capwords "abc\t   def  \nghi")))
@@ -105,21 +105,21 @@
   (t/is (thrown? ExceptionInfo (string/formatter-vformat-recursion-limit "{i}" () {:i 100} -1)))
   (t/is (string? (string/formatter-vformat-recursion-limit "{i}" () {:i 100} 10))))
 
-(t/deftest ^:kaocha/skip test-regular-templates
+(t/deftest test-regular-templates
   (t/is (= "tim likes to eat a bag of ham worth $100"
            (string/template-substitute "$who likes to eat a bag of $what worth $$100" {"who" "tim" "what" "ham"})))
   (t/is (thrown? ExceptionInfo (string/template-substitute "$who likes to eat a bag of $what worth $$100" {"who" "tim"})))
   (t/is (thrown? ExceptionInfo (string/template-substitute))))
 
-(t/deftest ^:kaocha/skip test-regular-templates-with-braces
+(t/deftest test-regular-templates-with-braces
   (t/is (= "tim likes ham for dinner" (string/template-substitute "$who likes ${what} for ${meal}" {"who" "tim" "what" "ham" "meal" "dinner"})))
   (t/is (thrown? ExceptionInfo (string/template-substitute "$who likes ${what} for ${meal}" {"who" "tim" "what" "ham"}))))
 
-(t/deftest ^:kaocha/skip test-regular-templates-with-upper-case
+(t/deftest test-regular-templates-with-upper-case
   (t/is (= "tim likes ham for dinner" (string/template-substitute "$WHO likes ${WHAT} for ${MEAL}" {"WHO" "tim" "WHAT" "ham" "MEAL" "dinner"})))
   (t/is (thrown? ExceptionInfo (string/template-substitute "$WHO likes ${WHAT} for ${MEAL}" {}))))
 
-(t/deftest ^:kaocha/skip test-regular-templates-with-non-letters
+(t/deftest test-regular-templates-with-non-letters
   (t/is (= "tim likes ham for dinner"
            (string/template-substitute "$_wh0_ likes ${_w_h_a_t_} for ${mea1}" {"_wh0_" "tim" "_w_h_a_t_" "ham" "mea1" "dinner"})))
   (t/is (thrown? ExceptionInfo (string/template-substitute "$_wh0_ likes ${_w_h_a_t_} for ${mea1}" {"_wh0_" "tim"}))))
@@ -132,7 +132,7 @@
   (t/is (= "%(foo)s baz baz" (string/template-safe-substitute "%(foo)s $foo ${foo}" {"foo" "baz"})))
   (t/is (= "%(foo)s baz baz" (string/template-safe-substitute "%(foo)s ${foo}" {"foo" "baz"}))))
 
-(t/deftest ^:kaocha/skip test-stringification
+(t/deftest test-stringification
   (t/is (= "tim has eaten 7 bags of ham today"
            (string/template-substitute "tim has eaten $count bags of ham today" {"count" 7})))
   (t/is (= "tim has eaten 7 bags of ham today"
@@ -148,7 +148,7 @@
   (t/is (= "tim likes ham for dinner" (string/template-safe-substitute "$who likes $what for $meal" {"who" "tim" "what" "ham" "meal" "dinner"})))
   (t/is (thrown? ExceptionInfo (string/template-substitute "$who likes ham for dinner" {"who" "tim"}))))
 
-(t/deftest ^:kaocha/skip test-invalid-placeholders
+(t/deftest test-invalid-placeholders
   (t/is (thrown? ExceptionInfo (string/template-substitute "$who likes $" {"who" "tim"})))
   (t/is (thrown? ExceptionInfo (string/template-substitute "$who likes ${what)" {"who" "tim"})))
   (t/is (thrown? ExceptionInfo (string/template-substitute "$who likes $100" {"who" "tim"})))
