@@ -116,3 +116,23 @@
 (t/deftest test-dotall
   (let [m (re-m/search "a.b" "a\nb" re-m/DOTALL)]
     (t/is (some? m))))
+
+(t/deftest test-flag-aliases
+  (t/is (= re-m/IGNORECASE re-m/I))
+  (t/is (= re-m/MULTILINE re-m/M))
+  (t/is (= re-m/DOTALL re-m/S))
+  (t/is (= re-m/VERBOSE re-m/X)))
+
+(t/deftest test-verbose-flag
+  (let [m (re-m/match "\\d +" "123" re-m/VERBOSE)]
+    (t/is (some? m))))
+
+(t/deftest test-sub-count-limit
+  (t/is (= "NUMbc123def456" (re-m/sub "\\d+" "NUM" "123bc123def456" 1)))
+  (t/is (= "NUMbcNUMdefNUM" (re-m/sub "\\d+" "NUM" "123bc123def456"))))
+
+(t/deftest test-finditer-positions
+  (let [results (re-m/finditer "\\d+" "a1b22c333")]
+    (t/is (= [1 2] (re-m/span (nth results 0))))
+    (t/is (= [3 5] (re-m/span (nth results 1))))
+    (t/is (= [6 9] (re-m/span (nth results 2))))))

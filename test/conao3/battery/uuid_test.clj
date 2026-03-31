@@ -97,3 +97,28 @@
   (let [u3 (uuid-m/uuid3 uuid-m/NAMESPACE_DNS "python.org")
         u5 (uuid-m/uuid5 uuid-m/NAMESPACE_DNS "python.org")]
     (t/is (not= (uuid-m/uuid-str u3) (uuid-m/uuid-str u5)))))
+
+(t/deftest test-uuid-time-fields
+  (let [u (uuid-m/make-uuid :str "12345678-1234-5678-1234-567812345678")]
+    (t/is (= 0x12345678 (uuid-m/uuid-time-low u)))
+    (t/is (= 0x1234 (uuid-m/uuid-time-mid u)))
+    (t/is (= 0x5678 (uuid-m/uuid-time-hi-version u)))))
+
+(t/deftest test-uuid-clock-seq-fields
+  (let [u (uuid-m/make-uuid :str "12345678-1234-5678-1234-567812345678")]
+    (t/is (= 0x12 (uuid-m/uuid-clock-seq-hi-variant u)))
+    (t/is (= 0x34 (uuid-m/uuid-clock-seq-low u)))
+    (t/is (= 0x567812345678 (uuid-m/uuid-node u)))))
+
+(t/deftest test-uuid4-str-format
+  (let [s (uuid-m/uuid-str (uuid-m/uuid4))]
+    (t/is (= 36 (count s)))
+    (t/is (= \- (nth s 8)))
+    (t/is (= \- (nth s 13)))
+    (t/is (= \- (nth s 18)))
+    (t/is (= \- (nth s 23)))))
+
+(t/deftest test-uuid1-is-unique
+  (let [u1 (uuid-m/uuid1)
+        u2 (uuid-m/uuid1)]
+    (t/is (not= (uuid-m/uuid-str u1) (uuid-m/uuid-str u2)))))

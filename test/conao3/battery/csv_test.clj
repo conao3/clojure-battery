@@ -102,3 +102,23 @@
         w  (csv-m/writer sw)]
     (csv-m/writerow w ["say \"hello\""])
     (t/is (= "\"say \"\"hello\"\"\"\r\n" (.toString sw)))))
+
+(t/deftest test-quoting-constants
+  (t/is (= 0 csv-m/QUOTE_MINIMAL))
+  (t/is (= 1 csv-m/QUOTE_ALL))
+  (t/is (= 2 csv-m/QUOTE_NONNUMERIC))
+  (t/is (= 3 csv-m/QUOTE_NONE)))
+
+(t/deftest test-writer-writerows-dict
+  (let [sw (StringWriter.)
+        dw (csv-m/dict-writer sw ["x" "y"])]
+    (csv-m/writerows-dict dw [{"x" 1 "y" 2} {"x" 3 "y" 4}])
+    (t/is (= "1,2\r\n3,4\r\n" (.toString sw)))))
+
+(t/deftest test-dict-reader-with-fieldnames
+  (let [rows (csv-m/dict-reader-with-fieldnames ["1,2,3"] ["a" "b" "c"])]
+    (t/is (= {"a" "1" "b" "2" "c" "3"} (first (vec rows))))))
+
+(t/deftest test-reader-newline-in-quoted
+  (let [rows (csv-m/reader ["\"line1\nline2\",foo"])]
+    (t/is (= [["line1\nline2" "foo"]] (vec rows)))))
