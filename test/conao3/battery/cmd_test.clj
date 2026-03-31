@@ -58,3 +58,24 @@
     (t/is (map? c))
     (t/is (contains? c :handlers))
     (t/is (contains? c :prompt))))
+
+(t/deftest test-cmd-prompt-default
+  (let [handlers {"EOF" (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))]
+    (t/is (= "(Cmd) " (:prompt c)))))
+
+(t/deftest test-output-written-to-handler
+  (let [captured (atom "")
+        handlers {"echo" (fn [args out] (.write out (str "ECHO:" args)) nil)
+                  "EOF"  (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))
+        output (cmd/run-cmdloop c "echo hello")]
+    (t/is (clojure.string/includes? output "ECHO:hello"))))
+
+(t/deftest test-eof-terminates-loop
+  (let [call-count (atom 0)
+        handlers {"tick" (fn [_ _] (swap! call-count inc) nil)
+                  "EOF"  (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))]
+    (cmd/run-cmdloop c "tick\ntick")
+    (t/is (= 2 @call-count))))

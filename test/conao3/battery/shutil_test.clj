@@ -90,3 +90,22 @@
     (t/is (.exists dst))
     (t/is (= "to move" (slurp (.getAbsolutePath dst))))
     (.delete dst)))
+
+(t/deftest test-copy2-preserves-metadata
+  (let [src (File/createTempFile "shutil-copy2-src" ".txt")
+        dst (File/createTempFile "shutil-copy2-dst" ".txt")]
+    (spit (.getAbsolutePath src) "copy2 test")
+    (shutil/copy2 (.getAbsolutePath src) (.getAbsolutePath dst))
+    (t/is (= "copy2 test" (slurp (.getAbsolutePath dst))))
+    (.delete src)
+    (.delete dst)))
+
+(t/deftest test-copyfile
+  (let [src (File/createTempFile "shutil-copyfile-src" ".txt")
+        dst (File/createTempFile "shutil-copyfile-dst" ".txt")]
+    (spit (.getAbsolutePath src) "copyfile test")
+    (shutil/copyfile (.getAbsolutePath src) (.getAbsolutePath dst))
+    (t/is (= "copyfile test" (slurp (.getAbsolutePath dst))))
+    (.delete src)
+    (.delete dst)))
+
