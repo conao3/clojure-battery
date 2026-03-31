@@ -87,3 +87,25 @@
             (= "linux" sys-m/platform)
             (= "win32" sys-m/platform)
             (string? sys-m/platform))))
+
+(t/deftest test-getrecursionlimit
+  (t/is (pos? (sys-m/getrecursionlimit))))
+
+(t/deftest test-setrecursionlimit-noop
+  (t/is (nil? (sys-m/setrecursionlimit 500))))
+
+(t/deftest test-getrefcount
+  (t/is (= 1 (sys-m/getrefcount "test"))))
+
+(t/deftest test-exc-info-returns-triple
+  (let [info (sys-m/exc-info)]
+    (t/is (= 3 (count info)))))
+
+(t/deftest test-path
+  (let [p (sys-m/path)]
+    (t/is (vector? p))))
+
+(t/deftest test-modules
+  (let [m (sys-m/modules)]
+    (t/is (map? m))
+    (t/is (contains? m "clojure.core"))))

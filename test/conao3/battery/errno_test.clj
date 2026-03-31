@@ -53,3 +53,23 @@
 (t/deftest test-strerror-unknown
   (let [s (errno-m/strerror 9999)]
     (t/is (string? s))))
+
+(t/deftest test-errorcode-large
+  (t/is (pos? (count errno-m/errorcode)))
+  (t/is (every? integer? (keys errno-m/errorcode)))
+  (t/is (every? string? (vals errno-m/errorcode))))
+
+(t/deftest test-strerror-network-errors
+  (t/is (= "Address already in use" (errno-m/strerror errno-m/EADDRINUSE)))
+  (t/is (= "Connection refused" (errno-m/strerror errno-m/ECONNREFUSED)))
+  (t/is (= "Connection timed out" (errno-m/strerror errno-m/ETIMEDOUT))))
+
+(t/deftest test-more-constants
+  (t/is (= 5 errno-m/EIO))
+  (t/is (= 10 errno-m/ECHILD))
+  (t/is (= 12 errno-m/ENOMEM))
+  (t/is (= 33 errno-m/EDOM))
+  (t/is (= 34 errno-m/ERANGE)))
+
+(t/deftest test-edeadlock-is-edeadlk
+  (t/is (= errno-m/EDEADLK errno-m/EDEADLOCK)))

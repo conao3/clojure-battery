@@ -86,3 +86,33 @@
 (t/deftest test-system-known-values
   (let [s (platform-m/system)]
     (t/is (or (= s "Linux") (= s "Darwin") (= s "Windows") (string? s)))))
+
+(t/deftest test-uname-keys
+  (let [u (platform-m/uname)]
+    (t/is (map? u))
+    (t/is (contains? u :system))
+    (t/is (contains? u :node))
+    (t/is (contains? u :release))
+    (t/is (contains? u :machine))
+    (t/is (contains? u :processor))))
+
+(t/deftest test-architecture-returns-pair
+  (let [a (platform-m/architecture)]
+    (t/is (vector? a))
+    (t/is (= 2 (count a)))
+    (t/is (string? (first a)))))
+
+(t/deftest test-python-version-tuple
+  (let [t (platform-m/python-version-tuple)]
+    (t/is (sequential? t))
+    (t/is (every? string? t))))
+
+(t/deftest test-java-ver
+  (let [v (platform-m/java-ver)]
+    (t/is (string? v))
+    (t/is (pos? (count v)))))
+
+(t/deftest test-python-version
+  (let [v (platform-m/python-version)]
+    (t/is (string? v))
+    (t/is (pos? (count v)))))
