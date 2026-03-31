@@ -207,3 +207,20 @@
   (t/is (= [] (vec (itertools/zip []))))
   (t/is (= [] (vec (itertools/groupby []))))
   (t/is (= [] (vec (itertools/islice [] nil)))))
+
+(t/deftest test-zip-longest
+  (t/is (= [[1 4] [2 5] [3 nil]] (vec (itertools/zip-longest [1 2 3] [4 5]))))
+  (t/is (= [[1 4] [2 5] [3 0]] (vec (itertools/zip-longest [1 2 3] [4 5] :fillvalue 0))))
+  (t/is (= [] (vec (itertools/zip-longest)))))
+
+(t/deftest test-chain-from-iterable-multiple
+  (t/is (= [1 2 3 4 5 6] (vec (itertools/chain-from-iterable [[1 2] [3 4] [5 6]]))))
+  (t/is (= [] (vec (itertools/chain-from-iterable [])))))
+
+(t/deftest test-repeat-finite
+  (t/is (= [5 5 5] (vec (itertools/repeat 5 3))))
+  (t/is (= [] (vec (itertools/repeat 5 0)))))
+
+(t/deftest test-accumulate-with-func
+  (t/is (= [1 2 6 24 120] (vec (itertools/accumulate [1 2 3 4 5] *))))
+  (t/is (= [1 2 6 24 120] (vec (take 5 (itertools/accumulate (range 1 100) *))))))

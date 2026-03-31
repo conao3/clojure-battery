@@ -303,3 +303,22 @@
                                  (reset! heap2 [])
                                  (throw (RuntimeException. "heap modified"))))]
                    (heapq/heappush! heap1 evil1)))))
+
+(t/deftest test-heap-merge
+  (t/is (= [1 2 3 4 5 6] (vec (heapq/heap-merge [1 3 5] [2 4 6]))))
+  (t/is (= [1 2 3] (vec (heapq/heap-merge [1 2 3]))))
+  (t/is (= [] (vec (heapq/heap-merge)))))
+
+(t/deftest test-heapreplace
+  (let [heap (atom [1 2 3 4 5])]
+    (heapq/heapify! heap)
+    (let [result (heapq/heapreplace! heap 0)]
+      (t/is (= 1 result)))
+    (t/is (= 0 (first @heap)))))
+
+(t/deftest test-heapreplace-max
+  (let [heap (atom [5 4 3 2 1])]
+    (heapq/heapify-max! heap)
+    (let [result (heapq/heapreplace-max! heap 10)]
+      (t/is (= 5 result)))
+    (t/is (= 10 (first @heap)))))
