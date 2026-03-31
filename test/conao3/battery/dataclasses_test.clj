@@ -45,3 +45,27 @@
 (t/deftest test-field-default
   (let [f (dataclasses/field :default 42)]
     (t/is (= 42 (:default f)))))
+
+(t/deftest test-is-dataclass-class
+  (t/is (true? (dataclasses/is-dataclass? Point)))
+  (t/is (true? (dataclasses/is-dataclass? Person))))
+
+(t/deftest test-replace-multiple
+  (let [p (->Person "Alice" 30)
+        p2 (dataclasses/replace p {:name "Bob" :age 25})]
+    (t/is (= "Bob" (:name p2)))
+    (t/is (= 25 (:age p2)))))
+
+(t/deftest test-asdict-is-map
+  (let [d (dataclasses/asdict (->Point 5 10))]
+    (t/is (map? d))
+    (t/is (= 5 (:x d)))
+    (t/is (= 10 (:y d)))))
+
+(t/deftest test-field-with-factory
+  (let [f (dataclasses/field :default-factory list)]
+    (t/is (= list (:default-factory f)))))
+
+(t/deftest test-defdata-not-dataclass-plain-map
+  (t/is (false? (dataclasses/is-dataclass? {:x 1 :y 2})))
+  (t/is (false? (dataclasses/is-dataclass? nil))))

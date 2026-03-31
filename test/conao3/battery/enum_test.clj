@@ -54,3 +54,25 @@
   (let [dup-enum {:A (enum/->EnumMember "Dup" "A" 1)
                   :B (enum/->EnumMember "Dup" "B" 1)}]
     (t/is (thrown? ExceptionInfo (enum/unique dup-enum)))))
+
+(t/deftest test-enum-member-fields
+  (let [m (:RED Color)]
+    (t/is (= "Color" (:enum-name m)))
+    (t/is (= "RED" (:member-name m)))
+    (t/is (= 1 (:value m)))))
+
+(t/deftest test-is-enum-false-for-member
+  (t/is (false? (enum/is-enum? (:RED Color)))))
+
+(t/deftest test-from-value-string-enum
+  (t/is (= (:SOUTH Direction) (enum/from-value Direction "south")))
+  (t/is (nil? (enum/from-value Direction "invalid"))))
+
+(t/deftest test-members-are-enum-members
+  (let [ms (enum/members Color)]
+    (t/is (= 3 (count ms)))
+    (t/is (every? #(instance? conao3.battery.enum.EnumMember %) ms))))
+
+(t/deftest test-defenum-creates-map
+  (t/is (map? Color))
+  (t/is (map? Direction)))

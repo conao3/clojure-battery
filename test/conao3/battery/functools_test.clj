@@ -116,3 +116,29 @@
     (t/is (= 3 (f 1 2)))
     (t/is (= 5 (f 2 3)))
     (t/is (= 3 (f 1 2)))))
+
+(t/deftest test-cached-property
+  (let [call-count (atom 0)
+        prop (functools/cached-property (fn [obj]
+                                          (swap! call-count inc)
+                                          (:x obj)))
+        obj {:x 42}]
+    (t/is (= 42 (prop obj)))
+    (t/is (= 42 (prop obj)))
+    (t/is (= 1 @call-count))))
+
+(t/deftest test-singledispatch-default
+  (let [f (functools/singledispatch (fn [x] (str "default:" x)))]
+    (t/is (= "default:42" (f 42)))
+    (t/is (= "default:hello" (f "hello")))))
+
+(t/deftest test-cmp-to-key-ordering
+  (let [cmp (fn [a b] (compare a b))
+        key (functools/cmp-to-key cmp)]
+    (t/is (neg? (compare (key 1) (key 2))))
+    (t/is (pos? (compare (key 3) (key 2))))
+    (t/is (zero? (compare (key 5) (key 5))))))
+
+(t/deftest test-total-ordering-identity
+  (let [cls {:lt (fn [a b] (< a b))}]
+    (t/is (identical? cls (functools/total-ordering cls)))))

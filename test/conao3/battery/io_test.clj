@@ -100,3 +100,31 @@
   (let [buf (io-m/bytes-io)]
     (t/is (= 5 (io-m/write buf (b "hello"))))
     (t/is (= 6 (io-m/write buf (b " world"))))))
+
+(t/deftest test-bytes-io-close
+  (let [buf (io-m/bytes-io)]
+    (io-m/close buf)
+    (t/is (thrown? clojure.lang.ExceptionInfo (io-m/read buf)))))
+
+(t/deftest test-bytes-io-readline
+  (let [buf (io-m/bytes-io (b "line1\nline2\n"))]
+    (t/is (bytes= (b "line1\n") (io-m/readline buf)))
+    (t/is (bytes= (b "line2\n") (io-m/readline buf)))))
+
+(t/deftest test-string-io-truncate
+  (let [buf (io-m/string-io "hello world")]
+    (io-m/seek buf 5)
+    (io-m/truncate buf)
+    (io-m/seek buf 0)
+    (t/is (= "hello" (io-m/read buf)))))
+
+(t/deftest test-string-io-close
+  (let [buf (io-m/string-io)]
+    (io-m/close buf)
+    (t/is (thrown? clojure.lang.ExceptionInfo (io-m/read buf)))))
+
+(t/deftest test-bytes-io-with-open
+  (let [result (atom nil)]
+    (with-open [buf (io-m/bytes-io (b "data"))]
+      (reset! result (io-m/read buf)))
+    (t/is (bytes= (b "data") @result))))

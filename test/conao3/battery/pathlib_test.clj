@@ -77,3 +77,25 @@
   (t/is (= "/foo/bar.md" (pathlib/with-suffix "/foo/bar.txt" ".md")))
   (t/is (= "/foo/bar" (pathlib/with-suffix "/foo/bar.txt" "")))
   (t/is (= "bar.clj" (pathlib/with-suffix "bar.txt" ".clj"))))
+
+(t/deftest test-suffixes
+  (t/is (= [".tar" ".gz"] (pathlib/suffixes "/foo/bar.tar.gz")))
+  (t/is (= [".txt"] (pathlib/suffixes "bar.txt")))
+  (t/is (= [] (pathlib/suffixes "bar"))))
+
+(t/deftest test-joinpath-multiple
+  (t/is (= "/a/b/c" (pathlib/joinpath "/a" "b" "c")))
+  (t/is (= "/c" (pathlib/joinpath "/a" "b" "/c"))))
+
+(t/deftest test-parts-root
+  (t/is (= ["/"] (pathlib/parts "/")))
+  (t/is (= ["/" "a"] (pathlib/parts "/a"))))
+
+(t/deftest test-parent-multiple-levels
+  (t/is (= "/a/b" (pathlib/parent "/a/b/c")))
+  (t/is (= "/a" (pathlib/parent "/a/b")))
+  (t/is (= "/" (pathlib/parent "/a"))))
+
+(t/deftest test-stem-dotfile
+  (t/is (= "" (pathlib/stem "/foo/")))
+  (t/is (= "file.tar" (pathlib/stem "file.tar.gz"))))
