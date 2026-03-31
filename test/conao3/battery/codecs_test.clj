@@ -83,3 +83,26 @@
 
 (t/deftest test-lookup-error-unknown
   (t/is (thrown? clojure.lang.ExceptionInfo (codecs-m/lookup-error "unknown_handler"))))
+
+(t/deftest test-bom-utf16-aliases
+  (t/is (bytes= codecs-m/BOM_UTF16 codecs-m/BOM_UTF16_LE))
+  (t/is (bytes= codecs-m/BOM codecs-m/BOM_UTF16)))
+
+(t/deftest test-bom-utf32-constants
+  (t/is (bytes= (byte-array [0xff 0xfe 0x00 0x00]) codecs-m/BOM_UTF32_LE))
+  (t/is (bytes= (byte-array [0x00 0x00 0xfe 0xff]) codecs-m/BOM_UTF32_BE))
+  (t/is (bytes= codecs-m/BOM_UTF32 codecs-m/BOM_UTF32_LE)))
+
+(t/deftest test-encode-utf16
+  (let [result (codecs-m/encode "hello" "utf-16")]
+    (t/is (> (alength result) 0))
+    (t/is (= "hello" (codecs-m/decode result "utf-16")))))
+
+(t/deftest test-encode-decode-roundtrip
+  (doseq [encoding ["utf-8" "UTF-8" "latin-1"]]
+    (let [text "hello world"]
+      (t/is (= text (codecs-m/decode (codecs-m/encode text encoding) encoding))))))
+
+(t/deftest test-register-error
+  (codecs-m/register-error "custom_ignore" (fn [_] nil))
+  (t/is (fn? (codecs-m/lookup-error "custom_ignore"))))

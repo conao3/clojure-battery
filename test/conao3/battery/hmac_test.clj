@@ -98,3 +98,23 @@
   (t/is (thrown? ExceptionInfo (hmac/new (b "key") "sha256" "msg")))
   (let [h (hmac/new (b "key") "sha256")]
     (t/is (thrown? ExceptionInfo (hmac/update! h "msg")))))
+
+(t/deftest test-hmac-sha512
+  (let [h (hmac/new (b "key") "sha512" (b "The quick brown fox jumps over the lazy dog"))]
+    (t/is (= 128 (count (hmac/hexdigest h))))
+    (t/is (= 64 (:digest-size h)))))
+
+(t/deftest test-hmac-new-without-msg
+  (let [h1 (hmac/new (b "key") "sha256")
+        h2 (hmac/new (b "key") "sha256" (b "hello"))]
+    (hmac/update! h1 (b "hello"))
+    (t/is (= (hmac/hexdigest h1) (hmac/hexdigest h2)))))
+
+(t/deftest test-compare-digest-timing-safe
+  (t/is (hmac/compare-digest "secret" "secret"))
+  (t/is (not (hmac/compare-digest "secret" "Secret")))
+  (t/is (not (hmac/compare-digest "abc" "abcd"))))
+
+(t/deftest test-digest-size-sha1
+  (t/is (= 20 (:digest-size (hmac/new (b "k") "sha1"))))
+  (t/is (= 20 (alength (hmac/digest (hmac/new (b "k") "sha1" (b "msg")))))))

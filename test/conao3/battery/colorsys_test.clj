@@ -91,3 +91,23 @@
     (doseq [[rgb yiq] values]
       (assert-triple-equal yiq (apply colorsys/rgb-to-yiq rgb))
       (assert-triple-equal rgb (apply colorsys/yiq-to-rgb yiq)))))
+
+(t/deftest test-pure-colors-to-hsv
+  (assert-triple-equal [0 1.0 1.0] (colorsys/rgb-to-hsv 1.0 0.0 0.0))
+  (assert-triple-equal [2/6 1.0 1.0] (colorsys/rgb-to-hsv 0.0 1.0 0.0))
+  (assert-triple-equal [4/6 1.0 1.0] (colorsys/rgb-to-hsv 0.0 0.0 1.0)))
+
+(t/deftest test-pure-colors-to-hls
+  (assert-triple-equal [0 1/2 1.0] (colorsys/rgb-to-hls 1.0 0.0 0.0))
+  (assert-triple-equal [2/6 1/2 1.0] (colorsys/rgb-to-hls 0.0 1.0 0.0))
+  (assert-triple-equal [4/6 1/2 1.0] (colorsys/rgb-to-hls 0.0 0.0 1.0)))
+
+(t/deftest test-black-and-white
+  (assert-triple-equal [0.0 0.0 0.0] (colorsys/hsv-to-rgb 0.0 0.0 0.0))
+  (assert-triple-equal [1.0 1.0 1.0] (colorsys/hsv-to-rgb 0.0 0.0 1.0))
+  (assert-triple-equal [0.0 0.0 0.0] (colorsys/hls-to-rgb 0.0 0.0 0.0))
+  (assert-triple-equal [1.0 1.0 1.0] (colorsys/hls-to-rgb 0.0 1.0 0.0)))
+
+(t/deftest test-yiq-black-white
+  (assert-triple-equal [0.0 0.0 0.0] (colorsys/rgb-to-yiq 0.0 0.0 0.0))
+  (assert-triple-equal [1.0 0.0 0.0] (colorsys/rgb-to-yiq 1.0 1.0 1.0)))

@@ -84,3 +84,24 @@
         packed (struct-m/pack "<d" v)
         [v2] (struct-m/unpack "<d" packed)]
     (t/is (< (Math/abs (- v v2)) 1e-12))))
+
+(t/deftest test-pack-into
+  (let [buf (byte-array 6)]
+    (struct-m/pack-into ">H" buf 0 0x0102)
+    (struct-m/pack-into ">H" buf 2 0x0304)
+    (struct-m/pack-into ">H" buf 4 0x0506)
+    (t/is (= [1 2 3 4 5 6] (map #(bit-and % 0xff) buf)))))
+
+(t/deftest test-pack-signed-short
+  (let [packed (struct-m/pack ">h" -1)]
+    (t/is (= [-1] (struct-m/unpack ">h" packed))))
+  (let [packed (struct-m/pack "<h" 32767)]
+    (t/is (= [32767] (struct-m/unpack "<h" packed)))))
+
+(t/deftest test-pack-zero-values
+  (let [packed (struct-m/pack ">HHH" 0 0 0)]
+    (t/is (= [0 0 0] (struct-m/unpack ">HHH" packed)))))
+
+(t/deftest test-unpack-from-offset
+  (let [data (struct-m/pack ">HH" 0x0102 0x0304)]
+    (t/is (= [0x0304] (struct-m/unpack ">H" (byte-array (drop 2 data)))))))

@@ -139,3 +139,18 @@
 (t/deftest test-punctuation-chars-read-only
   (let [s (shlex/make-shlex "" {:punctuation-chars "/|$%^"})]
     (t/is (= (get-in s [:opts :punctuation-chars]) "/|$%^"))))
+
+(t/deftest test-split-empty
+  (t/is (= [] (shlex/split "")))
+  (t/is (= [] (shlex/split "   "))))
+
+(t/deftest test-split-single-token
+  (t/is (= ["hello"] (shlex/split "hello")))
+  (t/is (= ["hello world"] (shlex/split "'hello world'"))))
+
+(t/deftest test-split-escaped-space
+  (t/is (= ["hello world"] (shlex/split "hello\\ world" {:posix true}))))
+
+(t/deftest test-quote-special-chars
+  (t/is (= "'foo bar'" (shlex/quote "foo bar")))
+  (t/is (= "'it'\\''s'" (shlex/quote "it's"))))

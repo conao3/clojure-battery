@@ -91,3 +91,28 @@
     (t/is (= 1 (:tm_yday st))))
   (let [st (time-m/gmtime (* 365 86400))]
     (t/is (= 1 (:tm_yday st)))))
+
+(t/deftest test-process-time
+  (let [t (time-m/process-time)]
+    (t/is (float? t))
+    (t/is (>= t 0.0))))
+
+(t/deftest test-timezone-is-integer
+  (let [tz (time-m/timezone)]
+    (t/is (integer? tz))))
+
+(t/deftest test-daylight-is-0-or-1
+  (let [d (time-m/daylight)]
+    (t/is (or (= d 0) (= d 1)))))
+
+(t/deftest test-tzname-is-vector-of-strings
+  (let [tzn time-m/tzname]
+    (t/is (vector? tzn))
+    (t/is (= 2 (count tzn)))
+    (t/is (every? string? tzn))))
+
+(t/deftest test-clock-constants
+  (t/is (= 0 time-m/CLOCK_REALTIME))
+  (t/is (= 1 time-m/CLOCK_MONOTONIC))
+  (t/is (= 2 time-m/CLOCK_PROCESS_CPUTIME_ID))
+  (t/is (= 3 time-m/CLOCK_THREAD_CPUTIME_ID)))

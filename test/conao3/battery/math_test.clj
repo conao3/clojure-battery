@@ -105,3 +105,32 @@
 (t/deftest test-log-with-base
   (t/is (approx= 3.0 (math-m/log 8 2)))
   (t/is (approx= 2.0 (math-m/log 100 10))))
+
+(t/deftest test-hyperbolic
+  (t/is (approx= 0.0 (math-m/sinh 0)))
+  (t/is (approx= 1.0 (math-m/cosh 0)))
+  (t/is (approx= 0.0 (math-m/tanh 0)))
+  (t/is (approx= 0.0 (math-m/asinh 0)))
+  (t/is (approx= 0.0 (math-m/atanh 0))))
+
+(t/deftest test-log1p-expm1
+  (t/is (approx= 0.0 (math-m/log1p 0)))
+  (t/is (approx= 0.0 (math-m/expm1 0)))
+  (t/is (approx= (Math/log 2.0) (math-m/log1p 1))))
+
+(t/deftest test-prod-fsum
+  (t/is (= 120 (math-m/prod [1 2 3 4 5])))
+  (t/is (= 1 (math-m/prod [])))
+  (t/is (approx= 6.0 (math-m/fsum [1.0 2.0 3.0]))))
+
+(t/deftest test-modf-frexp
+  (let [[_ int-part] (math-m/modf 3.7)]
+    (t/is (integer? int-part)))
+  (let [[m e] (math-m/frexp 8.0)]
+    (t/is (approx= 0.5 m))
+    (t/is (= 4 e))))
+
+(t/deftest test-remainder-nextafter
+  (t/is (approx= 1.0 (math-m/remainder 5.0 2.0)))
+  (t/is (> (math-m/nextafter 1.0 2.0) 1.0))
+  (t/is (< (math-m/nextafter 1.0 0.0) 1.0)))
