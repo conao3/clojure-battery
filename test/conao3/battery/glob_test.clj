@@ -55,3 +55,57 @@
   (let [translated (glob/translate (str "foo" "/" "bar" "/" "baz") :recursive true :include-hidden true :seps ["/" "\\"])]
     (t/is (re-matches (re-pattern translated) "foo/bar/baz"))
     (t/is (str/includes? translated "/"))))
+
+(t/deftest test-glob-returns-vector
+  (let [tmpdir (java.io.File/createTempFile "glob-test-dir" "")
+        _ (.delete tmpdir)
+        _ (.mkdir tmpdir)
+        f1 (java.io.File. tmpdir "foo.txt")
+        f2 (java.io.File. tmpdir "bar.txt")
+        f3 (java.io.File. tmpdir "baz.clj")]
+    (.createNewFile f1)
+    (.createNewFile f2)
+    (.createNewFile f3)
+    (try
+      (let [result (glob/glob "*.txt" {:root-dir (.getAbsolutePath tmpdir)})]
+        (t/is (vector? result))
+        (t/is (= 2 (count result)))
+        (t/is (every? #(str/ends-with? % ".txt") result)))
+      (finally
+        (.delete f1) (.delete f2) (.delete f3) (.delete tmpdir)))))
+
+(t/deftest test-glob-no-match
+  (let [tmpdir (java.io.File/createTempFile "glob-empty" "")
+        _ (.delete tmpdir)
+        _ (.mkdir tmpdir)]
+    (try
+      (let [result (glob/glob "*.xyz" {:root-dir (.getAbsolutePath tmpdir)})]
+        (t/is (vector? result))
+        (t/is (empty? result)))
+      (finally (.delete tmpdir)))))
+
+(t/deftest test-iglob-returns-lazy
+  (let [tmpdir (java.io.File/createTempFile "iglob-test" "")
+        _ (.delete tmpdir)
+        _ (.mkdir tmpdir)
+        f (java.io.File. tmpdir "test.txt")]
+    (.createNewFile f)
+    (try
+      (let [result (glob/iglob "*.txt" {:root-dir (.getAbsolutePath tmpdir)})]
+        (t/is (seq? (seq result)))
+        (t/is (= 1 (count (vec result)))))
+      (finally (.delete f) (.delete tmpdir)))))
+
+(t/deftest test-glob-all-files
+  (let [tmpdir (java.io.File/createTempFile "glob-all" "")
+        _ (.delete tmpdir)
+        _ (.mkdir tmpdir)
+        f1 (java.io.File. tmpdir "a.txt")
+        f2 (java.io.File. tmpdir "b.txt")]
+    (.createNewFile f1)
+    (.createNewFile f2)
+    (try
+      (let [result (glob/glob "*" {:root-dir (.getAbsolutePath tmpdir)})]
+        (t/is (vector? result))
+        (t/is (= 2 (count result))))
+      (finally (.delete f1) (.delete f2) (.delete tmpdir)))))

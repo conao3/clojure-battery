@@ -1,5 +1,9 @@
 (ns conao3.battery.glob
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str])
+  (:import
+   [java.io File]
+   [java.nio.file Files Path FileSystems]
+   [java.nio.file.attribute BasicFileAttributes]))
 
 (defn escape [value]
   (if (bytes? value)
@@ -66,18 +70,28 @@
           (.append sb (translate-chars chars recursive not-sep)))))
     (str "(?s:" (.toString sb) ")\\z")))
 
-(defn glob
-  ([pattern]
-   (throw (ex-info "Not implemented" {})))
-  ([pattern _opts]
-   (throw (ex-info "Not implemented" {})))
-  ([pattern _opts & _more]
-   (throw (ex-info "Not implemented" {}))))
+(defn- pattern-matches? [^java.util.regex.Pattern regex ^String path]
+  (boolean (re-matches regex path)))
 
 (defn iglob
-  ([pattern]
-   (throw (ex-info "Not implemented" {})))
-  ([pattern _opts]
-   (throw (ex-info "Not implemented" {})))
-  ([pattern _opts & _more]
-   (throw (ex-info "Not implemented" {}))))
+  ([pattern] (iglob pattern {}))
+  ([pattern {:keys [recursive include-hidden root-dir]}]
+   (let [base-dir (or root-dir (System/getProperty "user.dir"))
+         regex (re-pattern (translate pattern
+                                      :recursive recursive
+                                      :include-hidden include-hidden
+                                      :seps [File/separator]))]
+     (->> (file-seq (File. ^String base-dir))
+          (map #(.getAbsolutePath ^File %))
+          (map (fn [^String abs]
+                 (if (.startsWith abs (str base-dir File/separator))
+                   (subs abs (inc (count base-dir)))
+                   abs)))
+          (filter #(pattern-matches? regex %))
+          (map #(if (.isAbsolute (File. ^String pattern))
+                  (str base-dir File/separator %)
+                  %))))))
+
+(defn glob
+  ([pattern] (vec (iglob pattern)))
+  ([pattern opts] (vec (iglob pattern opts))))
