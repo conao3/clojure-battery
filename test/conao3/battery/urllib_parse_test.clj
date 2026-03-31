@@ -101,3 +101,11 @@
 (t/deftest test-quote-plus-roundtrip
   (let [s "hello world & more"]
     (t/is (= s (up-m/unquote-plus (up-m/quote-plus s))))))
+
+(t/deftest test-urlsplit
+  (let [r (up-m/urlsplit "https://user:pass@example.com/path?q=1#frag")]
+    (t/is (= "https" (:scheme r)))
+    (t/is (= "user:pass@example.com" (:netloc r)))
+    (t/is (= "/path" (:path r)))
+    (t/is (= "q=1" (:query r)))
+    (t/is (= "frag" (:fragment r)))))

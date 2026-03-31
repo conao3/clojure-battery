@@ -118,3 +118,12 @@
 (t/deftest test-dumps-special-chars
   (t/is (= "\"hello\\nworld\"" (json-m/dumps "hello\nworld")))
   (t/is (= "\"tab\\there\"" (json-m/dumps "tab\there"))))
+
+(t/deftest test-dump-and-load-streams
+  (let [data {"key" [1 2 3] "val" true}
+        out (java.io.StringWriter.)]
+    (json-m/dump data out)
+    (let [s (.toString out)
+          in (java.io.StringReader. s)
+          result (json-m/load in)]
+      (t/is (= {"key" [1 2 3] "val" true} result)))))
