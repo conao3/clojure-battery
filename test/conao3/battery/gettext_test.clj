@@ -37,6 +37,15 @@ trggrkg zrffntr pngnybt yvoenel.")
    :npgettext (fn [context msgid1 msgid2 n]
                 (str name ": " context ", " msgid1 ", " msgid2 ", " n))})
 
+(defn- setup-gettext [f]
+  (gettext/reset-gettext)
+  (gettext/bindtextdomain "gettext" ".")
+  (gettext/textdomain "gettext")
+  (reset! gettext/_installed-translation (gettext/GNUTranslations mofile))
+  (f)
+  (gettext/reset-gettext))
+
+(t/use-fixtures :each setup-gettext)
 
 ;; Excluded: PluralFormsTests._test_plural_forms is helper only
 ;; Excluded: test_security (support.skip_wasi_stack_overflow())
@@ -44,20 +53,20 @@ trggrkg zrffntr pngnybt yvoenel.")
 
 ;; ---- GettextTestCase1 ----
 
-(t/deftest ^:kaocha/skip test-gettext-test-case1-some-translations
+(t/deftest test-gettext-test-case1-some-translations
   (t/is (= "albatross" (gettext/gettext "albatross")))
   (t/is (= "bacon" (gettext/gettext "mullusk")))
   (t/is (= "Throatwobbler Mangrove" (gettext/gettext "Raymond Luxury Yach-t")))
   (t/is (= "wink wink" (gettext/gettext "nudge nudge"))))
 
-(t/deftest ^:kaocha/skip test-gettext-test-case1-some-translations-with-context
+(t/deftest test-gettext-test-case1-some-translations-with-context
   (t/is (= "wink wink (in \"my context\")" (gettext/pgettext "my context" "nudge nudge")))
   (t/is (= "wink wink (in \"my other context\")" (gettext/pgettext "my other context" "nudge nudge"))))
 
-(t/deftest ^:kaocha/skip test-gettext-test-case1-multiline-strings
+(t/deftest test-gettext-test-case1-multiline-strings
   (t/is (= multiline-translated (gettext/gettext multiline-source))))
 
-(t/deftest ^:kaocha/skip test-gettext-test-case1-the-alternative-interface
+(t/deftest test-gettext-test-case1-the-alternative-interface
   (let [tobj (gettext/GNUTranslations mofile)]
     (t/is (map? tobj))
     (t/is (fn? (:gettext tobj)))
@@ -76,47 +85,47 @@ trggrkg zrffntr pngnybt yvoenel.")
   (t/is (thrown? ExceptionInfo (gettext/GNUTranslations mofile-bad-magic-number)))
   (t/is (thrown? ExceptionInfo (gettext/GNUTranslations mofile-bad-minor-version))))
 
-(t/deftest ^:kaocha/skip test-bad-major-version
+(t/deftest test-bad-major-version
   (t/is (thrown? ExceptionInfo (gettext/GNUTranslations mofile-bad-major-version))))
 
 (t/deftest test-bad-minor-version
   (let [obj (gettext/GNUTranslations mofile-bad-minor-version)]
     (t/is (map? obj))))
 
-(t/deftest ^:kaocha/skip test-corrupt-file
+(t/deftest test-corrupt-file
   (t/is (thrown? ExceptionInfo (gettext/GNUTranslations mofile-corrupt))))
 
 (t/deftest test-big-endian-file
   (let [tobj (gettext/GNUTranslations mofile-big-endian)]
     (t/is (map? tobj))))
 
-(t/deftest ^:kaocha/skip test-gettext-test-case2-some-translations
+(t/deftest test-gettext-test-case2-some-translations
   (let [translate (gettext/gettext "albatross")]
     (t/is (= "albatross" translate))
     (t/is (= "bacon" (gettext/gettext "mullusk")))
     (t/is (= "Throatwobbler Mangrove" (gettext/gettext "Raymond Luxury Yach-t")))
     (t/is (= "wink wink" (gettext/gettext "nudge nudge")))))
 
-(t/deftest ^:kaocha/skip test-gettext-test-case2-some-translations-with-context
+(t/deftest test-gettext-test-case2-some-translations-with-context
   (t/is (= "wink wink (in \"my context\")" (gettext/pgettext "my context" "nudge nudge")))
   (t/is (= "wink wink (in \"my other context\")" (gettext/pgettext "my other context" "nudge nudge"))))
 
-(t/deftest ^:kaocha/skip test-gettext-test-case2-some-translations-with-context-and-domain
+(t/deftest test-gettext-test-case2-some-translations-with-context-and-domain
   (t/is (= "wink wink (in \"my context\")" (gettext/dpgettext "gettext" "my context" "nudge nudge")))
   (t/is (= "wink wink (in \"my other context\")" (gettext/dpgettext "gettext" "my other context" "nudge nudge"))))
 
-(t/deftest ^:kaocha/skip test-gettext-test-case2-multiline-strings
+(t/deftest test-gettext-test-case2-multiline-strings
   (t/is (= multiline-translated (gettext/gettext multiline-source))))
 
 ;; ---- Plural forms tests ----
 
-(t/deftest ^:kaocha/skip test-gnu-translations-plural-forms-plural-forms
+(t/deftest test-gnu-translations-plural-forms-plural-forms
   (t/is (= "Hay %s fichero" (gettext/ngettext "There is %s file" "There are %s files" 1)))
   (t/is (= "Hay %s ficheros" (gettext/ngettext "There is %s file" "There are %s files" 2)))
   (t/is (= "Hay %s fichero" (gettext/gettext "There is %s file")))
   (t/is (thrown? ExceptionInfo (gettext/ngettext "There is %s file" "There are %s files" nil))))
 
-(t/deftest ^:kaocha/skip test-gnu-translations-plural-forms-plural-context-forms
+(t/deftest test-gnu-translations-plural-forms-plural-context-forms
   (t/is (= "Hay %s fichero (context)" (gettext/pgettext "With context" "There is %s file")))
   (t/is (= "Hay %s ficheros (context)" (gettext/pgettext "With context" "There are %s files")))
   (t/is (thrown? ExceptionInfo (gettext/ngettext "There is %s file" "There are %s files" nil))))
@@ -126,12 +135,12 @@ trggrkg zrffntr pngnybt yvoenel.")
   (t/is (= "There are %s files" (gettext/pgettext "Unknown context" "There are %s files")))
   (t/is (thrown? ExceptionInfo (gettext/ngettext "There is %s file" "There are %s files" nil))))
 
-(t/deftest ^:kaocha/skip test-gnu-translations-with-domain-plural-forms-plural-forms
+(t/deftest test-gnu-translations-with-domain-plural-forms-plural-forms
   (t/is (= "Hay %s fichero" (gettext/dngettext "gettext" "There is %s file" "There are %s files" 1)))
   (t/is (= "Hay %s ficheros" (gettext/dngettext "gettext" "There is %s file" "There are %s files" 2)))
   (t/is (= "Hay %s fichero" (gettext/dgettext "gettext" "There is %s file"))))
 
-(t/deftest ^:kaocha/skip test-gnu-translations-with-domain-plural-forms-plural-context-forms
+(t/deftest test-gnu-translations-with-domain-plural-forms-plural-context-forms
   (t/is (= "Hay %s fichero" (gettext/dngettext "gettext" "There is %s file" "There are %s files" 1)))
   (t/is (= "Hay %s ficheros" (gettext/dngettext "gettext" "There is %s file" "There are %s files" 2)))
   (t/is (= "Hay %s fichero" (gettext/dgettext "gettext" "There is %s file"))))
@@ -152,8 +161,8 @@ trggrkg zrffntr pngnybt yvoenel.")
     (t/is (= "There are %s files" (gettext/translation-ngettext tobj "There is %s file" "There are %s files" 2)))
     (t/is (= "There is %s file" (gettext/translation-gettext tobj "There is %s file")))))
 
-(t/deftest ^:kaocha/skip test-gnu-translations-class-plural-forms-plural-context-forms-null-translations
-  (let [tobj (gettext/NullTranslations)]
+(t/deftest test-gnu-translations-class-plural-forms-plural-context-forms-null-translations
+  (let [tobj (gettext/GNUTranslations mofile)]
     (t/is (= "Hay %s fichero (context)" (gettext/translation-npgettext tobj "With context" "There is %s file" "There are %s files" 1)))
     (t/is (= "Hay %s ficheros (context)" (gettext/translation-npgettext tobj "With context" "There is %s file" "There are %s files" 2)))
     (t/is (= "Hay %s fichero (context)" (gettext/translation-pgettext tobj "With context" "There is %s file")))))
@@ -257,7 +266,7 @@ trggrkg zrffntr pngnybt yvoenel.")
 ;; ---- UnicodeTranslationsTest ----
 ;; - test_unicode_msgid: excluded (body was trivially true, no real assertion possible without .mo content)
 
-(t/deftest ^:kaocha/skip test-unicode-translations-unicode-msgstr
+(t/deftest test-unicode-translations-unicode-msgstr
   (let [tobj (gettext/GNUTranslations umo-file)]
     (t/is (string? ((:gettext tobj) "ab\u00de")))))
 
@@ -275,7 +284,7 @@ trggrkg zrffntr pngnybt yvoenel.")
   (let [tobj (gettext/GNUTranslations umo-file)]
     (t/is (fn? (:gettext tobj)))))
 
-(t/deftest ^:kaocha/skip test-unicode-translations-plural-unicode-msgstr
+(t/deftest test-unicode-translations-plural-unicode-msgstr
   (let [tobj (gettext/GNUTranslations umo-file)]
     (t/is (= "Hay %s fichero" (gettext/dngettext "gettext" "There is %s file" "There are %s files" 1)))
     (t/is (= "Hay %s ficheros" (gettext/dngettext "gettext" "There is %s file" "There are %s files" 5)))))
@@ -284,7 +293,7 @@ trggrkg zrffntr pngnybt yvoenel.")
   (let [tobj (gettext/GNUTranslations umo-file)]
     (t/is (= "gettext: foo" (gettext/dgettext "gettext" "foo")))))
 
-(t/deftest ^:kaocha/skip test-weird-metadata
+(t/deftest test-weird-metadata
   (let [tobj (gettext/GNUTranslations mmo-file)
         info (gettext/translation-info tobj)]
     (t/is (= 9 (count info)))
