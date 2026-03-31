@@ -129,3 +129,28 @@
   (t/is (= 1 (b/next [1 2 3])))
   (t/is (= :default (b/next [] :default)))
   (t/is (= 1 (b/next (seq [1 2 3])))))
+
+(t/deftest test-hash
+  (t/is (integer? (b/hash 42)))
+  (t/is (integer? (b/hash "hello")))
+  (t/is (= (b/hash 42) (b/hash 42))))
+
+(t/deftest test-id
+  (let [x {:a 1}]
+    (t/is (integer? (b/id x)))
+    (t/is (= (b/id x) (b/id x)))))
+
+(t/deftest test-range
+  (t/is (= [0 1 2 3 4] (vec (b/range 5))))
+  (t/is (= [2 3 4] (vec (b/range 2 5))))
+  (t/is (= [0 2 4] (vec (b/range 0 5 2)))))
+
+(t/deftest test-map-builtin
+  (t/is (= [1 4 9] (vec (b/map #(* % %) [1 2 3]))))
+  (t/is (= [5 7 9] (vec (b/map + [1 2 3] [4 5 6])))))
+
+(t/deftest test-isinstance-issubclass
+  (t/is (true? (b/isinstance 42 Long)))
+  (t/is (true? (b/isinstance "s" String)))
+  (t/is (false? (b/isinstance 42 String)))
+  (t/is (true? (b/issubclass Long Number))))

@@ -145,3 +145,25 @@
 (t/deftest test-hexdigest-idempotent
   (let [h (hashlib/sha256 (b "abc"))]
     (t/is (= (hashlib/hexdigest h) (hashlib/hexdigest h)))))
+
+(t/deftest test-sha3-variants
+  (t/is (= 28 (:digest-size (hashlib/sha3-224))))
+  (t/is (= 32 (:digest-size (hashlib/sha3-256))))
+  (t/is (= 48 (:digest-size (hashlib/sha3-384))))
+  (t/is (= 64 (:digest-size (hashlib/sha3-512)))))
+
+(t/deftest test-algorithms-available
+  (t/is (set? hashlib/algorithms-available))
+  (t/is (pos? (count hashlib/algorithms-available)))
+  (t/is (every? string? hashlib/algorithms-available)))
+
+(t/deftest test-copy-independence
+  (let [h1 (hashlib/md5 (b "hello"))
+        h2 (hashlib/copy h1)]
+    (hashlib/update! h1 (b " world"))
+    (t/is (not= (hashlib/hexdigest h1) (hashlib/hexdigest h2)))))
+
+(t/deftest test-sha3-known-value
+  (let [h (hashlib/sha3-256 (b ""))]
+    (t/is (= "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a"
+             (hashlib/hexdigest h)))))
