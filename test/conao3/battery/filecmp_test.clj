@@ -196,7 +196,7 @@
     (t/is (= ["file2"] (second (filecmp/cmpfiles (:dir state) (:dir-diff-file state) ["file" "file2"]))))
     (t/is (= [] (nth (filecmp/cmpfiles (:dir state) (:dir-diff-file state) ["file" "file2"]) 2)))))
 
-(t/deftest ^:kaocha/skip test-cmpfiles-invalid-names
+(t/deftest test-cmpfiles-invalid-names
   (let [state (dir-compare-setup)
         cases [["\u0000" "NUL bytes filename"]
                [(str "__file__" "\u0000") "filename with embedded NUL bytes"]
@@ -207,7 +207,7 @@
         (let [result (filecmp/cmpfiles (:dir state) other-dir [file])]
           (t/is (= [[] [] [file]] result)))))))
 
-(t/deftest ^:kaocha/skip test-dircmp-invalid-names
+(t/deftest test-dircmp-invalid-names
   (let [state (dir-compare-setup)
         cases [["\u0000" "NUL bytes dirname"]
                [(str "Top" java.io.File/separator "Mid\u0000") "dirname with embedded NUL bytes"]
