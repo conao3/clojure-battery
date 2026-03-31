@@ -102,3 +102,19 @@
 
 (t/deftest test-dumps-large-int
   (t/is (= "9007199254740992" (json-m/dumps 9007199254740992))))
+
+(t/deftest test-dumps-sort-keys
+  (t/is (= "{\"a\": 1, \"b\": 2, \"c\": 3}" (json-m/dumps {"c" 3 "b" 2 "a" 1} :sort-keys true))))
+
+(t/deftest test-dumps-indent
+  (let [result (json-m/dumps {"a" 1} :indent 2)]
+    (t/is (clojure.string/includes? result "\n"))
+    (t/is (clojure.string/includes? result "  "))))
+
+(t/deftest test-loads-unicode-escape
+  (t/is (= "\u0041" (json-m/loads "\"\\u0041\"")))
+  (t/is (= "A" (json-m/loads "\"\\u0041\""))))
+
+(t/deftest test-dumps-special-chars
+  (t/is (= "\"hello\\nworld\"" (json-m/dumps "hello\nworld")))
+  (t/is (= "\"tab\\there\"" (json-m/dumps "tab\there"))))

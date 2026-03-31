@@ -83,3 +83,28 @@
 (t/deftest test-relpath
   (t/is (= "bar" (osp-m/relpath "/foo/bar" "/foo")))
   (t/is (= "baz" (osp-m/relpath "/foo/bar/baz" "/foo/bar"))))
+
+(t/deftest test-path-constants
+  (t/is (= "/" osp-m/sep))
+  (t/is (string? osp-m/pathsep))
+  (t/is (= "." osp-m/curdir))
+  (t/is (= ".." osp-m/pardir))
+  (t/is (= "." osp-m/extsep)))
+
+(t/deftest test-abspath
+  (let [p (osp-m/abspath "foo")]
+    (t/is (osp-m/isabs p))
+    (t/is (string? p))))
+
+(t/deftest test-getsize
+  (t/is (pos? (osp-m/getsize "/etc/hosts")))
+  (t/is (integer? (osp-m/getsize "/etc/hosts"))))
+
+(t/deftest test-getatime-getmtime
+  (t/is (float? (osp-m/getatime "/etc/hosts")))
+  (t/is (float? (osp-m/getmtime "/etc/hosts")))
+  (t/is (pos? (osp-m/getmtime "/etc/hosts"))))
+
+(t/deftest test-islink
+  (t/is (false? (osp-m/islink "/etc/hosts")))
+  (t/is (false? (osp-m/islink "/nonexistent"))))

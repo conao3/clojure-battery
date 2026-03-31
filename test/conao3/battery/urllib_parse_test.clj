@@ -83,3 +83,21 @@
   (let [[url frag] (up-m/urldefrag "https://example.com/path")]
     (t/is (= "https://example.com/path" url))
     (t/is (= "" frag))))
+
+(t/deftest test-splittype
+  (let [[scheme rest] (up-m/splittype "https://example.com")]
+    (t/is (= "https" scheme))
+    (t/is (= "//example.com" rest))))
+
+(t/deftest test-splithost
+  (let [[host rest] (up-m/splithost "//example.com/path")]
+    (t/is (= "example.com" host))
+    (t/is (= "/path" rest))))
+
+(t/deftest test-parse-qs
+  (let [result (up-m/parse-qs "a=1&b=2&a=3")]
+    (t/is (= {"a" ["1" "3"] "b" ["2"]} result))))
+
+(t/deftest test-quote-plus-roundtrip
+  (let [s "hello world & more"]
+    (t/is (= s (up-m/unquote-plus (up-m/quote-plus s))))))
