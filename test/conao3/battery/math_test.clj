@@ -134,3 +134,9 @@
   (t/is (approx= 1.0 (math-m/remainder 5.0 2.0)))
   (t/is (> (math-m/nextafter 1.0 2.0) 1.0))
   (t/is (< (math-m/nextafter 1.0 0.0) 1.0)))
+
+(t/deftest test-acosh-ldexp-floordiv
+  (t/is (approx= 0.0 (math-m/acosh 1.0)))
+  (t/is (= 8.0 (math-m/ldexp 0.5 4)))
+  (t/is (= 3 (math-m/floor-div 10 3)))
+  (t/is (= -4 (math-m/floor-div -10 3))))
