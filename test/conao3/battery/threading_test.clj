@@ -130,3 +130,27 @@
     (th-m/semaphore-release s)
     (t/is (true? (th-m/semaphore-acquire s false)))
     (th-m/semaphore-release s)))
+
+(t/deftest test-rlock-non-blocking
+  (let [l (th-m/rlock)]
+    (t/is (true? (th-m/rlock-acquire l false)))
+    (th-m/rlock-release l)))
+
+(t/deftest test-lock-acquire-timeout
+  (let [l (th-m/lock)]
+    (th-m/lock-acquire l)
+    (t/is (false? (th-m/lock-acquire l true 0.01)))
+    (th-m/lock-release l)))
+
+(t/deftest test-thread-join-timeout
+  (let [result (atom nil)
+        t (th-m/make-thread #(reset! result 99))]
+    (th-m/thread-start! t)
+    (th-m/thread-join! t 5.0)
+    (t/is (= 99 @result))))
+
+(t/deftest test-semaphore-acquire-timeout
+  (let [s (th-m/semaphore 1)]
+    (th-m/semaphore-acquire s)
+    (t/is (false? (th-m/semaphore-acquire s true 0.01)))
+    (th-m/semaphore-release s)))

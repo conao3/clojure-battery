@@ -130,3 +130,22 @@
         shuffled (random-m/shuffle-with rng original)]
     (t/is (= (sort shuffled) original))
     (t/is (= 5 (count shuffled)))))
+
+(t/deftest test-triangular-in-range
+  (random-m/seed 42)
+  (dotimes [_ 100]
+    (let [v (random-m/triangular 1.0 10.0)]
+      (t/is (and (>= v 1.0) (<= v 10.0))))))
+
+(t/deftest test-triangular-with-mode
+  (random-m/seed 42)
+  (dotimes [_ 100]
+    (let [v (random-m/triangular 0.0 1.0 0.3)]
+      (t/is (and (>= v 0.0) (<= v 1.0))))))
+
+(t/deftest test-setstate-and-getstate
+  (random-m/seed 42)
+  (let [v1 (random-m/random)
+        _ (random-m/seed 42)
+        v2 (random-m/random)]
+    (t/is (= v1 v2))))

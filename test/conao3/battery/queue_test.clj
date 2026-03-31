@@ -102,3 +102,23 @@
     (t/is (q-m/queue-empty? q))
     (q-m/queue-put q "item")
     (t/is (= "item" (q-m/queue-get q)))))
+
+(t/deftest test-queue-task-done-no-op
+  (let [q (q-m/make-queue)]
+    (q-m/queue-put q 1)
+    (q-m/queue-get q)
+    (t/is (nil? (q-m/queue-task-done q)))))
+
+(t/deftest test-queue-join-no-op
+  (let [q (q-m/make-queue)]
+    (t/is (nil? (q-m/queue-join q)))))
+
+(t/deftest test-queue-full-no-maxsize
+  (let [q (q-m/make-queue)]
+    (doseq [i (range 100)] (q-m/queue-put q i))
+    (t/is (false? (q-m/queue-full? q)))))
+
+(t/deftest test-priority-full-no-maxsize
+  (let [q (q-m/make-priority-queue)]
+    (doseq [i (range 10)] (q-m/priority-put q i))
+    (t/is (false? (q-m/priority-full? q)))))
