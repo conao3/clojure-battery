@@ -32,3 +32,24 @@
 
 (t/deftest test-strerror-eperm
   (t/is (= "Operation not permitted" (errno-m/strerror 1))))
+
+(t/deftest test-additional-constants
+  (t/is (= 3 errno-m/ESRCH))
+  (t/is (= 4 errno-m/EINTR))
+  (t/is (= 9 errno-m/EBADF))
+  (t/is (= 17 errno-m/EEXIST))
+  (t/is (= 28 errno-m/ENOSPC))
+  (t/is (= 32 errno-m/EPIPE)))
+
+(t/deftest test-ewouldblock-is-eagain
+  (t/is (= errno-m/EAGAIN errno-m/EWOULDBLOCK)))
+
+(t/deftest test-errorcode-coverage
+  (t/is (contains? errno-m/errorcode 3))
+  (t/is (contains? errno-m/errorcode 9))
+  (t/is (= "ESRCH" (get errno-m/errorcode 3)))
+  (t/is (= "EBADF" (get errno-m/errorcode 9))))
+
+(t/deftest test-strerror-unknown
+  (let [s (errno-m/strerror 9999)]
+    (t/is (string? s))))

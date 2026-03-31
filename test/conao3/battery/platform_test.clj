@@ -63,3 +63,26 @@
     (t/is (vector? vt))
     (t/is (pos? (count vt)))
     (t/is (every? string? vt))))
+
+(t/deftest test-node
+  (let [n (platform-m/node)]
+    (t/is (string? n))))
+
+(t/deftest test-uname-all-keys
+  (let [u (platform-m/uname)]
+    (t/is (contains? u :node))
+    (t/is (contains? u :version))
+    (t/is (string? (:version u)))))
+
+(t/deftest test-architecture-64bit
+  (let [[bits _] (platform-m/architecture)]
+    (t/is (str/ends-with? bits "bit"))))
+
+(t/deftest test-platform-with-arg
+  (let [p (platform-m/platform false)]
+    (t/is (string? p))
+    (t/is (pos? (count p)))))
+
+(t/deftest test-system-known-values
+  (let [s (platform-m/system)]
+    (t/is (or (= s "Linux") (= s "Darwin") (= s "Windows") (string? s)))))
