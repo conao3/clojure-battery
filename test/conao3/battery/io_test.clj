@@ -128,3 +128,20 @@
     (with-open [buf (io-m/bytes-io (b "data"))]
       (reset! result (io-m/read buf)))
     (t/is (bytes= (b "data") @result))))
+
+(t/deftest test-string-io-write-returns-count
+  (let [buf (io-m/string-io)]
+    (t/is (= 5 (io-m/write buf "hello")))
+    (t/is (= 6 (io-m/write buf " world")))))
+
+(t/deftest test-string-io-readline-multiple
+  (let [buf (io-m/string-io "line1\nline2\nline3")]
+    (t/is (= "line1\n" (io-m/readline buf)))
+    (t/is (= "line2\n" (io-m/readline buf)))
+    (t/is (= "line3" (io-m/readline buf)))))
+
+(t/deftest test-string-io-with-open
+  (let [result (atom nil)]
+    (with-open [buf (io-m/string-io "test")]
+      (reset! result (io-m/read buf)))
+    (t/is (= "test" @result))))

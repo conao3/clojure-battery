@@ -176,3 +176,24 @@
     (t/is (bytes= (base64/urlsafe-b64decode (base64/urlsafe-b64encode data)) data))
     (t/is (bytes= (base64/urlsafe-b64encode (b "")) (b "")))
     (t/is (bytes= (base64/urlsafe-b64decode (b "")) (b "")))))
+
+(t/deftest test-standard-b64encode
+  (t/is (bytes= (base64/standard-b64encode (b "abc")) (b "YWJj")))
+  (t/is (bytes= (base64/standard-b64encode (b "")) (b "")))
+  (t/is (bytes= (base64/standard-b64encode (b "hello")) (b "aGVsbG8="))))
+
+(t/deftest test-standard-b64decode
+  (t/is (bytes= (base64/standard-b64decode (b "YWJj")) (b "abc")))
+  (t/is (bytes= (base64/standard-b64decode (b "")) (b "")))
+  (t/is (bytes= (base64/standard-b64decode (b "aGVsbG8=")) (b "hello"))))
+
+(t/deftest test-encode-decode-streams
+  (let [data (b "hello world")
+        in   (java.io.ByteArrayInputStream. data)
+        out  (java.io.ByteArrayOutputStream.)]
+    (base64/encode in out)
+    (let [encoded (.toByteArray out)
+          in2  (java.io.ByteArrayInputStream. encoded)
+          out2 (java.io.ByteArrayOutputStream.)]
+      (base64/decode in2 out2)
+      (t/is (bytes= data (.toByteArray out2))))))
