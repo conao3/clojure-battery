@@ -77,3 +77,28 @@
       (doseq [t threads] (.start t))
       (doseq [t threads] (.join t)))
     (t/is (= n (q-m/queue-qsize q)))))
+
+(t/deftest test-queue-put-get-nowait
+  (let [q (q-m/make-queue)]
+    (q-m/queue-put-nowait q 42)
+    (t/is (= 42 (q-m/queue-get-nowait q)))))
+
+(t/deftest test-lifo-queue-size
+  (let [q (q-m/make-lifo-queue)]
+    (t/is (= 0 (q-m/lifo-qsize q)))
+    (q-m/lifo-put q "a")
+    (q-m/lifo-put q "b")
+    (t/is (= 2 (q-m/lifo-qsize q)))))
+
+(t/deftest test-priority-queue-multiple
+  (let [q (q-m/make-priority-queue)]
+    (doseq [n [5 1 3 2 4]]
+      (q-m/priority-put q n))
+    (t/is (= [1 2 3 4 5]
+             (for [_ (range 5)] (q-m/priority-get q))))))
+
+(t/deftest test-simple-queue
+  (let [q (q-m/simple-queue)]
+    (t/is (q-m/queue-empty? q))
+    (q-m/queue-put q "item")
+    (t/is (= "item" (q-m/queue-get q)))))

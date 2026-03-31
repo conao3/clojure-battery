@@ -20,3 +20,41 @@
         c (cmd/make-cmd handlers (fn [] true))
         output1 (cmd/run-cmdloop c "print test\nprint test2")]
     (t/is (= output1 "(Cmd) test\n(Cmd) test2\n(Cmd) *** Unknown syntax: EOF\n"))))
+
+(t/deftest test-unknown-command-ignored
+  (let [handlers {"print" (fn [args out] (.write out (str args "\n")) nil)
+                  "EOF"   (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))
+        output (cmd/run-cmdloop c "unknown foo\nprint bar")]
+    (t/is (clojure.string/includes? output "bar"))
+    (t/is (not (clojure.string/includes? output "foo")))))
+
+(t/deftest test-empty-input
+  (let [handlers {"EOF" (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))
+        output (cmd/run-cmdloop c "")]
+    (t/is (clojure.string/starts-with? output "(Cmd) "))))
+
+(t/deftest test-multiple-commands
+  (let [results (atom [])
+        handlers {"cmd1" (fn [_ _] (swap! results conj "cmd1") nil)
+                  "cmd2" (fn [_ _] (swap! results conj "cmd2") nil)
+                  "EOF"  (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))]
+    (cmd/run-cmdloop c "cmd1\ncmd2\ncmd1")
+    (t/is (= @results ["cmd1" "cmd2" "cmd1"]))))
+
+(t/deftest test-command-with-args
+  (let [received (atom nil)
+        handlers {"echo" (fn [args _] (reset! received args) nil)
+                  "EOF"  (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))]
+    (cmd/run-cmdloop c "echo hello world")
+    (t/is (= "hello world" @received))))
+
+(t/deftest test-make-cmd-returns-map
+  (let [handlers {"EOF" (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))]
+    (t/is (map? c))
+    (t/is (contains? c :handlers))
+    (t/is (contains? c :prompt))))

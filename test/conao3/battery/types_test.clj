@@ -74,3 +74,23 @@
 (t/deftest test-bytes-type
   (t/is (instance? types-m/BytesType (byte-array 0)))
   (t/is (not (instance? types-m/BytesType "string"))))
+
+(t/deftest test-new-type-zero-fields
+  (let [Unit (types-m/new-type "Unit" [])
+        u (Unit)]
+    (t/is (= {} u))
+    (t/is (= "Unit" (:type-name (meta Unit))))))
+
+(t/deftest test-simple-namespace-update
+  (let [ns-obj (types-m/simple-namespace :x 1)]
+    (types-m/simple-namespace-set ns-obj :x 99)
+    (t/is (= 99 (types-m/simple-namespace-get ns-obj :x)))))
+
+(t/deftest test-union-type-empty-no-match
+  (let [u (types-m/union-type)]
+    (t/is (nil? (types-m/union-type-check u "hello")))
+    (t/is (nil? (types-m/union-type-check u 42)))))
+
+(t/deftest test-lambda-type
+  (t/is (= clojure.lang.IFn types-m/LambdaType))
+  (t/is (instance? types-m/LambdaType (fn [x] x))))

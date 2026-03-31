@@ -73,3 +73,23 @@
 
 (t/deftest test-print-exc-no-throw
   (t/is (nil? (traceback/print-exc (RuntimeException. "print test")))))
+
+(t/deftest test-extract-tb-contains-classname
+  (let [e (try (throw (RuntimeException. "test")) (catch RuntimeException ex ex))
+        tb (traceback/extract-tb e)]
+    (t/is (every? #(contains? % :classname) tb))
+    (t/is (every? #(string? (:classname %)) tb))))
+
+(t/deftest test-format-tb-non-empty
+  (let [e (try (throw (RuntimeException. "test")) (catch RuntimeException ex ex))
+        tb (traceback/format-tb e)]
+    (t/is (pos? (count tb)))
+    (t/is (str/includes? (first tb) "File"))))
+
+(t/deftest test-extract-stack-non-empty
+  (let [stack (traceback/extract-stack)]
+    (t/is (pos? (count stack)))
+    (t/is (every? #(contains? % :classname) stack))))
+
+(t/deftest test-print-exception-no-throw
+  (t/is (nil? (traceback/print-exception (RuntimeException. "test")))))

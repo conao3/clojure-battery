@@ -64,3 +64,25 @@
 
 (t/deftest test-str-wrap
   (t/is (= "\"a very long string\"" (pprint/pformat "a very long string"))))
+
+(t/deftest test-pformat-string-with-quotes
+  (t/is (= "\"say \\\"hello\\\"\"" (pprint/pformat "say \"hello\""))))
+
+(t/deftest test-pformat-keyword
+  (t/is (= ":foo" (pprint/pformat :foo)))
+  (t/is (= ":bar/baz" (pprint/pformat :bar/baz))))
+
+(t/deftest test-pformat-nested
+  (t/is (= "[[1 2] [3 4]]" (pprint/pformat [[1 2] [3 4]])))
+  (t/is (= "{:a [1 2]}" (pprint/pformat {:a [1 2]}))))
+
+(t/deftest test-saferepr-no-throw
+  (t/is (string? (pprint/saferepr (Object.))))
+  (t/is (string? (pprint/saferepr 42)))
+  (t/is (string? (pprint/saferepr nil))))
+
+(t/deftest test-isreadable-collections
+  (t/is (true? (pprint/isreadable {})))
+  (t/is (true? (pprint/isreadable #{})))
+  (t/is (true? (pprint/isreadable '(1 2))))
+  (t/is (false? (pprint/isreadable {:key (Object.)}))))

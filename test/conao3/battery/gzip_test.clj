@@ -47,3 +47,28 @@
   (let [c1 (gzip-m/compress test-data)
         c2 (gzip-m/compress test-data)]
     (t/is (bytes= (gzip-m/decompress c1) (gzip-m/decompress c2)))))
+
+(t/deftest test-compress-default-level
+  (let [compressed (gzip-m/compress test-data)
+        decompressed (gzip-m/decompress compressed)]
+    (t/is (bytes? compressed))
+    (t/is (bytes= test-data decompressed))))
+
+(t/deftest test-compress-single-byte
+  (let [data (b "A")
+        compressed (gzip-m/compress data)
+        decompressed (gzip-m/decompress compressed)]
+    (t/is (bytes= data decompressed))))
+
+(t/deftest test-compress-binary-data
+  (let [data (byte-array (range 256))
+        compressed (gzip-m/compress data)
+        decompressed (gzip-m/decompress compressed)]
+    (t/is (bytes= data decompressed))))
+
+(t/deftest test-compress-level-1-vs-9
+  (let [large-data (byte-array (repeat 1000 (byte 65)))
+        c1 (gzip-m/compress large-data 1)
+        c9 (gzip-m/compress large-data 9)]
+    (t/is (bytes= large-data (gzip-m/decompress c1)))
+    (t/is (bytes= large-data (gzip-m/decompress c9)))))

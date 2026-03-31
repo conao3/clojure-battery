@@ -46,3 +46,28 @@
 
 (t/deftest test-set-wakeup-fd
   (t/is (= -1 (signal-m/set-wakeup-fd -1))))
+
+(t/deftest test-signal-override-multiple
+  (let [calls (atom [])
+        h1 (fn [sig] (swap! calls conj [:h1 sig]))
+        h2 (fn [sig] (swap! calls conj [:h2 sig]))]
+    (signal-m/signal signal-m/SIGTERM h1)
+    (signal-m/signal signal-m/SIGTERM h2)
+    (signal-m/raise-signal signal-m/SIGTERM)
+    (t/is (= [[:h2 signal-m/SIGTERM]] @calls))
+    (signal-m/signal signal-m/SIGTERM signal-m/SIG_DFL)))
+
+(t/deftest test-getsignal-after-ign
+  (signal-m/signal signal-m/SIGTERM signal-m/SIG_IGN)
+  (t/is (= signal-m/SIG_IGN (signal-m/getsignal signal-m/SIGTERM)))
+  (signal-m/signal signal-m/SIGTERM signal-m/SIG_DFL))
+
+(t/deftest test-valid-signals-contains-standard
+  (let [sigs (signal-m/valid-signals)]
+    (t/is (contains? sigs signal-m/SIGABRT))
+    (t/is (contains? sigs signal-m/SIGFPE))
+    (t/is (contains? sigs signal-m/SIGILL))
+    (t/is (contains? sigs signal-m/SIGSEGV))))
+
+(t/deftest test-strsignal-unknown
+  (t/is (string? (signal-m/strsignal 99))))

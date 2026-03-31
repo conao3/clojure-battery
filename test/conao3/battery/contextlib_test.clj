@@ -92,3 +92,29 @@
       (contextlib/chdir "/tmp" (fn [] (throw (RuntimeException. "error"))))
       (catch RuntimeException _))
     (t/is (= original (System/getProperty "user.dir")))))
+
+(t/deftest test-contextmanager-passthrough
+  (let [f (fn [thunk] (thunk))]
+    (t/is (identical? f (contextlib/contextmanager f)))))
+
+(t/deftest test-redirect-stream-calls-thunk
+  (let [called (atom false)]
+    (contextlib/redirect-stream nil nil (fn [] (reset! called true)))
+    (t/is (true? @called))))
+
+(t/deftest test-suppress-nested-exception
+  (let [ctx (contextlib/suppress ArithmeticException)
+        outer-called (atom false)]
+    (ctx (fn []
+           (ctx (fn [] (/ 1 0)))
+           (reset! outer-called true)))
+    (t/is (true? @outer-called))))
+
+(t/deftest test-exit-stack-exception-in-close
+  (let [stack (contextlib/exit-stack)
+        order (atom [])]
+    ((:push stack) (fn [] (swap! order conj :last)))
+    ((:push stack) (fn [] (throw (RuntimeException. "ignored"))))
+    ((:push stack) (fn [] (swap! order conj :first)))
+    ((:close stack))
+    (t/is (= [:first :last] @order))))

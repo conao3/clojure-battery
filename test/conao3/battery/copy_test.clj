@@ -71,3 +71,30 @@
         copied   (copy-m/copy original)]
     (t/is (= original copied))
     (t/is (not (identical? original copied)))))
+
+(t/deftest test-deepcopy-keyword
+  (let [k :foo]
+    (t/is (= k (copy-m/deepcopy k)))
+    (t/is (identical? k (copy-m/deepcopy k)))))
+
+(t/deftest test-deepcopy-symbol
+  (let [s 'my-sym]
+    (t/is (= s (copy-m/deepcopy s)))))
+
+(t/deftest test-deepcopy-nested-vector
+  (let [original [1 [2 [3 [4]]]]
+        copied   (copy-m/deepcopy original)]
+    (t/is (= original copied))
+    (t/is (not (identical? (second original) (second copied))))
+    (t/is (not (identical? (second (second original)) (second (second copied)))))))
+
+(t/deftest test-copy-set
+  (let [original #{1 2 3}
+        copied   (copy-m/copy original)]
+    (t/is (= original copied))))
+
+(t/deftest test-deepcopy-mixed
+  (let [original {:a [1 2 #{3 4}] :b '(5 6)}
+        copied   (copy-m/deepcopy original)]
+    (t/is (= original copied))
+    (t/is (not (identical? (:a original) (:a copied))))))
