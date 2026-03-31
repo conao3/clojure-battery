@@ -79,3 +79,28 @@
     (t/is (identical? b (weakref/weak-value-dict-get d "b")))
     (t/is (true? (weakref/weak-value-dict-contains? d "a")))
     (t/is (false? (boolean (weakref/weak-value-dict-contains? d "c"))))))
+
+(t/deftest test-alive-returns-boolean
+  (let [obj (Object.)
+        r (weakref/ref obj)]
+    (t/is (true? (weakref/alive? r)))))
+
+(t/deftest test-finalize-returns-map
+  (let [obj (Object.)
+        fin (weakref/finalize obj (fn []))]
+    (t/is (map? fin))
+    (t/is (contains? fin :alive))
+    (t/is (contains? fin :func))
+    (t/is (contains? fin :obj))))
+
+(t/deftest test-weak-value-dict-overwrite
+  (let [d (weakref/make-weak-value-dict)
+        a (Object.)
+        b (Object.)]
+    (weakref/weak-value-dict-put d "key" a)
+    (weakref/weak-value-dict-put d "key" b)
+    (t/is (identical? b (weakref/weak-value-dict-get d "key")))))
+
+(t/deftest test-make-weak-dict-is-map
+  (let [d (weakref/make-weak-dict)]
+    (t/is (instance? java.util.Map d))))

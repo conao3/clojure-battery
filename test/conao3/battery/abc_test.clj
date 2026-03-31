@@ -57,3 +57,27 @@
   (t/is (true? (abc-m/issubclass? Number Long)))
   (t/is (true? (abc-m/issubclass? Object Long)))
   (t/is (false? (abc-m/issubclass? Long Object))))
+
+(t/deftest test-abstractmethod-meta-preserved
+  (let [original-meta {:doc "my doc" :other "data"}
+        f (with-meta (fn [x] x) original-meta)
+        af (abc-m/abstractmethod f)]
+    (t/is (= "my doc" (:doc (meta af))))
+    (t/is (= "data" (:other (meta af))))
+    (t/is (true? (:abstract (meta af))))))
+
+(t/deftest test-get-abstractmethods-all-abstract
+  (let [f1 (abc-m/abstractmethod (fn [x] x))
+        f2 (abc-m/abstractmethod (fn [x] x))
+        cls {:a f1 :b f2}]
+    (t/is (= #{:a :b} (abc-m/get-abstractmethods cls)))))
+
+(t/deftest test-isinstance-nil
+  (t/is (false? (abc-m/isinstance? nil String)))
+  (t/is (false? (abc-m/isinstance? nil Long))))
+
+(t/deftest test-abstract-fn-metadata
+  (abc-m/defabstract abstract-method [a b]
+    "An abstract method")
+  (t/is (map? (meta abstract-method)))
+  (t/is (true? (abc-m/abstract? abstract-method))))

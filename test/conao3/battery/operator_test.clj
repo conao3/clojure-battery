@@ -104,3 +104,29 @@
   (t/is (= -1 (op/isub 2 3)))
   (t/is (= 6 (op/imul 2 3)))
   (t/is (= "hello world" (op/iconcat "hello " "world"))))
+
+(t/deftest test-in-place-more
+  (t/is (= 2.0 (op/itruediv 4 2)))
+  (t/is (= 1 (op/ifloordiv 7 4)))
+  (t/is (= 1 (op/imod 7 3)))
+  (t/is (= 8.0 (op/ipow 2 3)))
+  (t/is (= 4 (op/ilshift 1 2)))
+  (t/is (= 1 (op/irshift 4 2)))
+  (t/is (= 0 (op/iand 3 4)))
+  (t/is (= 7 (op/ior 3 4)))
+  (t/is (= 7 (op/ixor 3 4))))
+
+(t/deftest test-methodcaller
+  (let [upper-fn (op/methodcaller "toUpperCase")]
+    (t/is (= "HELLO" (upper-fn "hello")))))
+
+(t/deftest test-attrgetter-nested
+  (let [g (op/attrgetter "user.name")]
+    (t/is (= "alice" (g {"user" {:name "alice"}})))))
+
+(t/deftest test-length-hint-java-collection
+  (let [lst (doto (ArrayList.) (.add 1) (.add 2) (.add 3))]
+    (t/is (= 3 (op/length-hint lst)))))
+
+(t/deftest test-concat-seq
+  (t/is (= [1 2 3 4] (vec (op/concat '(1 2) [3 4])))))

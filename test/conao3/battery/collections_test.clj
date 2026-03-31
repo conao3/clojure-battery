@@ -118,3 +118,25 @@
   (let [c {\a -5 \b 0 \c 5 \d 10 \e 15 \g 40}]
     (t/is (= {\c 5 \d 10 \e 15 \g 40} (collections/counter-pos c)))
     (t/is (= {\a 5} (collections/counter-neg c)))))
+
+(t/deftest test-counter-most-common
+  (let [c (collections/counter "abracadabra")]
+    (t/is (= [[\a 5]] (collections/counter-most-common c 1)))
+    (t/is (= \a (first (first (collections/counter-most-common c 1)))))
+    (t/is (= 5 (second (first (collections/counter-most-common c 1)))))))
+
+(t/deftest test-counter-elements-order
+  (let [c {\a 3 \b 2}
+        elements (vec (collections/counter-elements c))]
+    (t/is (= 5 (count elements)))
+    (t/is (= 3 (count (filter #(= \a %) elements))))
+    (t/is (= 2 (count (filter #(= \b %) elements))))))
+
+(t/deftest test-counter-of-vec
+  (let [c (collections/counter [1 2 3 2 1 3 3])]
+    (t/is (= {1 2 2 2 3 3} c))))
+
+(t/deftest test-chain-map-lookup-priority
+  (let [c (collections/chain-map {:a 1} {:a 99 :b 2})]
+    (t/is (= 1 (:a c)))
+    (t/is (= 2 (:b c)))))

@@ -79,3 +79,27 @@
 
 (t/deftest test-getdoc-var
   (t/is (string? (inspect-m/getdoc #'clojure.core/map))))
+
+(t/deftest test-signature
+  (let [f (with-meta (fn [x y] (+ x y)) {:arglists '([x y])})]
+    (t/is (string? (inspect-m/signature f)))))
+
+(t/deftest test-getfullargspec
+  (let [f (with-meta (fn [x y] (+ x y)) {:arglists '([x y])})]
+    (let [spec (inspect-m/getfullargspec f)]
+      (t/is (map? spec))
+      (t/is (contains? spec :args))
+      (t/is (contains? spec :varargs))
+      (t/is (contains? spec :defaults)))))
+
+(t/deftest test-isfunction-multimethod
+  (let [mm (fn [x] x)]
+    (t/is (true? (inspect-m/isbuiltin? mm)))))
+
+(t/deftest test-getfile-var
+  (let [file (inspect-m/getfile #'clojure.core/map)]
+    (t/is (or (nil? file) (string? file)))))
+
+(t/deftest test-ismodule-namespace
+  (t/is (true? (inspect-m/ismodule? (find-ns 'clojure.test))))
+  (t/is (false? (inspect-m/ismodule? nil))))
