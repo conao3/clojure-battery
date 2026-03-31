@@ -67,3 +67,52 @@
   (t/is (= 42 (functools/reduce + (range 0) 42)))
   (t/is (= 0 (functools/reduce + (range 1))))
   (t/is (= 42 (functools/reduce + (range 1) 42))))
+
+;; TestCmpToKey
+
+(t/deftest test-cmp-to-key-basic
+  (let [cmp (fn [a b] (compare a b))
+        key (functools/cmp-to-key cmp)]
+    (t/is (= [1 1 3 4 5] (sort-by key [3 1 4 1 5])))))
+
+(t/deftest test-cmp-to-key-reverse
+  (let [cmp (fn [a b] (compare b a))
+        key (functools/cmp-to-key cmp)]
+    (t/is (= [5 4 3 1 1] (sort-by key [3 1 4 1 5])))))
+
+(t/deftest test-cmp-to-key-strings
+  (let [cmp (fn [a b] (compare a b))
+        key (functools/cmp-to-key cmp)]
+    (t/is (= ["apple" "banana" "cherry"] (sort-by key ["banana" "apple" "cherry"])))))
+
+;; TestLRUCache
+
+(t/deftest test-lru-cache-basic
+  (let [call-count (atom 0)
+        f (functools/lru-cache (fn [x]
+                                 (swap! call-count inc)
+                                 (* x x)))]
+    (t/is (= 4 (f 2)))
+    (t/is (= 4 (f 2)))
+    (t/is (= 1 @call-count))
+    (t/is (= 9 (f 3)))
+    (t/is (= 2 @call-count))))
+
+(t/deftest test-lru-cache-maxsize
+  (let [call-count (atom 0)
+        f (functools/lru-cache 2 (fn [x]
+                                   (swap! call-count inc)
+                                   (* x x)))]
+    (f 1)
+    (f 2)
+    (f 1)
+    (t/is (= 2 @call-count))
+    (f 3)
+    (f 1)
+    (t/is (>= @call-count 3))))
+
+(t/deftest test-lru-cache-multi-args
+  (let [f (functools/lru-cache (fn [a b] (+ a b)))]
+    (t/is (= 3 (f 1 2)))
+    (t/is (= 5 (f 2 3)))
+    (t/is (= 3 (f 1 2)))))
