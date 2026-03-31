@@ -57,3 +57,36 @@
     (t/is (contains? usage :used))
     (t/is (contains? usage :free))
     (t/is (pos? (:total usage)))))
+
+(t/deftest test-copytree
+  (let [src (File/createTempFile "shutil-src-dir" "")
+        _ (.delete src)
+        _ (.mkdir src)
+        f1 (File. src "file1.txt")
+        f2 (File. src "file2.txt")
+        sub (File. src "subdir")
+        _ (.mkdir sub)
+        f3 (File. sub "file3.txt")
+        _ (spit (.getAbsolutePath f1) "content1")
+        _ (spit (.getAbsolutePath f2) "content2")
+        _ (spit (.getAbsolutePath f3) "content3")
+        dst (File/createTempFile "shutil-dst-dir" "")
+        _ (.delete dst)]
+    (shutil/copytree (.getAbsolutePath src) (.getAbsolutePath dst))
+    (t/is (.exists (File. dst "file1.txt")))
+    (t/is (.exists (File. dst "file2.txt")))
+    (t/is (.exists (File. (File. dst "subdir") "file3.txt")))
+    (t/is (= "content1" (slurp (File. dst "file1.txt"))))
+    (shutil/rmtree (.getAbsolutePath src))
+    (shutil/rmtree (.getAbsolutePath dst))))
+
+(t/deftest test-move-file
+  (let [src (File/createTempFile "shutil-move-src" ".txt")
+        dst (File/createTempFile "shutil-move-dst" ".txt")]
+    (spit (.getAbsolutePath src) "to move")
+    (.delete dst)
+    (shutil/move (.getAbsolutePath src) (.getAbsolutePath dst))
+    (t/is (not (.exists src)))
+    (t/is (.exists dst))
+    (t/is (= "to move" (slurp (.getAbsolutePath dst))))
+    (.delete dst)))

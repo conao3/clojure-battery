@@ -11,9 +11,23 @@
        (doseq [child (reverse (file-seq f))]
          (.delete ^File child))))))
 
+(defn- copy-tree-recursive [^File src ^File dst]
+  (when-not (.exists dst)
+    (.mkdirs dst))
+  (doseq [^File child (.listFiles src)]
+    (let [dst-child (File. dst (.getName child))]
+      (if (.isDirectory child)
+        (copy-tree-recursive child dst-child)
+        (Files/copy (.toPath child) (.toPath dst-child)
+                    (into-array CopyOption [StandardCopyOption/REPLACE_EXISTING]))))))
+
 (defn copytree
-  [& _]
-  (throw (ex-info "Not implemented" {})))
+  ([src dst] (copytree src dst {}))
+  ([src dst _opts]
+   (let [src-f (File. ^String src)
+         dst-f (File. ^String dst)]
+     (copy-tree-recursive src-f dst-f)
+     dst)))
 
 (defn copy
   [src dst]
