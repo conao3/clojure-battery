@@ -2,6 +2,8 @@
   (:require [clojure.set :as set]
             [clojure.string :as str]))
 
+(declare python-repr python-seq-str)
+
 (def whitespace " \t\n\r\u000b\u000c")
 (def ascii-lowercase "abcdefghijklmnopqrstuvwxyz")
 (def ascii-uppercase "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -53,14 +55,14 @@
               (if raise-on-missing?
                 (throw (ex-info (str "Missing key: " named) {:key named}))
                 (.append sb (str "$" named)))
-              (.append sb (str v))))
+              (.append sb (if (sequential? v) (python-seq-str v) (str v)))))
           (some? braced)
           (let [v (get mapping braced ::missing)]
             (if (= v ::missing)
               (if raise-on-missing?
                 (throw (ex-info (str "Missing key: " braced) {:key braced}))
                 (.append sb (str "${" braced "}")))
-              (.append sb (str v))))
+              (.append sb (if (sequential? v) (python-seq-str v) (str v)))))
           (some? invalid)
           (let [pos (.start m)
                 prefix (.substring tmpl 0 pos)
@@ -128,6 +130,15 @@
   (java.util.regex.Pattern/compile
    "\\{\\{|\\}\\}|\\{([_a-zA-Z][_a-zA-Z0-9]*|\\d+)(?:\\.([_a-zA-Z][_a-zA-Z0-9]*))?(?:\\[(\\d+)\\])?(?:!([a-zA-Z]))?\\}"))
 
+(defn- check-mixed-format [fmt]
+  (let [has-auto (boolean (re-find #"\{\}" fmt))
+        has-explicit (boolean (re-find #"\{(?:\d+|[_a-zA-Z])" fmt))]
+    (when (and has-auto has-explicit)
+      (throw (ex-info "cannot switch from manual field specification to automatic field numbering" {})))))
+
+(defn- python-seq-str [v]
+  (str "(" (str/join ", " (map python-repr v)) ")"))
+
 (defn- fmt-substitute
   [fmt positional named]
   (let [sb (StringBuilder.)
@@ -185,6 +196,7 @@
 (defn formatter-format
   ([] (throw (ex-info "formatter-format requires at least 1 arg" {})))
   ([fmt & args]
+   (check-mixed-format fmt)
    (let [[positional named] (split-positional-keyword args)
          [result _ _] (fmt-substitute fmt positional named)]
      result)))
