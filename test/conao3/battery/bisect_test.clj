@@ -486,20 +486,18 @@
   (let [m (module->env :python)]
     (t/is (= (:insort m) (:insort-right m)))))
 
-(t/deftest ^:kaocha/skip test-list-derived-python
+(t/deftest test-list-derived-python
   (let [m (module->env :python)
-        lst-data (atom [])
-        insert-fn (fn [item] (swap! lst-data conj item))]
-    (insort-left m insert-fn 10)
-    (insort-right m insert-fn 5)
+        lst-data (atom [])]
+    (insort-left m lst-data 10)
+    (insort-right m lst-data 5)
     (t/is (= @lst-data [5 10]))))
 
-(t/deftest ^:kaocha/skip test-list-derived-c
+(t/deftest test-list-derived-c
   (let [m (module->env :python)
-        lst-data (atom [])
-        insert-fn (fn [item] (swap! lst-data conj item))]
-    (insort-left m insert-fn 10)
-    (insort-right m insert-fn 5)
+        lst-data (atom [])]
+    (insort-left m lst-data 10)
+    (insort-right m lst-data 5)
     (t/is (= @lst-data [5 10]))))
 
 (t/deftest test-non-sequence-python
