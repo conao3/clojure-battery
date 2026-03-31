@@ -38,3 +38,42 @@
 
     (t/deftest  test-posix-path-div
       (assert-div pathlib/posix-path))))
+
+(t/deftest test-name
+  (t/is (= "bar.txt" (pathlib/name "/foo/bar.txt")))
+  (t/is (= "bar.txt" (pathlib/name "bar.txt")))
+  (t/is (= "" (pathlib/name "/foo/"))))
+
+(t/deftest test-parent
+  (t/is (= "/foo" (pathlib/parent "/foo/bar.txt")))
+  (t/is (= "/" (pathlib/parent "/foo")))
+  (t/is (= "." (pathlib/parent "bar.txt"))))
+
+(t/deftest test-stem
+  (t/is (= "bar" (pathlib/stem "/foo/bar.txt")))
+  (t/is (= "bar" (pathlib/stem "bar")))
+  (t/is (= ".hidden" (pathlib/stem "/foo/.hidden"))))
+
+(t/deftest test-suffix
+  (t/is (= ".txt" (pathlib/suffix "/foo/bar.txt")))
+  (t/is (= "" (pathlib/suffix "/foo/bar")))
+  (t/is (= ".gz" (pathlib/suffix "/foo/bar.tar.gz"))))
+
+(t/deftest test-parts
+  (t/is (= ["/" "foo" "bar"] (pathlib/parts "/foo/bar")))
+  (t/is (= ["foo" "bar"] (pathlib/parts "foo/bar")))
+  (t/is (= ["foo"] (pathlib/parts "foo"))))
+
+(t/deftest test-is-absolute
+  (t/is (true? (pathlib/is-absolute? "/foo/bar")))
+  (t/is (false? (pathlib/is-absolute? "foo/bar")))
+  (t/is (false? (pathlib/is-absolute? "foo"))))
+
+(t/deftest test-with-name
+  (t/is (= "/foo/baz.txt" (pathlib/with-name "/foo/bar.txt" "baz.txt")))
+  (t/is (= "baz.txt" (pathlib/with-name "bar.txt" "baz.txt"))))
+
+(t/deftest test-with-suffix
+  (t/is (= "/foo/bar.md" (pathlib/with-suffix "/foo/bar.txt" ".md")))
+  (t/is (= "/foo/bar" (pathlib/with-suffix "/foo/bar.txt" "")))
+  (t/is (= "bar.clj" (pathlib/with-suffix "bar.txt" ".clj"))))
