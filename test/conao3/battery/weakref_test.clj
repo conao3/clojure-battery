@@ -1,0 +1,52 @@
+;; Original: Lib/test/test_weakref.py
+
+(ns conao3.battery.weakref-test
+  (:require
+   [clojure.test :as t]
+   [conao3.battery.weakref :as weakref]))
+
+(t/deftest test-basic-ref
+  (let [obj (Object.)
+        r (weakref/ref obj)]
+    (t/is (some? (weakref/deref-ref r)))
+    (t/is (identical? obj (weakref/deref-ref r)))
+    (t/is (weakref/alive? r))))
+
+(t/deftest test-ref-with-callback
+  (let [obj (Object.)
+        called (atom false)
+        r (weakref/ref obj (fn [] (reset! called true)))]
+    (t/is (some? (weakref/deref-ref r)))))
+
+(t/deftest test-weak-dict
+  (let [d (weakref/make-weak-dict)
+        k (Object.)]
+    (.put d k "value")
+    (t/is (= "value" (.get d k)))
+    (t/is (= 1 (.size d)))))
+
+(t/deftest test-weak-value-dict
+  (let [d (weakref/make-weak-value-dict)
+        obj (Object.)]
+    (weakref/weak-value-dict-put d "key" obj)
+    (t/is (identical? obj (weakref/weak-value-dict-get d "key")))
+    (t/is (true? (weakref/weak-value-dict-contains? d "key")))
+    (t/is (nil? (weakref/weak-value-dict-get d "missing")))
+    (t/is (= :default (weakref/weak-value-dict-get d "missing" :default)))))
+
+(t/deftest test-finalize
+  (let [called (atom false)
+        obj (Object.)
+        fin (weakref/finalize obj #(reset! called true))]
+    (t/is (weakref/finalize-alive? fin))
+    (weakref/finalize-call fin)
+    (t/is (true? @called))
+    (t/is (not (weakref/finalize-alive? fin)))))
+
+(t/deftest test-finalize-idempotent
+  (let [call-count (atom 0)
+        obj (Object.)
+        fin (weakref/finalize obj #(swap! call-count inc))]
+    (weakref/finalize-call fin)
+    (weakref/finalize-call fin)
+    (t/is (= 1 @call-count))))
