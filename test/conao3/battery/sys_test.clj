@@ -63,3 +63,27 @@
 (t/deftest test-exc-info
   (let [info (sys-m/exc-info)]
     (t/is (= [nil nil nil] info))))
+
+(t/deftest test-getsizeof
+  (t/is (pos? (sys-m/getsizeof "hello")))
+  (t/is (pos? (sys-m/getsizeof [1 2 3])))
+  (t/is (= 0 (sys-m/getsizeof (Object.) 0))))
+
+(t/deftest test-getfilesystemencoding
+  (let [enc (sys-m/getfilesystemencoding)]
+    (t/is (string? enc))
+    (t/is (pos? (count enc)))))
+
+(t/deftest test-stdin-stdout-stderr
+  (t/is (some? sys-m/stdin))
+  (t/is (some? sys-m/stdout))
+  (t/is (some? sys-m/stderr)))
+
+(t/deftest test-argv
+  (t/is (vector? sys-m/argv)))
+
+(t/deftest test-platform-values
+  (t/is (or (= "darwin" sys-m/platform)
+            (= "linux" sys-m/platform)
+            (= "win32" sys-m/platform)
+            (string? sys-m/platform))))

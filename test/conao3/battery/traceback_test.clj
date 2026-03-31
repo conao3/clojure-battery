@@ -51,3 +51,25 @@
 
 (t/deftest test-clear-frames
   (t/is (nil? (traceback/clear-frames nil))))
+
+(t/deftest test-format-exc-class-name
+  (let [e (IllegalArgumentException. "bad arg")
+        s (traceback/format-exc e)]
+    (t/is (str/includes? s "IllegalArgumentException"))
+    (t/is (str/includes? s "bad arg"))))
+
+(t/deftest test-extract-tb-not-empty
+  (let [e (try (throw (RuntimeException. "test")) (catch RuntimeException ex ex))
+        tb (traceback/extract-tb e)]
+    (t/is (pos? (count tb)))
+    (t/is (string? (:filename (first tb))))
+    (t/is (pos? (:lineno (first tb))))))
+
+(t/deftest test-format-exception
+  (let [e (RuntimeException. "format test")
+        s (traceback/format-exception e)]
+    (t/is (string? s))
+    (t/is (str/includes? s "format test"))))
+
+(t/deftest test-print-exc-no-throw
+  (t/is (nil? (traceback/print-exc (RuntimeException. "print test")))))
