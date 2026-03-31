@@ -43,3 +43,34 @@
 (t/deftest test-isfunction-check
   (t/is (instance? clojure.lang.IFn (fn [x] x)))
   (t/is (not (instance? clojure.lang.IFn 42))))
+
+(t/deftest test-more-type-constants
+  (t/is (= java.lang.Boolean types-m/BooleanType))
+  (t/is (= clojure.lang.IPersistentVector types-m/ListType))
+  (t/is (= clojure.lang.IPersistentMap types-m/DictType))
+  (t/is (= clojure.lang.IPersistentSet types-m/SetType)))
+
+(t/deftest test-new-type-multiple
+  (let [Color (types-m/new-type "Color" ["r" "g" "b"])
+        c (Color 255 128 0)]
+    (t/is (= {:r 255 :g 128 :b 0} c))
+    (t/is (= "Color" (:type-name (meta Color))))
+    (t/is (= [:r :g :b] (:fields (meta Color))))))
+
+(t/deftest test-simple-namespace-multiple-keys
+  (let [ns-obj (types-m/simple-namespace :x 1 :y 2 :z 3)]
+    (t/is (= 1 (types-m/simple-namespace-get ns-obj :x)))
+    (t/is (= 2 (types-m/simple-namespace-get ns-obj :y)))
+    (t/is (= 3 (types-m/simple-namespace-get ns-obj :z)))
+    (t/is (nil? (types-m/simple-namespace-get ns-obj :w)))))
+
+(t/deftest test-union-type-three
+  (let [u (types-m/union-type String Long Double)]
+    (t/is (true? (boolean (types-m/union-type-check u "hello"))))
+    (t/is (true? (boolean (types-m/union-type-check u 42))))
+    (t/is (true? (boolean (types-m/union-type-check u 3.14))))
+    (t/is (nil? (types-m/union-type-check u true)))))
+
+(t/deftest test-bytes-type
+  (t/is (instance? types-m/BytesType (byte-array 0)))
+  (t/is (not (instance? types-m/BytesType "string"))))
