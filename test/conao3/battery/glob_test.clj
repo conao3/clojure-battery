@@ -109,3 +109,31 @@
         (t/is (vector? result))
         (t/is (= 2 (count result))))
       (finally (.delete f1) (.delete f2) (.delete tmpdir)))))
+
+(t/deftest test-escape-all-chars
+  (t/is (= "[[]" (glob/escape "[")))
+  (t/is (= "[?]" (glob/escape "?")))
+  (t/is (= "[*]" (glob/escape "*")))
+  (t/is (= "abc" (glob/escape "abc"))))
+
+(t/deftest test-glob-specific-extension
+  (let [tmpdir (java.io.File/createTempFile "glob-ext" "")
+        _ (.delete tmpdir)
+        _ (.mkdir tmpdir)
+        f1 (java.io.File. tmpdir "foo.clj")
+        f2 (java.io.File. tmpdir "bar.clj")
+        f3 (java.io.File. tmpdir "baz.txt")]
+    (.createNewFile f1)
+    (.createNewFile f2)
+    (.createNewFile f3)
+    (try
+      (let [result (glob/glob "*.clj" {:root-dir (.getAbsolutePath tmpdir)})]
+        (t/is (= 2 (count result)))
+        (t/is (every? #(str/ends-with? % ".clj") result)))
+      (finally (.delete f1) (.delete f2) (.delete f3) (.delete tmpdir)))))
+
+(t/deftest test-translate-basic
+  (t/is (string? (glob/translate "*")))
+  (t/is (string? (glob/translate "*.txt")))
+  (t/is (string? (glob/translate "?")))
+  (t/is (string? (glob/translate "**" :recursive true))))

@@ -104,3 +104,34 @@
       (sched/enter! s x 1 #(swap! results conj x)))
     (sched/run! s false)
     (t/is (= @results []))))
+
+(t/deftest test-scheduler-is-atom
+  (let [s (sched/scheduler)]
+    (t/is (instance? clojure.lang.Atom s))))
+
+(t/deftest test-enter-returns-event
+  (let [s (sched/scheduler)
+        e (sched/enter! s 0.01 1 (fn []))]
+    (t/is (map? e))
+    (t/is (contains? e :time))
+    (t/is (contains? e :priority))
+    (t/is (contains? e :action))))
+
+(t/deftest test-queue-after-cancel
+  (let [s (sched/scheduler)
+        now (/ (System/currentTimeMillis) 1000.0)
+        e1 (sched/enterabs! s now 1 (fn []))
+        e2 (sched/enterabs! s (+ now 0.01) 1 (fn []))]
+    (t/is (= 2 (count (sched/sched-queue s))))
+    (sched/cancel! s e1)
+    (t/is (= 1 (count (sched/sched-queue s))))
+    (t/is (= e2 (first (sched/sched-queue s))))
+    (sched/cancel! s e2)))
+
+(t/deftest test-enterabs-with-args
+  (let [results (atom [])
+        s (sched/scheduler)
+        now (/ (System/currentTimeMillis) 1000.0)]
+    (sched/enterabs! s now 1 (fn [a b] (swap! results conj [a b])) [10 20])
+    (sched/run! s)
+    (t/is (= [[10 20]] @results))))

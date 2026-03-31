@@ -78,3 +78,30 @@
     (t/is (.isDirectory (File. ^String dir-path)))
     ((:cleanup td))
     (t/is (not (.exists (File. ^String dir-path))))))
+
+(t/deftest test-gettempdir-non-empty
+  (let [d (tempfile/gettempdir)]
+    (t/is (string? d))
+    (t/is (pos? (count d)))))
+
+(t/deftest test-mkstemp-creates-file
+  (let [[_ path] (tempfile/mkstemp)]
+    (let [f (File. ^String path)]
+      (t/is (.exists f))
+      (t/is (.isFile f))
+      (.delete f))))
+
+(t/deftest test-mkdtemp-creates-dir
+  (let [dir (tempfile/mkdtemp)]
+    (let [f (File. ^String dir)]
+      (t/is (.isDirectory f))
+      (.delete f))))
+
+(t/deftest test-tmp-max-constant
+  (t/is (pos? tempfile/TMP_MAX)))
+
+(t/deftest test-temporary-directory-with-prefix
+  (let [td (tempfile/TemporaryDirectory nil "mytest" nil)
+        dir-path (:name td)]
+    (t/is (.startsWith (.getName (File. ^String dir-path)) "mytest"))
+    ((:cleanup td))))
