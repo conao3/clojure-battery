@@ -92,3 +92,23 @@
         part1-hash (zlib/adler32 part1)
         part2-hash (zlib/adler32 part2 part1-hash)]
     (t/is (= full-hash part2-hash))))
+
+(t/deftest test-compress-single-byte
+  (let [data (b "A")
+        compressed (zlib/compress data)
+        decompressed (zlib/decompress compressed)]
+    (t/is (bytes= data decompressed))))
+
+(t/deftest test-compress-binary-data
+  (let [data (byte-array (range 256))
+        compressed (zlib/compress data)
+        decompressed (zlib/decompress compressed)]
+    (t/is (bytes= data decompressed))))
+
+(t/deftest test-crc32-deterministic
+  (let [data (b "hello world")]
+    (t/is (= (zlib/crc32 data) (zlib/crc32 data)))))
+
+(t/deftest test-adler32-deterministic
+  (let [data (b "hello world")]
+    (t/is (= (zlib/adler32 data) (zlib/adler32 data)))))

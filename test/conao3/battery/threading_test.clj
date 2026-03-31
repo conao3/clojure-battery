@@ -104,3 +104,29 @@
     (doseq [t threads] (th-m/thread-start! t))
     (doseq [t threads] (th-m/thread-join! t))
     (t/is (= (sort @results) (range 5)))))
+
+(t/deftest test-lock-locked
+  (let [l (th-m/lock)]
+    (t/is (false? (th-m/lock-locked? l)))
+    (th-m/lock-acquire l)
+    (t/is (true? (th-m/lock-locked? l)))
+    (th-m/lock-release l)
+    (t/is (false? (th-m/lock-locked? l)))))
+
+(t/deftest test-enumerate
+  (let [threads (th-m/enumerate)]
+    (t/is (vector? threads))
+    (t/is (pos? (count threads)))))
+
+(t/deftest test-main-thread
+  (let [mt (th-m/main-thread)]
+    (t/is (some? mt))
+    (t/is (= "main" (th-m/thread-name mt)))))
+
+(t/deftest test-semaphore-one-permit
+  (let [s (th-m/semaphore)]
+    (t/is (true? (th-m/semaphore-acquire s)))
+    (t/is (false? (th-m/semaphore-acquire s false)))
+    (th-m/semaphore-release s)
+    (t/is (true? (th-m/semaphore-acquire s false)))
+    (th-m/semaphore-release s)))

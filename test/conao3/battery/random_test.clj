@@ -101,3 +101,32 @@
   (dotimes [_ 100]
     (let [v (random-m/randrange 0 100 5)]
       (t/is (zero? (mod v 5))))))
+
+(t/deftest test-uniform-range
+  (random-m/seed 42)
+  (dotimes [_ 100]
+    (let [v (random-m/uniform 1.5 3.5)]
+      (t/is (and (>= v 1.5) (<= v 3.5))))))
+
+(t/deftest test-gauss-type
+  (random-m/seed 42)
+  (let [v (random-m/gauss 0.0 1.0)]
+    (t/is (float? v))))
+
+(t/deftest test-getrandbits
+  (random-m/seed 42)
+  (let [v (random-m/getrandbits 8)]
+    (t/is (and (>= v 0) (< v 256)))))
+
+(t/deftest test-sample-with-rng
+  (let [rng (random-m/make-random 42)
+        result (random-m/sample-with rng [1 2 3 4 5] 3)]
+    (t/is (= 3 (count result)))
+    (t/is (every? #(contains? #{1 2 3 4 5} %) result))))
+
+(t/deftest test-shuffle-with-rng
+  (let [rng (random-m/make-random 42)
+        original [1 2 3 4 5]
+        shuffled (random-m/shuffle-with rng original)]
+    (t/is (= (sort shuffled) original))
+    (t/is (= 5 (count shuffled)))))
