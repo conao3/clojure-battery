@@ -58,3 +58,24 @@
 
 (t/deftest test-getsource-throws
   (t/is (thrown? ExceptionInfo (inspect-m/getsource (fn [] nil)))))
+
+(t/deftest test-isbuiltin
+  (t/is (true? (inspect-m/isbuiltin? (fn [x] x))))
+  (t/is (false? (inspect-m/isbuiltin? 42))))
+
+(t/deftest test-ismodule
+  (t/is (true? (inspect-m/ismodule? (find-ns 'clojure.core))))
+  (t/is (false? (inspect-m/ismodule? "string")))
+  (t/is (false? (inspect-m/ismodule? 42))))
+
+(t/deftest test-getmodule
+  (let [v #'clojure.core/map]
+    (t/is (instance? clojure.lang.Namespace (inspect-m/getmodule v)))))
+
+(t/deftest test-stack-has-function
+  (let [s (inspect-m/stack)]
+    (t/is (every? #(contains? % :function) s))
+    (t/is (every? #(string? (:function %)) s))))
+
+(t/deftest test-getdoc-var
+  (t/is (string? (inspect-m/getdoc #'clojure.core/map))))

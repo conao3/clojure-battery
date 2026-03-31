@@ -50,3 +50,32 @@
     (weakref/finalize-call fin)
     (weakref/finalize-call fin)
     (t/is (= 1 @call-count))))
+
+(t/deftest test-ref-returns-weakreference
+  (let [obj (Object.)
+        r (weakref/ref obj)]
+    (t/is (instance? java.lang.ref.WeakReference r))))
+
+(t/deftest test-deref-ref-returns-obj
+  (let [obj (java.util.ArrayList.)
+        r (weakref/ref obj)]
+    (t/is (= obj (weakref/deref-ref r)))))
+
+(t/deftest test-weak-dict-remove
+  (let [d (weakref/make-weak-dict)
+        k (Object.)]
+    (.put d k "value")
+    (t/is (= 1 (.size d)))
+    (.remove d k)
+    (t/is (= 0 (.size d)))))
+
+(t/deftest test-weak-value-dict-multiple
+  (let [d (weakref/make-weak-value-dict)
+        a (Object.)
+        b (Object.)]
+    (weakref/weak-value-dict-put d "a" a)
+    (weakref/weak-value-dict-put d "b" b)
+    (t/is (identical? a (weakref/weak-value-dict-get d "a")))
+    (t/is (identical? b (weakref/weak-value-dict-get d "b")))
+    (t/is (true? (weakref/weak-value-dict-contains? d "a")))
+    (t/is (false? (boolean (weakref/weak-value-dict-contains? d "c"))))))
