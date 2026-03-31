@@ -96,3 +96,36 @@
 
 (t/deftest test-iter
   (t/is (= [1 2 3] (vec (b/iter [1 2 3])))))
+
+(t/deftest test-iter-callable-sentinel
+  (let [counter (atom 0)
+        f (fn [] (swap! counter inc))
+        result (vec (b/iter f 4))]
+    (t/is (= [1 2 3] result))))
+
+(t/deftest test-format-basic
+  (t/is (= "hello" (b/format "hello" "")))
+  (t/is (= "42" (b/format 42 ""))))
+
+(t/deftest test-getattr-default
+  (t/is (= "default" (b/getattr {:a 1} :b "default")))
+  (t/is (= 1 (b/getattr {:a 1} :a "default"))))
+
+(t/deftest test-hasattr
+  (t/is (true? (b/hasattr {:a 1 :b 2} :a)))
+  (t/is (false? (b/hasattr {:a 1} :z)))
+  (t/is (false? (b/hasattr "string" :anything))))
+
+(t/deftest test-setattr
+  (t/is (= {:a 1 :b 2} (b/setattr {:a 1} :b 2)))
+  (t/is (= {:a 99} (b/setattr {:a 1} :a 99))))
+
+(t/deftest test-callable
+  (t/is (true? (b/callable? (fn [x] x))))
+  (t/is (false? (b/callable? 42)))
+  (t/is (false? (b/callable? "string"))))
+
+(t/deftest test-next
+  (t/is (= 1 (b/next [1 2 3])))
+  (t/is (= :default (b/next [] :default)))
+  (t/is (= 1 (b/next (seq [1 2 3])))))

@@ -51,3 +51,44 @@
         result (contextlib/chdir "/tmp" (fn [] (System/getProperty "user.dir")))]
     (t/is (= "/tmp" result))
     (t/is (= original (System/getProperty "user.dir")))))
+
+(t/deftest test-suppress-returns-nil-on-exception
+  (let [ctx (contextlib/suppress RuntimeException)]
+    (t/is (nil? (ctx (fn [] (throw (RuntimeException. "test"))))))
+    (t/is (= "ok" (ctx (fn [] "ok"))))))
+
+(t/deftest test-closing-calls-close-on-exception
+  (let [closed (atom false)
+        resource (reify java.io.Closeable
+                   (close [_] (reset! closed true)))]
+    (try
+      (contextlib/closing resource (fn [_] (throw (RuntimeException. "error"))))
+      (catch RuntimeException _))
+    (t/is (true? @closed))))
+
+(t/deftest test-exit-stack-close-clears-stack
+  (let [stack (contextlib/exit-stack)
+        count (atom 0)]
+    ((:push stack) (fn [] (swap! count inc)))
+    ((:push stack) (fn [] (swap! count inc)))
+    ((:close stack))
+    (t/is (= 2 @count))
+    ((:close stack))
+    (t/is (= 2 @count))))
+
+(t/deftest test-exit-stack-enter
+  (let [stack (contextlib/exit-stack)
+        closed (atom false)
+        resource (reify java.io.Closeable
+                   (close [_] (reset! closed true)))
+        entered ((:enter stack) resource)]
+    (t/is (identical? resource entered))
+    ((:close stack))
+    (t/is (true? @closed))))
+
+(t/deftest test-chdir-restores-on-exception
+  (let [original (System/getProperty "user.dir")]
+    (try
+      (contextlib/chdir "/tmp" (fn [] (throw (RuntimeException. "error"))))
+      (catch RuntimeException _))
+    (t/is (= original (System/getProperty "user.dir")))))
