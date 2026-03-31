@@ -44,7 +44,7 @@
   (t/is (= "-test-" (string/formatter-format-keyword "-{format_string}-" :format-string "test")))
   (t/is (thrown? ExceptionInfo (string/formatter-format-keyword "-{format_string}-"))))
 
-(t/deftest ^:kaocha/skip test-auto-numbering
+(t/deftest test-auto-numbering
   (t/is (= "foo{}{}" (string/formatter-format "foo{}{}" "bar" 6)))
   (t/is (= "foobar6bar" (string/formatter-format "foo{1}{num}{1}" nil "bar" :num 6)))
   (t/is (thrown? ExceptionInfo (string/formatter-format "foo{1}{}" "bar" 6)))
@@ -138,9 +138,9 @@
   (t/is (= "tim has eaten 7 bags of ham today"
            (string/template-safe-substitute "tim has eaten ${count} bags of ham today" {"count" 7}))))
 
-(t/deftest ^:kaocha/skip test-tupleargs
-  (t/is (= "('tim', 'fred') ate ('ham', 'kung pao')" (string/template-substitute "$who likes to eat a bag of $what" {"who" ["tim" "fred"] "what" ["ham" "kung pao"]})))
-  (t/is (= "('tim', 'fred') ate ('ham', 'kung pao')" (string/template-safe-substitute "$who likes to eat a bag of $what" {"who" ["tim" "fred"] "what" ["ham" "kung pao"]}))))
+(t/deftest test-tupleargs
+  (t/is (= "('tim', 'fred') likes to eat a bag of ('ham', 'kung pao')" (string/template-substitute "$who likes to eat a bag of $what" {"who" ["tim" "fred"] "what" ["ham" "kung pao"]})))
+  (t/is (= "('tim', 'fred') likes to eat a bag of ('ham', 'kung pao')" (string/template-safe-substitute "$who likes to eat a bag of $what" {"who" ["tim" "fred"] "what" ["ham" "kung pao"]}))))
 
 (t/deftest test-safe-template
   (t/is (= "tim likes ${what} for ${meal}" (string/template-safe-substitute "$who likes ${what} for ${meal}" {"who" "tim"})))
