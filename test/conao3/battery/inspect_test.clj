@@ -103,3 +103,14 @@
 (t/deftest test-ismodule-namespace
   (t/is (true? (inspect-m/ismodule? (find-ns 'clojure.test))))
   (t/is (false? (inspect-m/ismodule? nil))))
+
+(t/deftest test-getmembers
+  (let [members (inspect-m/getmembers (find-ns 'clojure.core))]
+    (t/is (sequential? members))
+    (t/is (pos? (count members)))
+    (t/is (every? #(string? (first %)) members))))
+
+(t/deftest test-getmembers-with-pred
+  (let [members (inspect-m/getmembers (find-ns 'clojure.core) fn?)]
+    (t/is (pos? (count members)))
+    (t/is (every? #(fn? (second %)) members))))

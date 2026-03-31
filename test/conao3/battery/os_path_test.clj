@@ -108,3 +108,19 @@
 (t/deftest test-islink
   (t/is (false? (osp-m/islink "/etc/hosts")))
   (t/is (false? (osp-m/islink "/nonexistent"))))
+
+(t/deftest test-lexists
+  (t/is (true? (osp-m/lexists "/etc/hosts")))
+  (t/is (false? (osp-m/lexists "/nonexistent-xyz"))))
+
+(t/deftest test-realpath
+  (t/is (string? (osp-m/realpath "/etc/hosts")))
+  (t/is (osp-m/isabs (osp-m/realpath "/etc/hosts"))))
+
+(t/deftest test-getctime
+  (t/is (float? (osp-m/getctime "/etc/hosts")))
+  (t/is (pos? (osp-m/getctime "/etc/hosts"))))
+
+(t/deftest test-expandvars
+  (t/is (string? (osp-m/expandvars "/home/$USER")))
+  (t/is (= "/etc/hosts" (osp-m/expandvars "/etc/hosts"))))
