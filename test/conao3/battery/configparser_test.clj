@@ -87,3 +87,23 @@
     (t/is (true? (configparser/remove-option cfg "section1" "foo")))
     (t/is (false? (configparser/has-option cfg "section1" "foo")))
     (t/is (false? (configparser/remove-option cfg "section1" "foo")))))
+
+(t/deftest test-colon-delimiter
+  (let [cfg (configparser/read-string "[section]\nkey: value\n")]
+    (t/is (= "value" (configparser/get cfg "section" "key")))))
+
+(t/deftest test-empty-value
+  (let [cfg (configparser/read-string "[section]\nkey=\n")]
+    (t/is (= "" (configparser/get cfg "section" "key")))))
+
+(t/deftest test-multiple-sections
+  (let [cfg (configparser/read-string "[s1]\na=1\n[s2]\nb=2\n[s3]\nc=3\n")]
+    (t/is (= 3 (count (configparser/sections cfg))))))
+
+(t/deftest test-items-multiple-keys
+  (let [cfg (configparser/read-string "[s]\na=1\nb=2\nc=3\n")
+        kv (into {} (configparser/items cfg "s"))]
+    (t/is (= "1" (get kv "a")))
+    (t/is (= "2" (get kv "b")))
+    (t/is (= "3" (get kv "c")))
+    (t/is (= 3 (count kv)))))

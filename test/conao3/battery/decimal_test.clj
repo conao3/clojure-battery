@@ -102,3 +102,23 @@
 (t/deftest test-decimal-int-float
   (t/is (= 3 (dec-m/decimal-int (dec-m/decimal "3.14"))))
   (t/is (< (Math/abs (- 3.14 (dec-m/decimal-float (dec-m/decimal "3.14")))) 1e-10)))
+
+(t/deftest test-decimal-sqrt
+  (let [result (dec-m/sqrt (dec-m/decimal "4"))]
+    (t/is (< (Math/abs (- 2.0 (dec-m/decimal-float result))) 1e-10))))
+
+(t/deftest test-decimal-ln-log10
+  (let [e (dec-m/decimal "2.718281828459045")]
+    (t/is (< (Math/abs (- 1.0 (dec-m/decimal-float (dec-m/ln e)))) 1e-6)))
+  (let [hundred (dec-m/decimal "100")]
+    (t/is (< (Math/abs (- 2.0 (dec-m/decimal-float (dec-m/log10 hundred)))) 1e-10))))
+
+(t/deftest test-decimal-quantize
+  (let [d (dec-m/decimal "3.14159")]
+    (t/is (= "3.14" (dec-m/decimal-str (dec-m/quantize d (dec-m/decimal "0.01")))))))
+
+(t/deftest test-decimal-to-integral
+  (let [d (dec-m/decimal "3.7")]
+    (t/is (= "4" (dec-m/decimal-str (dec-m/to-integral-value d)))))
+  (let [d (dec-m/decimal "3.2")]
+    (t/is (= "3" (dec-m/decimal-str (dec-m/to-integral-value d dec-m/ROUND_DOWN))))))

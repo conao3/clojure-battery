@@ -198,3 +198,23 @@
 (t/deftest test-datetime-strftime
   (let [dt (dt-m/datetime 2024 1 15 10 30 45)]
     (t/is (= "2024-01-15 10:30:45" (dt-m/datetime-strftime dt "%Y-%m-%d %H:%M:%S")))))
+
+(t/deftest test-datetime-strptime
+  (let [dt (dt-m/datetime-strptime "2024-01-15 10:30:45" "%Y-%m-%d %H:%M:%S")]
+    (t/is (= 2024 (dt-m/get-year dt)))
+    (t/is (= 1 (dt-m/get-month dt)))
+    (t/is (= 15 (dt-m/get-day dt)))
+    (t/is (= 10 (dt-m/get-hour dt)))))
+
+(t/deftest test-datetime-fromisoformat
+  (let [dt (dt-m/datetime-fromisoformat "2024-01-15T10:30:45")]
+    (t/is (= 2024 (dt-m/get-year dt)))
+    (t/is (= 10 (dt-m/get-hour dt)))))
+
+(t/deftest test-datetime-isoformat
+  (let [dt (dt-m/datetime 2024 1 15 10 30 45)]
+    (t/is (= "2024-01-15T10:30:45" (dt-m/datetime-isoformat dt)))))
+
+(t/deftest test-timedelta-min-max
+  (t/is (= -999999999 (:days dt-m/timedelta-min)))
+  (t/is (= 999999999 (:days dt-m/timedelta-max))))
