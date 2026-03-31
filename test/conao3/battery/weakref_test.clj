@@ -104,3 +104,24 @@
 (t/deftest test-make-weak-dict-is-map
   (let [d (weakref/make-weak-dict)]
     (t/is (instance? java.util.Map d))))
+
+(t/deftest test-finalize-alive
+  (let [obj (Object.)
+        fin (weakref/finalize obj (fn []))]
+    (t/is (true? (weakref/finalize-alive? fin)))))
+
+(t/deftest test-finalize-call-runs-func
+  (let [called (atom false)
+        obj (Object.)
+        fin (weakref/finalize obj (fn [] (reset! called true)))]
+    (weakref/finalize-call fin)
+    (t/is (true? @called))
+    (t/is (false? (weakref/finalize-alive? fin)))))
+
+(t/deftest test-finalize-call-idempotent
+  (let [call-count (atom 0)
+        obj (Object.)
+        fin (weakref/finalize obj (fn [] (swap! call-count inc)))]
+    (weakref/finalize-call fin)
+    (weakref/finalize-call fin)
+    (t/is (= 1 @call-count))))

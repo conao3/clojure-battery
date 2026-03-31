@@ -94,3 +94,19 @@
 (t/deftest test-lambda-type
   (t/is (= clojure.lang.IFn types-m/LambdaType))
   (t/is (instance? types-m/LambdaType (fn [x] x))))
+
+(t/deftest test-simple-namespace-del
+  (let [ns-obj (types-m/simple-namespace :x 1 :y 2)]
+    (types-m/simple-namespace-del ns-obj :x)
+    (t/is (nil? (types-m/simple-namespace-get ns-obj :x)))
+    (t/is (= 2 (types-m/simple-namespace-get ns-obj :y)))))
+
+(t/deftest test-mapped-attribute
+  (let [attr (types-m/dynamic-class-attribute (fn [obj] (:x obj)))]
+    (t/is (true? (types-m/mapped-attribute? attr)))
+    (t/is (false? (types-m/mapped-attribute? {:not-an-attr true})))))
+
+(t/deftest test-union-type-predicate
+  (let [u (types-m/union-type Integer Long)]
+    (t/is (true? (types-m/union-type? u)))
+    (t/is (false? (types-m/union-type? {:x 1})))))
