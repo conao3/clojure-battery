@@ -114,3 +114,25 @@
   (let [members (inspect-m/getmembers (find-ns 'clojure.core) fn?)]
     (t/is (pos? (count members)))
     (t/is (every? #(fn? (second %)) members))))
+
+(t/deftest test-isbuiltin
+  (t/is (true? (inspect-m/isbuiltin? +)))
+  (t/is (true? (inspect-m/isbuiltin? str)))
+  (t/is (false? (inspect-m/isbuiltin? 42))))
+
+(t/deftest test-iscoroutinefunction
+  (t/is (false? (inspect-m/iscoroutinefunction? (fn [x] x))))
+  (t/is (false? (inspect-m/iscoroutinefunction? 42))))
+
+(t/deftest test-isgeneratorfunction
+  (t/is (false? (inspect-m/isgeneratorfunction? (fn [x] x))))
+  (t/is (false? (inspect-m/isgeneratorfunction? nil))))
+
+(t/deftest test-currentframe
+  (let [f (inspect-m/currentframe)]
+    (t/is (or (nil? f) (inspect-m/isframe? f)))))
+
+(t/deftest test-isframe
+  (t/is (false? (inspect-m/isframe? nil)))
+  (t/is (false? (inspect-m/isframe? {})))
+  (t/is (false? (inspect-m/isframe? 42))))

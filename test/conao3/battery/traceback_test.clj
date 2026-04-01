@@ -93,3 +93,22 @@
 
 (t/deftest test-print-exception-no-throw
   (t/is (nil? (traceback/print-exception (RuntimeException. "test")))))
+
+(t/deftest test-format-list-empty
+  (t/is (= [] (traceback/format-list []))))
+
+(t/deftest test-format-exc-with-cause
+  (let [cause (IllegalArgumentException. "cause")
+        e (RuntimeException. "wrapper" cause)
+        s (traceback/format-exc e)]
+    (t/is (string? s))
+    (t/is (str/includes? s "wrapper"))))
+
+(t/deftest test-extract-stack-has-filename
+  (let [stack (traceback/extract-stack)]
+    (t/is (every? #(string? (:filename %)) stack))))
+
+(t/deftest test-walk-tb-frames-have-two-elements
+  (let [e (try (throw (RuntimeException. "test")) (catch RuntimeException ex ex))
+        frames (traceback/walk-tb e)]
+    (t/is (every? #(= 2 (count %)) frames))))
