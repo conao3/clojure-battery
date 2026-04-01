@@ -139,3 +139,28 @@
     (dec-m/setcontext! (assoc original :prec 10))
     (t/is (= 10 (:prec (dec-m/getcontext))))
     (dec-m/setcontext! original)))
+
+;; division by zero
+(t/deftest test-decimal-div-by-zero
+  (t/is (thrown? Exception (dec-m/decimal-div (dec-m/decimal "10") (dec-m/decimal "0"))))
+  (t/is (thrown? Exception (dec-m/decimal-div (dec-m/decimal "0") (dec-m/decimal "0")))))
+
+;; as-tuple with negative values
+(t/deftest test-as-tuple-negative
+  (let [d (dec-m/decimal "-3.14")]
+    (t/is (= 1 (:sign (dec-m/as-tuple d))))
+    (t/is (= [3 1 4] (:digits (dec-m/as-tuple d))))
+    (t/is (= -2 (:exponent (dec-m/as-tuple d)))))
+  (let [d (dec-m/decimal "-0")]
+    (t/is (= 1 (:sign (dec-m/as-tuple d))))))
+
+;; context precision affects calculation  
+(t/deftest test-context-precision-affects-ops
+  (let [original (dec-m/getcontext)]
+    (try
+      (dec-m/setcontext! (assoc original :prec 5))
+      (let [result (dec-m/decimal-div (dec-m/decimal "1") (dec-m/decimal "3"))]
+        ;; with prec=5, result should be 0.33333 (5 digits)
+        (t/is (= 5 (count (:digits (dec-m/as-tuple result))))))
+      (finally
+        (dec-m/setcontext! original)))))

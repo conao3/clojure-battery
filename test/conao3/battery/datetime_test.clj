@@ -240,3 +240,38 @@
     (t/is (= 6 (dt-m/get-month result)))
     (t/is (= 14 (dt-m/get-day result)))
     (t/is (= 12 (dt-m/get-hour result)))))
+
+;; timedelta normalization: negative seconds → carry to days
+(t/deftest test-timedelta-negative-seconds
+  ;; timedelta(0, -1) → days=-1, seconds=86399 (Python semantics)
+  (let [td (dt-m/timedelta 0 -1)]
+    (t/is (= -1 (:days td)))
+    (t/is (= 86399 (:seconds td)))
+    (t/is (= 0 (:microseconds td))))
+  ;; timedelta(0, -86400) → days=-1, seconds=0
+  (let [td (dt-m/timedelta 0 -86400)]
+    (t/is (= -1 (:days td)))
+    (t/is (= 0 (:seconds td))))
+  ;; timedelta(1, -1) → days=0, seconds=86399
+  (let [td (dt-m/timedelta 1 -1)]
+    (t/is (= 0 (:days td)))
+    (t/is (= 86399 (:seconds td)))))
+
+;; date weekday for multiple dates  
+(t/deftest test-date-weekday-multiple
+  (t/is (= 0 (dt-m/date-weekday (dt-m/date 2024 1 15))))  ; Monday
+  (t/is (= 1 (dt-m/date-weekday (dt-m/date 2024 1 16))))  ; Tuesday
+  (t/is (= 4 (dt-m/date-weekday (dt-m/date 2024 1 19))))  ; Friday
+  (t/is (= 5 (dt-m/date-weekday (dt-m/date 2024 1 20))))  ; Saturday
+  (t/is (= 6 (dt-m/date-weekday (dt-m/date 2024 1 21))))) ; Sunday
+
+;; date strftime with %A, %B, %a, %b
+(t/deftest test-date-strftime-extended
+  (let [d (dt-m/date 2024 1 15)]  ; Monday, January
+    (t/is (= "Monday" (dt-m/date-strftime d "%A")))
+    (t/is (= "Mon" (dt-m/date-strftime d "%a")))
+    (t/is (= "January" (dt-m/date-strftime d "%B")))
+    (t/is (= "Jan" (dt-m/date-strftime d "%b"))))
+  (let [d (dt-m/date 2024 7 4)]   ; Thursday, July
+    (t/is (= "Thursday" (dt-m/date-strftime d "%A")))
+    (t/is (= "July" (dt-m/date-strftime d "%B")))))

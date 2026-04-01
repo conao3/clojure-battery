@@ -67,10 +67,10 @@
   (let [total-us   (+ (* (long days) 86400000000)
                       (* (long seconds) 1000000)
                       (long microseconds))
-        d  (quot total-us 86400000000)
-        r  (mod  total-us 86400000000)
-        s  (quot r 1000000)
-        us (mod  r 1000000)]
+        d  (Math/floorDiv total-us 86400000000)
+        r  (Math/floorMod total-us 86400000000)
+        s  (Math/floorDiv r 1000000)
+        us (Math/floorMod r 1000000)]
     (->Timedelta d s us)))
 
 (defn timedelta

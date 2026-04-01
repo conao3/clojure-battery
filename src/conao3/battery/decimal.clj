@@ -26,53 +26,75 @@
   ([prec] (make-mc prec (current-rounding)))
   ([prec rounding] (MathContext. (int prec) ^RoundingMode rounding)))
 
-(defrecord Decimal [^BigDecimal _bd])
+;; _sign: nil means derive from _bd.signum(); true means explicitly negative (for -0)
+(defrecord Decimal [^BigDecimal _bd _sign])
+
+(defn- make-dec
+  ([bd] (->Decimal bd nil))
+  ([bd explicit-neg] (->Decimal bd explicit-neg)))
+
+(defn- effective-sign
+  "Returns Python-style sign: 0 for positive/zero, 1 for negative (including -0)."
+  [^Decimal d]
+  (if (true? (:_sign d))
+    1
+    (if (neg? (.signum ^BigDecimal (:_bd d))) 1 0)))
 
 (defn decimal
   ([x]
    (cond
      (instance? Decimal x) x
-     (instance? BigDecimal x) (->Decimal x)
-     (string? x) (->Decimal (BigDecimal. ^String x))
-     (integer? x) (->Decimal (BigDecimal/valueOf (long x)))
-     (float? x) (->Decimal (BigDecimal. (double x)))
-     (ratio? x) (->Decimal (.divide (BigDecimal. (numerator x))
-                                    (BigDecimal. (denominator x))
-                                    (make-mc)))
-     :else (->Decimal (BigDecimal. (str x))))))
+     (instance? BigDecimal x) (make-dec x)
+     (string? x)
+     (let [trimmed (clojure.string/trim x)
+           ;; detect negative zero: "-0", "-0.0", "-0.00", etc.
+           neg-zero? (and (clojure.string/starts-with? trimmed "-")
+                          (zero? (.compareTo (BigDecimal. ^String trimmed) BigDecimal/ZERO)))]
+       (->Decimal (BigDecimal. ^String trimmed) neg-zero?))
+     (integer? x) (make-dec (BigDecimal/valueOf (long x)))
+     (float? x) (make-dec (BigDecimal. (double x)))
+     (ratio? x) (make-dec (.divide (BigDecimal. (numerator x))
+                                   (BigDecimal. (denominator x))
+                                   (make-mc)))
+     :else (make-dec (BigDecimal. (str x))))))
 
 (defn- bd [^Decimal d] ^BigDecimal (:_bd d))
 
 (defn decimal-add [^Decimal a ^Decimal b]
-  (->Decimal (.add (bd a) (bd b))))
+  (make-dec (.add (bd a) (bd b))))
 
 (defn decimal-sub [^Decimal a ^Decimal b]
-  (->Decimal (.subtract (bd a) (bd b))))
+  (make-dec (.subtract (bd a) (bd b))))
 
 (defn decimal-mul [^Decimal a ^Decimal b]
-  (->Decimal (.multiply (bd a) (bd b))))
+  (make-dec (.multiply (bd a) (bd b))))
 
 (defn decimal-div
   ([^Decimal a ^Decimal b]
-   (->Decimal (.divide (bd a) (bd b) (make-mc)))))
+   (make-dec (.divide (bd a) (bd b) (make-mc)))))
 
 (defn decimal-rem [^Decimal a ^Decimal b]
-  (->Decimal (.remainder (bd a) (bd b))))
+  (make-dec (.remainder (bd a) (bd b))))
 
 (defn decimal-floordiv [^Decimal a ^Decimal b]
-  (->Decimal (.setScale (.divideToIntegralValue (bd a) (bd b)) 0 ROUND_DOWN)))
+  (make-dec (.setScale (.divideToIntegralValue (bd a) (bd b)) 0 ROUND_DOWN)))
 
 (defn decimal-pow [^Decimal a ^Decimal b]
   (try
-    (->Decimal (.pow (bd a) (int (.longValueExact (bd b)))))
+    (make-dec (.pow (bd a) (int (.longValueExact (bd b)))))
     (catch Exception _
-      (->Decimal (.pow (bd a) (int (.longValue (bd b))) (make-mc))))))
+      (make-dec (.pow (bd a) (int (.longValue (bd b))) (make-mc))))))
 
 (defn decimal-neg [^Decimal a]
-  (->Decimal (.negate (bd a))))
+  (let [neg-bd (.negate (bd a))
+        ;; -0 negated => +0, +0 negated => -0, other values: follow BigDecimal
+        explicit-neg? (if (zero? (.signum neg-bd))
+                        (zero? (effective-sign a))
+                        nil)]
+    (->Decimal neg-bd explicit-neg?)))
 
 (defn decimal-abs [^Decimal a]
-  (->Decimal (.abs (bd a))))
+  (make-dec (.abs (bd a))))
 
 (defn decimal-compare [^Decimal a ^Decimal b]
   (.compareTo (bd a) (bd b)))
@@ -99,7 +121,7 @@
   (str "Decimal('" (.toPlainString (bd d)) "')"))
 
 (defn is-signed [^Decimal d]
-  (neg? (.signum (bd d))))
+  (= 1 (effective-sign d)))
 
 (defn is-nan [^Decimal d]
   (try (.intValue (.unscaledValue (bd d))) false
@@ -121,24 +143,24 @@
   ([^Decimal d exp rounding]
    (let [exp-bd (bd (decimal exp))
          scale  (- (.scale exp-bd))]
-     (->Decimal (.setScale (bd d) (.scale exp-bd) ^RoundingMode rounding)))))
+     (make-dec (.setScale (bd d) (.scale exp-bd) ^RoundingMode rounding)))))
 
 (defn to-integral-value
   ([^Decimal d]
    (to-integral-value d (current-rounding)))
   ([^Decimal d rounding]
-   (->Decimal (.setScale (bd d) 0 ^RoundingMode rounding))))
+   (make-dec (.setScale (bd d) 0 ^RoundingMode rounding))))
 
 (defn sqrt [^Decimal d]
-  (->Decimal (.sqrt (bd d) (make-mc))))
+  (make-dec (.sqrt (bd d) (make-mc))))
 
 (defn ln [^Decimal d]
   (let [v (Math/log (.doubleValue (bd d)))]
-    (->Decimal (BigDecimal. v (make-mc)))))
+    (make-dec (BigDecimal. v (make-mc)))))
 
 (defn log10 [^Decimal d]
   (let [v (Math/log10 (.doubleValue (bd d)))]
-    (->Decimal (BigDecimal. v (make-mc)))))
+    (make-dec (BigDecimal. v (make-mc)))))
 
 (defn decimal-int [^Decimal d]
   (.longValue (bd d)))
@@ -147,11 +169,10 @@
   (.doubleValue (bd d)))
 
 (defn as-tuple [^Decimal d]
-  (let [bd-val  (bd d)
-        sign    (if (neg? (.signum bd-val)) 1 0)
-        scale   (.scale bd-val)
+  (let [bd-val   (bd d)
+        sign     (effective-sign d)
         unscaled (.unscaledValue bd-val)
-        abs-u   (.abs unscaled)
-        digits  (mapv #(- (int %) (int \0)) (str abs-u))
-        exp     (- scale)]
+        abs-u    (.abs unscaled)
+        digits   (mapv #(- (int %) (int \0)) (str abs-u))
+        exp      (- (.scale bd-val))]
     {:sign sign :digits digits :exponent exp}))

@@ -140,3 +140,33 @@
   (let [c (collections/chain-map {:a 1} {:a 99 :b 2})]
     (t/is (= 1 (:a c)))
     (t/is (= 2 (:b c)))))
+
+;; counter-most-common boundary values
+(t/deftest test-counter-most-common-boundary
+  (let [c {\a 3 \b 2 \c 1}]
+    ;; n=0 returns empty
+    (t/is (= [] (vec (collections/counter-most-common c 0))))
+    ;; n > size returns all in order
+    (t/is (= 3 (count (collections/counter-most-common c 10))))
+    ;; no arg returns all, most frequent first
+    (let [all (collections/counter-most-common c)]
+      (t/is (= 3 (count all)))
+      (t/is (= \a (first (first all)))))))
+
+;; counter-pos and counter-neg with zero values
+(t/deftest test-counter-pos-neg-zero
+  (let [c {\a -5 \b 0 \c 5 \d 10}]
+    ;; pos keeps only strictly positive
+    (t/is (= {\c 5 \d 10} (collections/counter-pos c)))
+    ;; neg keeps only negative values, negated
+    (t/is (= {\a 5} (collections/counter-neg c)))
+    ;; b=0 is excluded from both
+    (t/is (not (contains? (collections/counter-pos c) \b)))
+    (t/is (not (contains? (collections/counter-neg c) \b)))))
+
+;; counter-elements with multi-elements
+(t/deftest test-counter-elements-sorted
+  ;; elements returns each key repeated by count, only positive counts
+  (let [c {\a 3 \b 0 \c -1 \d 2}
+        elems (sort (collections/counter-elements c))]
+    (t/is (= [\a \a \a \d \d] elems))))
