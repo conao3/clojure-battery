@@ -176,6 +176,30 @@
   (t/is (thrown? ExceptionInfo (random-m/randrange 5 3)))
   (t/is (thrown? ExceptionInfo (random-m/randrange 0 42 0))))
 
+(t/deftest test-gauss-many-samples-mean
+  ;; mean of many gauss samples should be close to mu
+  (let [rng (random-m/make-random 42)
+        mu 5.0
+        sigma 1.0
+        n 10000
+        samples (repeatedly n #(+ mu (* sigma (.nextGaussian ^java.util.Random rng))))
+        mean (/ (reduce + samples) n)]
+    (t/is (< (Math/abs (- mean mu)) 0.1))))
+
+(t/deftest test-choice-from-range
+  (let [rng (random-m/make-random 42)]
+    (dotimes [_ 100]
+      (let [v (random-m/choice-with rng (range 5))]
+        (t/is (and (>= v 0) (< v 5)))))))
+
+(t/deftest test-module-level-shuffle
+  ;; module-level shuffle works without explicit rng
+  (random-m/seed 42)
+  (let [orig [1 2 3 4 5]
+        shuffled (random-m/shuffle orig)]
+    (t/is (= (sort orig) (sort shuffled)))
+    (t/is (= 5 (count shuffled)))))
+
 (t/deftest test-randrange-step
   ;; with step, values should be multiples of step from start
   (dotimes [_ 20]

@@ -224,3 +224,24 @@
 (t/deftest test-accumulate-with-func
   (t/is (= [1 2 6 24 120] (vec (itertools/accumulate [1 2 3 4 5] *))))
   (t/is (= [1 2 6 24 120] (vec (take 5 (itertools/accumulate (range 1 100) *))))))
+
+(t/deftest test-accumulate-with-initial
+  (t/is (= [100 101 103 106 110] (vec (itertools/accumulate [1 2 3 4] + 100))))
+  (t/is (= [1000] (vec (itertools/accumulate [] + 1000)))))
+
+(t/deftest test-product-three-colls
+  (t/is (= 8 (count (vec (itertools/product [0 1] [0 1] [0 1])))))
+  (t/is (= [[0 0 0] [0 0 1] [0 1 0] [0 1 1] [1 0 0] [1 0 1] [1 1 0] [1 1 1]]
+           (vec (itertools/product [0 1] [0 1] [0 1])))))
+
+(t/deftest test-tee-three
+  (let [[a b c] (itertools/tee [1 2 3] 3)]
+    (t/is (= [1 2 3] (vec a)))
+    (t/is (= [1 2 3] (vec b)))
+    (t/is (= [1 2 3] (vec c)))))
+
+(t/deftest test-groupby-custom-key
+  (let [result (vec (itertools/groupby [1 2 3 4] even?))]
+    (t/is (= [false [1]] (first result)))
+    (t/is (= [true [2]] (second result)))
+    (t/is (= 4 (count result)))))

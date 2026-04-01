@@ -188,10 +188,9 @@
     [(.toString sb) @used-indices @used-keys]))
 
 (defn- split-positional-keyword [args]
-  (let [kw-start (or (first (keep-indexed (fn [i a] (when (keyword? a) i)) args))
-                     (count args))]
-    [(vec (take kw-start args))
-     (into {} (map (fn [[k v]] [(name k) (str v)]) (partition 2 (drop kw-start args))))]))
+  (let [[pos kw-args] (split-with (complement keyword?) args)]
+    [(vec pos)
+     (into {} (map (fn [[k v]] [(name k) (str v)]) (partition 2 kw-args)))]))
 
 (defn formatter-format
   ([] (throw (ex-info "formatter-format requires at least 1 arg" {})))

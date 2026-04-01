@@ -71,3 +71,15 @@
 
 (t/deftest test-strsignal-unknown
   (t/is (string? (signal-m/strsignal 99))))
+
+(t/deftest test-strsignal-standard-signals
+  (doseq [sig [signal-m/SIGTERM signal-m/SIGINT signal-m/SIGABRT signal-m/SIGSEGV]]
+    (let [desc (signal-m/strsignal sig)]
+      (t/is (string? desc))
+      (t/is (pos? (count desc))))))
+
+(t/deftest test-valid-signals-minimum-count
+  (t/is (>= (count (signal-m/valid-signals)) 4)))
+
+(t/deftest test-valid-signals-all-positive
+  (t/is (every? pos? (signal-m/valid-signals))))

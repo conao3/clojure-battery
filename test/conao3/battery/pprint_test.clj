@@ -110,3 +110,20 @@
   (t/is (false? (pprint/isrecursive [])))
   (t/is (false? (pprint/isrecursive '(1 2))))
   (t/is (false? (pprint/isrecursive #{1 2}))))
+
+(t/deftest test-pformat-symbol
+  (t/is (= "foo" (pprint/pformat 'foo)))
+  (t/is (= "my-sym" (pprint/pformat 'my-sym)))
+  (t/is (= "ns/fn" (pprint/pformat 'ns/fn))))
+
+(t/deftest test-pformat-ratio
+  (t/is (= "3/4" (pprint/pformat 3/4)))
+  (t/is (= "1/3" (pprint/pformat 1/3))))
+
+(t/deftest test-isreadable-symbol-consistent
+  ;; isreadable and pformat should be consistent for symbols
+  (t/is (true? (pprint/isreadable 'foo)))
+  (t/is (string? (pprint/pformat 'foo))))
+
+(t/deftest test-pformat-string-key-map
+  (t/is (= "{\"a\" 1}" (pprint/pformat {"a" 1}))))

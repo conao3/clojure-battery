@@ -12,15 +12,14 @@
   ([] (reset! _rng (make-rng)))
   ([s] (reset! _rng (make-rng s))))
 
-(defn random []
-  (.nextDouble ^Random @_rng))
+(defn random [] (.nextDouble ^Random @_rng))
 
 (defn getrandbits [k]
   (let [^Random r @_rng]
     (loop [n k result 0]
       (if (<= n 0)
         result
-        (let [bits (min n 32)
+        (let [bits  (min n 32)
               chunk (if (< bits 32)
                       (bit-and (.nextInt r) (dec (bit-shift-left 1 bits)))
                       (bit-and (long (.nextInt r)) 0xFFFFFFFF))]
@@ -42,27 +41,6 @@
 (defn randint [a b]
   (+ a (.nextInt ^Random @_rng (inc (- b a)))))
 
-(defn choice [seq]
-  (let [v (vec seq)
-        n (count v)]
-    (when (zero? n)
-      (throw (ex-info "Cannot choose from an empty sequence" {})))
-    (nth v (.nextInt ^Random @_rng n))))
-
-(defn shuffle [lst]
-  (let [v (java.util.ArrayList. ^java.util.Collection lst)]
-    (java.util.Collections/shuffle v ^Random @_rng)
-    (vec v)))
-
-(defn sample [population k]
-  (let [v (vec population)
-        n (count v)]
-    (when (> k n)
-      (throw (ex-info "Sample larger than population" {:k k :n n})))
-    (let [indices (java.util.ArrayList. (range n))]
-      (java.util.Collections/shuffle indices ^Random @_rng)
-      (mapv #(nth v %) (take k indices)))))
-
 (defn uniform [a b]
   (+ a (* (.nextDouble ^Random @_rng) (- b a))))
 
@@ -78,11 +56,9 @@
        (+ low (* (Math/sqrt (* u (- high low) (- mode low)))))
        (- high (* (Math/sqrt (* (- 1 u) (- high low) (- high mode)))))))))
 
-(defn getstate []
-  (.getSeed ^Random (make-rng 0)))
+(defn getstate [] (.getSeed ^Random (make-rng 0)))
 
-(defn setstate [state]
-  (reset! _rng (make-rng state)))
+(defn setstate [state] (reset! _rng (make-rng state)))
 
 (defn make-random
   ([] (make-rng))
@@ -114,3 +90,9 @@
     (let [indices (java.util.ArrayList. (range n))]
       (java.util.Collections/shuffle indices ^java.util.Random rng)
       (mapv #(nth v %) (take k indices)))))
+
+(defn choice [coll] (choice-with @_rng coll))
+
+(defn shuffle [lst] (shuffle-with @_rng lst))
+
+(defn sample [population k] (sample-with @_rng population k))

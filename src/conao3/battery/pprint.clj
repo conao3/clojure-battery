@@ -28,6 +28,7 @@
     (number? obj) (str obj)
     (string? obj) (str "\"" (str/replace obj "\"" "\\\"") "\"")
     (keyword? obj) (str obj)
+    (symbol? obj)  (str obj)
     (vector? obj) (str "[" (str/join " " (map pformat obj)) "]")
     (list? obj) (str "(" (str/join " " (map pformat obj)) ")")
     (map? obj) (if (empty? obj) "{}"

@@ -162,3 +162,26 @@
   (t/is (= 5 (op/call + 2 3)))
   (t/is (= "hello" (op/call str "hel" "lo")))
   (t/is (= [1 2 3] (op/call vector 1 2 3))))
+
+(t/deftest test-floordiv-negative
+  (t/is (= -2 (op/floordiv -7 4)))
+  (t/is (= -2 (op/floordiv 7 -4)))
+  (t/is (= 0 (op/floordiv 3 5)))
+  (t/is (= -1 (op/floordiv -1 3))))
+
+(t/deftest test-truediv-returns-double
+  (t/is (= 1.5 (op/truediv 3 2)))
+  (t/is (= 0.5 (op/truediv 1 2)))
+  (t/is (double? (op/truediv 10 5))))
+
+(t/deftest test-concat-throws-for-unsupported
+  (t/is (thrown? clojure.lang.ExceptionInfo (op/concat 42 43)))
+  (t/is (thrown? clojure.lang.ExceptionInfo (op/concat :a :b))))
+
+(t/deftest test-truth-various-types
+  (t/is (true? (op/truth 1)))
+  (t/is (true? (op/truth "x")))
+  (t/is (true? (op/truth [])))
+  (t/is (true? (op/truth 0)))
+  (t/is (false? (op/truth nil)))
+  (t/is (false? (op/truth false))))

@@ -130,6 +130,24 @@
     (md5test (byte-array (repeat 16 (unchecked-byte 0xaa))) (byte-array (repeat 50 (unchecked-byte 0xdd)))
              "56be34521d144c88dbb8c733f0e8b3f6")))
 
+(t/deftest test-hmac-sha224
+  (let [h (hmac/new (b "key") "sha224" (b "The quick brown fox jumps over the lazy dog"))]
+    (t/is (= 28 (:digest-size h)))
+    (t/is (= 56 (count (hmac/hexdigest h))))))
+
+(t/deftest test-hmac-sha384
+  (let [h (hmac/new (b "key") "sha384" (b "The quick brown fox jumps over the lazy dog"))]
+    (t/is (= 48 (:digest-size h)))
+    (t/is (= 96 (count (hmac/hexdigest h))))))
+
+(t/deftest test-update-multiple-calls
+  ;; Multiple small updates == one large update
+  (let [h1 (hmac/new (b "key") "sha256" (b "hello world"))
+        h2 (hmac/new (b "key") "sha256")]
+    (hmac/update! h2 (b "hello"))
+    (hmac/update! h2 (b " world"))
+    (t/is (= (hmac/hexdigest h1) (hmac/hexdigest h2)))))
+
 ;; RFC 2202 test vectors for HMAC-SHA1
 (t/deftest test-sha1-rfc2202
   (letfn [(shatest [key msg expected]

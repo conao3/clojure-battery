@@ -201,3 +201,19 @@
     (t/is (= 1 (:a c)))
     (t/is (= 3 (:b c)))
     (t/is (= 4 (:c c)))))
+
+(t/deftest test-counter-from-char-seq
+  (let [c (collections/counter (seq "hello"))]
+    (t/is (= 1 (get c \h)))
+    (t/is (= 1 (get c \e)))
+    (t/is (= 2 (get c \l)))
+    (t/is (= 1 (get c \o)))))
+
+(t/deftest test-chain-map-no-args
+  (t/is (= {} (collections/chain-map))))
+
+(t/deftest test-counter-subtract-makes-negative
+  (let [c (collections/counter-subtract {"a" 2 "b" 3} {"a" 5 "c" 1})]
+    (t/is (= -3 (get c "a")))
+    (t/is (= 3 (get c "b")))
+    (t/is (= -1 (get c "c")))))

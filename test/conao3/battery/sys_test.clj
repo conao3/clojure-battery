@@ -131,3 +131,16 @@
     (t/is (nil? t))
     (t/is (nil? v))
     (t/is (nil? tb))))
+
+(t/deftest test-getsizeof-ordering
+  (let [small (sys-m/getsizeof "a")
+        large (sys-m/getsizeof (apply str (repeat 1000 "a")))]
+    (t/is (<= small large))))
+
+(t/deftest test-version-info-major-ge-1
+  (t/is (>= (:major sys-m/version-info) 1)))
+
+(t/deftest test-path-strings
+  (let [p (sys-m/path)]
+    (t/is (vector? p))
+    (t/is (every? string? p))))

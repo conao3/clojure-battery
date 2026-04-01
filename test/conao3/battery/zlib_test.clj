@@ -165,3 +165,19 @@
 (t/deftest test-crc32-known-value
   ;; crc32 of "hello world" is a known constant
   (t/is (= 222957957 (zlib/crc32 (b "hello world")))))
+
+(t/deftest test-decompress-throws-on-bad-data
+  (t/is (thrown? Exception (zlib/decompress (byte-array [0 1 2 3 4 5])))))
+
+(t/deftest test-compress-z-default-compression
+  (let [data (b "hello world")
+        compressed (zlib/compress data zlib/Z_DEFAULT_COMPRESSION)
+        decompressed (zlib/decompress compressed)]
+    (t/is (bytes= data decompressed))))
+
+(t/deftest test-adler32-known-value
+  (t/is (= 436929629 (zlib/adler32 (b "hello world")))))
+
+(t/deftest test-checksum-returns-integer
+  (t/is (integer? (zlib/crc32 (b "test"))))
+  (t/is (integer? (zlib/adler32 (b "test")))))

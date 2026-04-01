@@ -14,9 +14,7 @@
 
 (defn counter-elements
   [c]
-  (->> c
-       (filter (fn [[_ v]] (pos? v)))
-       (mapcat (fn [[k v]] (repeat v k)))))
+  (mapcat (fn [[k v]] (when (pos? v) (repeat v k))) c))
 
 (defn counter-most-common
   ([c] (sort-by (comp - second) c))
@@ -24,17 +22,14 @@
 
 (defn counter-subtract
   [c1 c2]
-  (->> (into #{} (concat (keys c1) (keys c2)))
-       (map (fn [k] [k (- (get c1 k 0) (get c2 k 0))]))
-       (into {})))
+  (reduce (fn [acc [k v]] (assoc acc k (- (get acc k 0) v)))
+          (into {} c1)
+          c2))
 
 (defn counter-pos
   [c]
-  (->> c (filter (fn [[_ v]] (pos? v))) (into {})))
+  (into {} (for [[k v] c :when (pos? v)] [k v])))
 
 (defn counter-neg
   [c]
-  (->> c
-       (filter (fn [[_ v]] (neg? v)))
-       (map (fn [[k v]] [k (- v)]))
-       (into {})))
+  (into {} (for [[k v] c :when (neg? v)] [k (- v)])))

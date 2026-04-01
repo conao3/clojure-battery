@@ -229,3 +229,22 @@
   ;; $ matches end
   (t/is (some? (re-m/search "world$" "hello world")))
   (t/is (nil? (re-m/search "hello$" "hello world"))))
+
+(t/deftest test-sub-count-limit
+  ;; max-count limits number of replacements
+  (t/is (= "xbca" (re-m/sub "a" "x" "abca" 1)))
+  (t/is (= "xbcx" (re-m/sub "a" "x" "abca" 2)))
+  (t/is (= "xbcx" (re-m/sub "a" "x" "abca" 99))))
+
+(t/deftest test-split-maxsplit
+  (t/is (= ["a" "b" "c d"] (vec (re-m/split "\\s+" "a b c d" 2))))
+  (t/is (= ["a" "b" "c" "d"] (vec (re-m/split "\\s+" "a b c d")))))
+
+(t/deftest test-findall-no-match
+  (t/is (= [] (re-m/findall "xyz" "hello world"))))
+
+(t/deftest test-dotall-flag
+  ;; without DOTALL, . does not match newline
+  (t/is (nil? (re-m/match "a.b" "a\nb")))
+  ;; with DOTALL, . matches newline
+  (t/is (some? (re-m/match "a.b" "a\nb" re-m/DOTALL))))
