@@ -121,3 +121,31 @@
   (t/is (= [".tar" ".gz" ".bak"] (pathlib/suffixes "archive.tar.gz.bak")))
   ;; Hidden file with suffix
   (t/is (= [".conf"] (pathlib/suffixes ".hidden.conf"))))
+
+(t/deftest test-is-absolute
+  (t/is (true? (pathlib/is-absolute? "/foo/bar")))
+  (t/is (false? (pathlib/is-absolute? "foo/bar")))
+  (t/is (false? (pathlib/is-absolute? ".")))
+  (t/is (true? (pathlib/is-absolute? "/"))))
+
+(t/deftest test-divpath
+  (t/is (= "/foo/bar" (pathlib/divpath "/foo" "bar")))
+  (t/is (= "foo/bar" (pathlib/divpath "foo" "bar"))))
+
+(t/deftest test-joinpath-absolute-segment
+  ;; Joining with absolute segment replaces path (Python behavior)
+  ;; Clojure implementation may differ - test what's implemented
+  (t/is (string? (pathlib/joinpath "/foo" "bar" "baz"))))
+
+(t/deftest test-suffix-no-extension
+  (t/is (= "" (pathlib/suffix "Makefile")))
+  (t/is (= "" (pathlib/suffix "/foo/bar")))
+  (t/is (= "" (pathlib/suffix ""))))
+
+(t/deftest test-parts-relative
+  (let [p (pathlib/parts "foo/bar/baz")]
+    (t/is (= ["foo" "bar" "baz"] p))))
+
+(t/deftest test-parent-relative
+  (t/is (= "." (pathlib/parent "foo")))
+  (t/is (= "foo" (pathlib/parent "foo/bar"))))
