@@ -90,22 +90,21 @@
     (fn [obj] (getitem obj (first items)))
     (fn [obj] (mapv #(getitem obj %) items))))
 
+(defn- get-nested-attr [obj attr]
+  (reduce (fn [o k]
+            (if (map? o)
+              (or (get o k)
+                  (get o (keyword k))
+                  (throw (ex-info (str "Attribute not found: " k) {:attr k})))
+              (throw (ex-info (str "Cannot get attribute on " (type o)) {}))))
+          obj
+          (clojure.string/split attr #"\.")))
+
 (defn attrgetter
   [& attrs]
-  (letfn [(get-attr [obj attr]
-            (let [parts (clojure.string/split attr #"\.")
-                  k (first parts)]
-              (let [v (cond
-                        (map? obj) (or (get obj k)
-                                       (get obj (keyword k))
-                                       (throw (ex-info (str "Attribute not found: " k) {:attr k})))
-                        :else (throw (ex-info (str "Cannot get attribute on " (type obj)) {})))]
-                (if (seq (rest parts))
-                  (get-attr v (clojure.string/join "." (rest parts)))
-                  v))))]
-    (if (= 1 (count attrs))
-      (fn [obj] (get-attr obj (first attrs)))
-      (fn [obj] (mapv #(get-attr obj %) attrs)))))
+  (if (= 1 (count attrs))
+    (fn [obj] (get-nested-attr obj (first attrs)))
+    (fn [obj] (mapv #(get-nested-attr obj %) attrs))))
 
 (defn methodcaller
   [name & args]

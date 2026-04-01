@@ -83,24 +83,17 @@
              f (count (filter #(= % x) sorted))]
          (+ l (* interval (/ (- (/ n 2.0) cf) f))))))))
 
+(defn- mode-values [data]
+  (let [freqs     (frequencies data)
+        max-count (apply max (vals freqs))]
+    (->> data distinct (filter #(= (freqs %) max-count)))))
+
 (defn mode [data]
   (check-nonempty data "mode")
-  (let [freqs (reduce (fn [acc x] (update acc x (fnil inc 0))) {} data)
-        max-count (apply max (vals freqs))]
-    (->> data
-         (distinct)
-         (filter #(= (freqs %) max-count))
-         first)))
+  (first (mode-values data)))
 
 (defn multimode [data]
-  (if (empty? data)
-    []
-    (let [freqs (reduce (fn [acc x] (update acc x (fnil inc 0))) {} data)
-          max-count (apply max (vals freqs))]
-      (->> data
-           (distinct)
-           (filter #(= (freqs %) max-count))
-           vec))))
+  (if (empty? data) [] (vec (mode-values data))))
 
 (defn pvariance
   ([data] (pvariance data (mean data)))

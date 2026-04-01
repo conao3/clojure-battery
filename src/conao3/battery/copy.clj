@@ -18,17 +18,11 @@
     (list? x)    x
     (seq? x)     x
     (instance? java.util.List x)
-    (let [result (java.util.ArrayList.)]
-      (doseq [item x] (.add result item))
-      result)
+    (java.util.ArrayList. ^java.util.Collection (vec x))
     (instance? java.util.Map x)
-    (let [result (java.util.HashMap.)]
-      (doseq [[k v] x] (.put result k v))
-      result)
+    (java.util.HashMap. ^java.util.Map x)
     (instance? java.util.Set x)
-    (let [result (java.util.HashSet.)]
-      (doseq [item x] (.add result item))
-      result)
+    (java.util.HashSet. ^java.util.Collection (vec x))
     :else x))
 
 (defn deepcopy
@@ -50,15 +44,12 @@
      (list? x)    (apply list (map deepcopy x))
      (seq? x)     (map deepcopy x)
      (instance? java.util.List x)
-     (let [result (java.util.ArrayList.)]
-       (doseq [item x] (.add result (deepcopy item)))
-       result)
+     (java.util.ArrayList. ^java.util.Collection (mapv deepcopy x))
      (instance? java.util.Map x)
-     (let [result (java.util.HashMap.)]
-       (doseq [[k v] x] (.put result (deepcopy k) (deepcopy v)))
-       result)
+     (reduce (fn [^java.util.HashMap m [k v]]
+               (doto m (.put (deepcopy k) (deepcopy v))))
+             (java.util.HashMap.)
+             x)
      (instance? java.util.Set x)
-     (let [result (java.util.HashSet.)]
-       (doseq [item x] (.add result (deepcopy item)))
-       result)
+     (java.util.HashSet. ^java.util.Collection (mapv deepcopy x))
      :else x)))

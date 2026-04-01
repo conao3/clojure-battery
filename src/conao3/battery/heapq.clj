@@ -12,43 +12,50 @@
     (catch Throwable e
       (throw (ex-info "comparison failed" {} e)))))
 
+(defn- swap-at [v i j]
+  (assoc v i (nth v j) j (nth v i)))
+
 (defn- sift-up [v i]
   (loop [v v i i]
     (let [parent (quot (dec i) 2)]
       (if (and (pos? i) (neg? (safe-compare (nth v i) (nth v parent))))
-        (recur (assoc v i (nth v parent) parent (nth v i)) parent)
+        (recur (swap-at v i parent) parent)
         v))))
 
 (defn- sift-down [v i n]
   (loop [v v i i]
-    (let [left (inc (* 2 i))
+    (let [left  (inc (* 2 i))
           right (+ 2 (* 2 i))
-          smallest (if (and (< left n) (neg? (safe-compare (nth v left) (nth v i))))
-                     left i)
-          smallest (if (and (< right n) (neg? (safe-compare (nth v right) (nth v smallest))))
-                     right smallest)]
+          smallest (cond
+                     (and (< left n) (neg? (safe-compare (nth v left) (nth v i)))) left
+                     :else i)
+          smallest (cond
+                     (and (< right n) (neg? (safe-compare (nth v right) (nth v smallest)))) right
+                     :else smallest)]
       (if (= smallest i)
         v
-        (recur (assoc v i (nth v smallest) smallest (nth v i)) smallest)))))
+        (recur (swap-at v i smallest) smallest)))))
 
 (defn- sift-up-max [v i]
   (loop [v v i i]
     (let [parent (quot (dec i) 2)]
       (if (and (pos? i) (pos? (safe-compare (nth v i) (nth v parent))))
-        (recur (assoc v i (nth v parent) parent (nth v i)) parent)
+        (recur (swap-at v i parent) parent)
         v))))
 
 (defn- sift-down-max [v i n]
   (loop [v v i i]
-    (let [left (inc (* 2 i))
-          right (+ 2 (* 2 i))
-          largest (if (and (< left n) (pos? (safe-compare (nth v left) (nth v i))))
-                    left i)
-          largest (if (and (< right n) (pos? (safe-compare (nth v right) (nth v largest))))
-                   right largest)]
+    (let [left    (inc (* 2 i))
+          right   (+ 2 (* 2 i))
+          largest (cond
+                    (and (< left n) (pos? (safe-compare (nth v left) (nth v i)))) left
+                    :else i)
+          largest (cond
+                    (and (< right n) (pos? (safe-compare (nth v right) (nth v largest)))) right
+                    :else largest)]
       (if (= largest i)
         v
-        (recur (assoc v i (nth v largest) largest (nth v i)) largest)))))
+        (recur (swap-at v i largest) largest)))))
 
 (defn heappush! [heap-atom item]
   (validate-heap heap-atom)

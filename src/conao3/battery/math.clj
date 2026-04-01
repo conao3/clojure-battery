@@ -56,7 +56,8 @@
        (max (* rel-tol (max (Math/abs (double a)) (Math/abs (double b)))) abs-tol))))
 
 (defn factorial [n]
-  (if (<= n 1) 1 (* (long n) (factorial (dec n)))))
+  (loop [n (long n) acc 1]
+    (if (<= n 1) acc (recur (dec n) (* acc n)))))
 
 (defn gcd
   ([a b]

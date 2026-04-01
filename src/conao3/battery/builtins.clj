@@ -86,7 +86,7 @@
 
 (defn len [x]
   (cond
-    (string? x) (.length ^String x)
+    (string? x)  (.length ^String x)
     (counted? x) (count x)
     (instance? java.util.Collection x) (.size ^java.util.Collection x)
     :else (throw (ex-info (str "object has no len(): " (type x)) {}))))
@@ -94,29 +94,24 @@
 (defn map [f & iterables]
   (apply clojure.core/map f iterables))
 
+(defn- extremum [better? iterable key-fn]
+  (clojure.core/reduce (fn [a b] (if (better? (compare (key-fn a) (key-fn b))) a b)) iterable))
+
 (defn max
-  ([iterable] (clojure.core/reduce (fn [a b] (if (pos? (compare a b)) a b)) iterable))
+  ([iterable] (extremum pos? iterable identity))
   ([iterable & args]
    (if (keyword? (first args))
-     ;; keyword opts: treat iterable as the collection
      (let [{:keys [key]} (apply hash-map args)]
-       (if key
-         (clojure.core/reduce (fn [a b] (if (pos? (compare (key a) (key b))) a b)) iterable)
-         (clojure.core/reduce (fn [a b] (if (pos? (compare a b)) a b)) iterable)))
-     ;; multiple positional args
-     (let [all-args (cons iterable args)]
-       (clojure.core/reduce (fn [a b] (if (pos? (compare a b)) a b)) all-args)))))
+       (extremum pos? iterable (or key identity)))
+     (extremum pos? (cons iterable args) identity))))
 
 (defn min
-  ([iterable] (clojure.core/reduce (fn [a b] (if (neg? (compare a b)) a b)) iterable))
+  ([iterable] (extremum neg? iterable identity))
   ([iterable & args]
    (if (keyword? (first args))
      (let [{:keys [key]} (apply hash-map args)]
-       (if key
-         (clojure.core/reduce (fn [a b] (if (neg? (compare (key a) (key b))) a b)) iterable)
-         (clojure.core/reduce (fn [a b] (if (neg? (compare a b)) a b)) iterable)))
-     (let [all-args (cons iterable args)]
-       (clojure.core/reduce (fn [a b] (if (neg? (compare a b)) a b)) all-args)))))
+       (extremum neg? iterable (or key identity)))
+     (extremum neg? (cons iterable args) identity))))
 
 (defn next
   ([it] (first it))
