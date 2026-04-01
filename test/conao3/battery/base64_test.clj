@@ -245,3 +245,37 @@
                 (byte-array (map unchecked-byte [0xd3 0x56 0xbe 0x6f 0xf7 0x1d]))))
   (t/is (bytes= (base64/urlsafe-b64decode (b "01a\n-b_cd"))
                 (byte-array (map unchecked-byte [0xd3 0x56 0xbe 0x6f 0xf7 0x1d])))))
+
+(t/deftest test-b64encode-empty
+  (t/is (bytes= (base64/b64encode (b "")) (b ""))))
+
+(t/deftest test-b64decode-empty
+  (t/is (bytes= (base64/b64decode (b "")) (b ""))))
+
+(t/deftest test-encodebytes-multiline
+  ;; encodebytes adds \n every 76 chars
+  (let [data (byte-array (repeat 100 (byte 65)))  ;; 100 'A's
+        encoded (base64/encodebytes data)
+        lines (clojure.string/split-lines (String. encoded "UTF-8"))]
+    (t/is (> (count lines) 1))
+    (t/is (every? #(<= (count %) 76) lines))))
+
+(t/deftest test-decodebytes-roundtrip
+  (let [data (b "hello world!")
+        encoded (base64/encodebytes data)
+        decoded (base64/decodebytes encoded)]
+    (t/is (bytes= data decoded))))
+
+(t/deftest test-b16encode-lowercase-input
+  ;; b16encode produces uppercase
+  (let [encoded (base64/b16encode (b "abc"))]
+    (t/is (= "616263" (String. encoded "UTF-8")))))
+
+(t/deftest test-b32encode-empty
+  (t/is (bytes= (base64/b32encode (b "")) (b ""))))
+
+(t/deftest test-urlsafe-roundtrip
+  (let [data (b "hello+world/foo=bar")
+        encoded (base64/urlsafe-b64encode data)
+        decoded (base64/urlsafe-b64decode encoded)]
+    (t/is (bytes= data decoded))))
