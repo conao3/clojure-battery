@@ -25,20 +25,27 @@
 (defn lru-cache
   ([f] (lru-cache nil f))
   ([maxsize f]
-   (let [cache (atom {})
-         order (atom [])]
-     (fn [& args]
-       (let [k (vec args)]
-         (if-let [[_ v] (find @cache k)]
-           v
-           (let [result (apply f args)]
-             (swap! cache assoc k result)
-             (swap! order conj k)
-             (when (and maxsize (> (count @cache) maxsize))
-               (let [evict (first @order)]
-                 (swap! order (comp vec rest))
-                 (swap! cache dissoc evict)))
-             result)))))))
+   (let [cache  (atom {})
+         order  (atom [])
+         hits   (atom 0)
+         misses (atom 0)]
+     (fn lru-fn [& args]
+       (condp = args
+         [:cache-info] {:hits @hits :misses @misses :maxsize maxsize :currsize (count @cache)}
+         [:cache-clear] (do (reset! cache {}) (reset! order []) (reset! hits 0) (reset! misses 0) nil)
+         [:wrapped]     f
+         (let [k (vec args)]
+           (if-let [[_ v] (find @cache k)]
+             (do (swap! hits inc) v)
+             (let [result (apply f args)]
+               (swap! misses inc)
+               (swap! cache assoc k result)
+               (swap! order conj k)
+               (when (and maxsize (> (count @cache) maxsize))
+                 (let [evict (first @order)]
+                   (swap! order (comp vec rest))
+                   (swap! cache dissoc evict)))
+               result))))))))
 
 (defn cached-property [f]
   (let [cache (atom {})]

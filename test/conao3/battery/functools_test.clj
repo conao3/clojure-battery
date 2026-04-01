@@ -142,3 +142,29 @@
 (t/deftest test-total-ordering-identity
   (let [cls {:lt (fn [a b] (< a b))}]
     (t/is (identical? cls (functools/total-ordering cls)))))
+
+(t/deftest test-lru-cache-info
+  (let [f (functools/lru-cache (fn [x] (* x x)))]
+    (f 2)
+    (f 2)
+    (f 3)
+    (let [info (f :cache-info)]
+      (t/is (= 1 (:hits info)))
+      (t/is (= 2 (:misses info)))
+      (t/is (= 2 (:currsize info)))
+      (t/is (nil? (:maxsize info))))))
+
+(t/deftest test-lru-cache-clear
+  (let [f (functools/lru-cache (fn [x] (* x x)))]
+    (f 2)
+    (f 3)
+    (f :cache-clear)
+    (let [info (f :cache-info)]
+      (t/is (= 0 (:hits info)))
+      (t/is (= 0 (:misses info)))
+      (t/is (= 0 (:currsize info))))))
+
+(t/deftest test-lru-cache-wrapped
+  (let [orig (fn [x] (* x x))
+        f (functools/lru-cache orig)]
+    (t/is (identical? orig (f :wrapped)))))
