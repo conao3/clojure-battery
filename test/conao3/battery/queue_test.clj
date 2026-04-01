@@ -122,3 +122,10 @@
   (let [q (q-m/make-priority-queue)]
     (doseq [i (range 10)] (q-m/priority-put q i))
     (t/is (false? (q-m/priority-full? q)))))
+
+(t/deftest test-priority-qsize
+  (let [q (q-m/make-priority-queue)]
+    (t/is (= 0 (q-m/priority-qsize q)))
+    (q-m/priority-put q 1)
+    (q-m/priority-put q 2)
+    (t/is (= 2 (q-m/priority-qsize q)))))
