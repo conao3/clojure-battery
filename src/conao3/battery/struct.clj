@@ -104,11 +104,11 @@
     \i (doseq [v (take n values)]
          (.putInt buf (int v)))
     \I (doseq [v (take n values)]
-         (.putInt buf (int (long v))))
+         (.putInt buf (unchecked-int (long v))))
     \l (doseq [v (take n values)]
          (.putInt buf (int v)))
     \L (doseq [v (take n values)]
-         (.putInt buf (int (long v))))
+         (.putInt buf (unchecked-int (long v))))
     \q (doseq [v (take n values)]
          (.putLong buf (long v)))
     \Q (doseq [v (take n values)]

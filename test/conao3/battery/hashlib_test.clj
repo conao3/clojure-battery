@@ -167,3 +167,27 @@
   (let [h (hashlib/sha3-256 (b ""))]
     (t/is (= "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a"
              (hashlib/hexdigest h)))))
+
+(t/deftest test-sequential-updates-consistency
+  ;; Multiple updates should give same result as single combined update
+  (let [h1 (hashlib/md5)
+        h2 (hashlib/md5)]
+    (hashlib/update! h1 (b "hello"))
+    (hashlib/update! h1 (b "world"))
+    (hashlib/update! h2 (b "helloworld"))
+    (t/is (= (hashlib/hexdigest h1) (hashlib/hexdigest h2)))))
+
+(t/deftest test-digest-immutability
+  ;; Calling digest multiple times should return equal values
+  (let [h (hashlib/sha256 (b "test"))]
+    (let [d1 (hashlib/digest h)
+          d2 (hashlib/digest h)]
+      (t/is (java.util.Arrays/equals d1 d2)))
+    (t/is (= (hashlib/hexdigest h) (hashlib/hexdigest h)))))
+
+(t/deftest test-new-function-alias
+  (let [h (hashlib/new "md5")]
+    (t/is (= "md5" (:name h))))
+  (let [h (hashlib/new "sha256" (b "hello"))]
+    (t/is (= (hashlib/hexdigest (hashlib/sha256 (b "hello")))
+             (hashlib/hexdigest h)))))

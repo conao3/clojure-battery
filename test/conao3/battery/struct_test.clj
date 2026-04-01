@@ -105,3 +105,29 @@
 (t/deftest test-unpack-from-offset
   (let [data (struct-m/pack ">HH" 0x0102 0x0304)]
     (t/is (= [0x0304] (struct-m/unpack ">H" (byte-array (drop 2 data)))))))
+
+(t/deftest test-byteorder-equivalence
+  ;; ! and > should produce same results for big-endian
+  (t/is (Arrays/equals (struct-m/pack "!H" 0x1234) (struct-m/pack ">H" 0x1234)))
+  (t/is (= [0x1234] (struct-m/unpack "!H" (byte-array [0x12 0x34])))))
+
+(t/deftest test-signed-boundary-values
+  ;; Signed short boundaries
+  (t/is (= [32767]  (struct-m/unpack ">h" (struct-m/pack ">h" 32767))))
+  (t/is (= [-32768] (struct-m/unpack ">h" (struct-m/pack ">h" -32768))))
+  ;; Signed long boundaries
+  (t/is (= [9223372036854775807]  (struct-m/unpack ">q" (struct-m/pack ">q" 9223372036854775807))))
+  (t/is (= [-9223372036854775808] (struct-m/unpack ">q" (struct-m/pack ">q" -9223372036854775808)))))
+
+(t/deftest test-unsigned-boundary-values
+  ;; Unsigned short boundaries
+  (t/is (= [0]     (struct-m/unpack ">H" (struct-m/pack ">H" 0))))
+  (t/is (= [65535] (struct-m/unpack ">H" (struct-m/pack ">H" 65535))))
+  ;; Unsigned int boundaries
+  (t/is (= [0]          (struct-m/unpack ">I" (struct-m/pack ">I" 0))))
+  (t/is (= [4294967295] (struct-m/unpack ">I" (struct-m/pack ">I" 4294967295)))))
+
+(t/deftest test-unpack-insufficient-data
+  ;; Try to unpack more bytes than provided
+  (t/is (thrown? Exception (struct-m/unpack ">HH" (byte-array [0x01 0x02]))))
+  (t/is (thrown? Exception (struct-m/unpack ">d" (byte-array [0x01 0x02 0x03])))))
