@@ -161,3 +161,13 @@
          s     (to-path (str start))
          rel   (.relativize s p)]
      (.toString rel))))
+
+(defn ismount [path]
+  (let [f (.getCanonicalFile (File. ^String (str path)))]
+    (boolean (some #(.equals f %) (File/listRoots)))))
+
+(defn splitroot [path]
+  (let [s (str path)]
+    (if (clojure.string/starts-with? s "/")
+      ["/" (subs s 1)]
+      ["" s])))

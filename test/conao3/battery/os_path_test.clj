@@ -124,3 +124,13 @@
 (t/deftest test-expandvars
   (t/is (string? (osp-m/expandvars "/home/$USER")))
   (t/is (= "/etc/hosts" (osp-m/expandvars "/etc/hosts"))))
+
+(t/deftest test-ismount
+  (t/is (true? (osp-m/ismount "/")))
+  (t/is (false? (osp-m/ismount "/nonexistent-path-xyz")))
+  (t/is (false? (osp-m/ismount "/etc"))))
+
+(t/deftest test-splitroot
+  (t/is (= ["/" "etc/hosts"] (osp-m/splitroot "/etc/hosts")))
+  (t/is (= ["" "relative/path"] (osp-m/splitroot "relative/path")))
+  (t/is (= ["/" ""] (osp-m/splitroot "/"))))
