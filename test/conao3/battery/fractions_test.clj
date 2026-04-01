@@ -45,6 +45,20 @@
   (t/is (thrown? ExceptionInfo (fractions/from-string "3/0")))
   (t/is (thrown? ExceptionInfo (fractions/from-string "not-a-fraction"))))
 
+(t/deftest test-from-string-positive-sign
+  ;; Python allows + prefix on numerator
+  (t/is (= [3 2] (fractions/components (fractions/from-string "+3/2"))))
+  (t/is (= [5 1] (fractions/components (fractions/from-string "+5"))))
+  (t/is (= [16 5] (fractions/components (fractions/from-string "+3.2"))))
+  ;; denominator sign is not allowed
+  (t/is (thrown? ExceptionInfo (fractions/from-string "3/+2")))
+  (t/is (thrown? ExceptionInfo (fractions/from-string "3/-2"))))
+
+(t/deftest test-from-string-whitespace
+  ;; Python trims whitespace
+  (t/is (= [3 2] (fractions/components (fractions/from-string " 3/2 "))))
+  (t/is (= [-5 1] (fractions/components (fractions/from-string "  -5  ")))))
+
 (t/deftest test-limit-int
   (t/is (= [111111 1] (fractions/components (fractions/from-string "111111")))))
 

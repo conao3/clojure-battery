@@ -64,18 +64,18 @@
   [s]
   (let [s (str/trim s)]
     (cond
-      (re-matches #"-?\d+" s)
+      (re-matches #"[+-]?\d+" s)
       (Long/parseLong s)
 
-      (re-matches #"-?\d+/\d+" s)
-      (let [[_ n d] (re-matches #"(-?\d+)/(\d+)" s)
+      (re-matches #"[+-]?\d+/\d+" s)
+      (let [[_ n d] (re-matches #"([+-]?\d+)/(\d+)" s)
             nd (Long/parseLong n)
             dd (Long/parseLong d)]
         (when (zero? dd)
           (throw (ex-info (str "Fraction('" s "') has zero denominator") {})))
         (/ nd dd))
 
-      (re-matches #"-?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?" s)
+      (re-matches #"[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?" s)
       (rationalize (bigdec s))
 
       :else

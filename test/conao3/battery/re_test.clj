@@ -158,3 +158,31 @@
   (let [cp (re-m/compile "\\d+")]
     (t/is (= "\\d+" (re-m/pattern cp)))
     (t/is (integer? (re-m/re-flags cp)))))
+
+(t/deftest test-groupdict
+  (let [m (re-m/search "(?P<year>\\d{4})-(?P<month>\\d{2})" "2024-01")]
+    (t/is (= {"year" "2024" "month" "01"} (re-m/groupdict m)))
+    (t/is (= "2024" (get (re-m/groupdict m) "year")))
+    (t/is (= "01" (get (re-m/groupdict m) "month")))))
+
+(t/deftest test-span-and-start-end
+  (let [m (re-m/search "\\d+" "abc123def")]
+    (t/is (= 3 (re-m/start m)))
+    (t/is (= 6 (re-m/end m)))
+    (t/is (= [3 6] (re-m/span m)))))
+
+(t/deftest test-lookahead
+  ;; positive lookahead
+  (t/is (= ["foo"] (re-m/findall "foo(?=bar)" "foobar foobaz")))
+  ;; negative lookahead
+  (t/is (= ["foo"] (re-m/findall "foo(?!bar)" "foobaz foobar"))))
+
+(t/deftest test-lookbehind
+  ;; positive lookbehind
+  (t/is (= ["bar"] (re-m/findall "(?<=foo)bar" "foobar")))
+  ;; negative lookbehind
+  (t/is (= ["bar"] (re-m/findall "(?<!foo)bar" "bazbar"))))
+
+(t/deftest test-re-split-limits
+  (t/is (= ["a" "b" "c,d"] (re-m/split "," "a,b,c,d" 2)))
+  (t/is (= ["a" "b" "c" "d"] (re-m/split "," "a,b,c,d"))))

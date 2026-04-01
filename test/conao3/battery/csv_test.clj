@@ -122,3 +122,32 @@
 (t/deftest test-reader-newline-in-quoted
   (let [rows (csv-m/reader ["\"line1\nline2\",foo"])]
     (t/is (= [["line1\nline2" "foo"]] (vec rows)))))
+
+(t/deftest test-writer-custom-lineterminator
+  (let [sw (StringWriter.)
+        w  (csv-m/writer sw {:lineterminator "\n"})]
+    (csv-m/writerow w ["a" "b"])
+    (csv-m/writerow w ["c" "d"])
+    (t/is (= "a,b\nc,d\n" (.toString sw)))))
+
+(t/deftest test-reader-empty-input
+  (let [rows (csv-m/reader [])]
+    (t/is (= [] (vec rows)))))
+
+(t/deftest test-writer-quote-none-plain-fields
+  (let [sw (StringWriter.)
+        w  (csv-m/writer sw {:quoting csv-m/QUOTE_NONE})]
+    (csv-m/writerow w ["abc" "def" "ghi"])
+    (t/is (= "abc,def,ghi\r\n" (.toString sw)))))
+
+(t/deftest test-dict-reader-custom-delimiter
+  (let [rows (csv-m/dict-reader ["name;age" "Alice;30"] {:delimiter \;})]
+    (let [row (first (vec rows))]
+      (t/is (= "Alice" (get row "name")))
+      (t/is (= "30" (get row "age"))))))
+
+(t/deftest test-writer-tab-delimiter
+  (let [sw (StringWriter.)
+        w  (csv-m/writer sw {:delimiter \tab})]
+    (csv-m/writerow w ["a" "b" "c"])
+    (t/is (= "a\tb\tc\r\n" (.toString sw)))))
