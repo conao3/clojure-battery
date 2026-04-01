@@ -122,3 +122,20 @@
     (t/is (= "4" (dec-m/decimal-str (dec-m/to-integral-value d)))))
   (let [d (dec-m/decimal "3.2")]
     (t/is (= "3" (dec-m/decimal-str (dec-m/to-integral-value d dec-m/ROUND_DOWN))))))
+
+(t/deftest test-is-nan-is-infinite-is-finite
+  (let [d (dec-m/decimal "3.14")]
+    (t/is (false? (dec-m/is-nan d)))
+    (t/is (false? (dec-m/is-infinite d)))
+    (t/is (true? (dec-m/is-finite d)))))
+
+(t/deftest test-decimal-repr
+  (let [d (dec-m/decimal "3.14")]
+    (t/is (string? (dec-m/decimal-repr d)))
+    (t/is (clojure.string/includes? (dec-m/decimal-repr d) "3.14"))))
+
+(t/deftest test-setcontext
+  (let [original (dec-m/getcontext)]
+    (dec-m/setcontext! (assoc original :prec 10))
+    (t/is (= 10 (:prec (dec-m/getcontext))))
+    (dec-m/setcontext! original)))

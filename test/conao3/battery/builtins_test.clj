@@ -154,3 +154,12 @@
   (t/is (true? (b/isinstance "s" String)))
   (t/is (false? (b/isinstance 42 String)))
   (t/is (true? (b/issubclass Long Number))))
+
+(t/deftest test-vars-map
+  (let [m {:a 1 :b 2}]
+    (t/is (= m (b/vars m)))))
+
+(t/deftest test-vars-namespace
+  (let [result (b/vars (find-ns 'clojure.core))]
+    (t/is (map? result))
+    (t/is (pos? (count result)))))
