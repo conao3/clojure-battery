@@ -129,3 +129,33 @@
     (q-m/priority-put q 1)
     (q-m/priority-put q 2)
     (t/is (= 2 (q-m/priority-qsize q)))))
+
+(t/deftest test-queue-nowait-full
+  ;; put_nowait on full queue raises Full, get_nowait on empty raises Empty
+  (let [q (q-m/make-queue 3)]
+    (q-m/queue-put-nowait q 1)
+    (q-m/queue-put-nowait q 2)
+    (q-m/queue-put-nowait q 3)
+    (t/is (thrown? clojure.lang.ExceptionInfo (q-m/queue-put-nowait q 4)))
+    (q-m/queue-get-nowait q)
+    (q-m/queue-get-nowait q)
+    (q-m/queue-get-nowait q)
+    (t/is (thrown? clojure.lang.ExceptionInfo (q-m/queue-get-nowait q)))))
+
+(t/deftest test-lifo-queue-nowait
+  (let [q (q-m/make-lifo-queue)]
+    (q-m/lifo-put q "x" false)
+    (q-m/lifo-put q "y" false)
+    (t/is (= "y" (q-m/lifo-get q false)))
+    (t/is (= "x" (q-m/lifo-get q false)))
+    (t/is (thrown? clojure.lang.ExceptionInfo (q-m/lifo-get q false)))))
+
+(t/deftest test-queue-full?-with-maxsize
+  (let [q (q-m/make-queue 2)]
+    (t/is (false? (q-m/queue-full? q)))
+    (q-m/queue-put q 1)
+    (t/is (false? (q-m/queue-full? q)))
+    (q-m/queue-put q 2)
+    (t/is (true? (q-m/queue-full? q)))
+    (q-m/queue-get q)
+    (t/is (false? (q-m/queue-full? q)))))
