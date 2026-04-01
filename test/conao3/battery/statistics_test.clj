@@ -257,3 +257,55 @@
     (statistics/mean data)
     (statistics/median data)
     (t/is (= original (vec data)))))
+
+(t/deftest test-linearregression-more-cases
+  ;; zero slope
+  (let [r (statistics/linear-regression [1 2 3] [100 100 100])]
+    (t/is (< (Math/abs (- 0.0 (:slope r))) 1e-10))
+    (t/is (< (Math/abs (- 100.0 (:intercept r))) 1e-10)))
+  ;; negative slope
+  (let [r (statistics/linear-regression [1 2 3] [-1 -2 -3])]
+    (t/is (< (Math/abs (- -1.0 (:slope r))) 1e-10))
+    (t/is (< (Math/abs (- 0.0 (:intercept r))) 1e-10)))
+  ;; non-trivial case
+  (let [r (statistics/linear-regression [1 2 3] [12 14 16])]
+    (t/is (< (Math/abs (- 2.0 (:slope r))) 1e-10))
+    (t/is (< (Math/abs (- 10.0 (:intercept r))) 1e-10))))
+
+(t/deftest test-covariance-more
+  ;; independent data → covariance near 0
+  (let [x [1 2 3 4 5]
+        y [5 4 3 2 1]]
+    (t/is (< (Math/abs (- -2.5 (statistics/covariance x y))) 1e-10)))
+  ;; identical data → covariance = variance
+  (let [x [1 2 3 4 5]]
+    (t/is (< (Math/abs (- (statistics/variance x) (statistics/covariance x x))) 1e-10))))
+
+(t/deftest test-correlation-negative
+  ;; negatively correlated data
+  (let [x [1 2 3 4 5]
+        y [5 4 3 2 1]]
+    (t/is (< (Math/abs (- -1.0 (statistics/correlation x y))) 1e-10))))
+
+(t/deftest test-variance-mean-relationship
+  ;; var(x) = mean(x^2) - mean(x)^2 (for population variance)
+  (let [x [2 4 4 4 5 5 7 9]
+        pv (statistics/pvariance x)
+        mx (statistics/mean x)]
+    (t/is (< (Math/abs (- 4.0 pv)) 1e-10))
+    (t/is (< (Math/abs (- 5.0 mx)) 1e-10))))
+
+(t/deftest test-quantiles-types
+  ;; quantiles returns a list of floats
+  (let [q (statistics/quantiles [1 2 3 4 5 6 7 8 9 10])]
+    (t/is (= 3 (count q)))
+    (t/is (every? number? q)))
+  ;; quantiles with n=4 returns 3 quartiles
+  (let [q (statistics/quantiles [1 2 3 4 5 6 7 8 9 10] {:n 4})]
+    (t/is (= 3 (count q)))))
+
+(t/deftest test-multimode-empty-returns-all
+  ;; if all values appear same number of times, all are modes
+  (let [mm (statistics/multimode [1 2 3])]
+    (t/is (= 3 (count mm)))
+    (t/is (= #{1 2 3} (set mm)))))

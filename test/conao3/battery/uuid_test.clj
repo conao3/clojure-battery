@@ -122,3 +122,14 @@
   (let [u1 (uuid-m/uuid1)
         u2 (uuid-m/uuid1)]
     (t/is (not= (uuid-m/uuid-str u1) (uuid-m/uuid-str u2)))))
+
+(t/deftest test-nil-uuid
+  (let [s "00000000-0000-0000-0000-000000000000"]
+    (t/is (= s (uuid-m/uuid-str uuid-m/NIL)))
+    (t/is (= (BigInteger/ZERO) (uuid-m/uuid-int uuid-m/NIL)))))
+
+(t/deftest test-max-uuid
+  (let [s "ffffffff-ffff-ffff-ffff-ffffffffffff"
+        max-int (.subtract (.shiftLeft BigInteger/ONE 128) BigInteger/ONE)]
+    (t/is (= s (uuid-m/uuid-str uuid-m/MAX)))
+    (t/is (= max-int (uuid-m/uuid-int uuid-m/MAX)))))

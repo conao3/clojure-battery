@@ -152,6 +152,9 @@
           (set-version version)
           (set-variant)))))
 
+(def NIL (from-str "00000000-0000-0000-0000-000000000000"))
+(def MAX (from-str "ffffffff-ffff-ffff-ffff-ffffffffffff"))
+
 (def NAMESPACE_DNS  (from-str "6ba7b810-9dad-11d1-80b4-00c04fd430c8"))
 (def NAMESPACE_URL  (from-str "6ba7b811-9dad-11d1-80b4-00c04fd430c8"))
 (def NAMESPACE_OID  (from-str "6ba7b812-9dad-11d1-80b4-00c04fd430c8"))

@@ -112,6 +112,30 @@
     [(.getDisplayName tz false TimeZone/SHORT)
      (.getDisplayName tz true TimeZone/SHORT)]))
 
+(defn time-ns []
+  (System/nanoTime))
+
+(defn- pad2 [n] (format "%02d" n))
+
+(defn asctime
+  ([] (asctime (localtime)))
+  ([^StructTime st]
+   (let [days ["Mon" "Tue" "Wed" "Thu" "Fri" "Sat" "Sun"]
+         months ["Jan" "Feb" "Mar" "Apr" "May" "Jun"
+                 "Jul" "Aug" "Sep" "Oct" "Nov" "Dec"]
+         day (nth days (:tm_wday st))
+         mon (nth months (dec (:tm_mon st)))
+         mday (format "%2d" (:tm_mday st))]
+     (str day " " mon " " mday " "
+          (pad2 (:tm_hour st)) ":"
+          (pad2 (:tm_min st)) ":"
+          (pad2 (:tm_sec st)) " "
+          (:tm_year st)))))
+
+(defn ctime
+  ([] (asctime (localtime)))
+  ([secs] (asctime (localtime secs))))
+
 (def ^:const CLOCK_REALTIME  0)
 (def ^:const CLOCK_MONOTONIC 1)
 (def ^:const CLOCK_PROCESS_CPUTIME_ID 2)

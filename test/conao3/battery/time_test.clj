@@ -119,3 +119,28 @@
 
 (t/deftest test-altzone-is-integer
   (t/is (integer? (time-m/altzone))))
+
+(t/deftest test-time-ns
+  (let [ns1 (time-m/time-ns)
+        ns2 (time-m/time-ns)]
+    (t/is (integer? ns1))
+    (t/is (<= ns1 ns2))))
+
+(t/deftest test-asctime-no-args
+  (let [s (time-m/asctime)]
+    (t/is (string? s))
+    (t/is (= 24 (count s)))))
+
+(t/deftest test-asctime-with-struct-time
+  ;; 1973-09-16 01:03:52 Sunday (wday=6), day 259
+  (let [st (time-m/->StructTime 1973 9 16 1 3 52 6 259 0)
+        s  (time-m/asctime st)]
+    (t/is (clojure.string/starts-with? s "Sun Sep 16"))
+    (t/is (clojure.string/ends-with? s "1973"))))
+
+(t/deftest test-ctime
+  (let [t (time-m/mktime (time-m/->StructTime 1973 9 16 1 3 52 6 259 0))
+        s (time-m/ctime t)]
+    (t/is (string? s))
+    (t/is (= 24 (count s)))
+    (t/is (clojure.string/ends-with? s "1973"))))
