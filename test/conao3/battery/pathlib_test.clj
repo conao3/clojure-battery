@@ -99,3 +99,25 @@
 (t/deftest test-stem-dotfile
   (t/is (= "" (pathlib/stem "/foo/")))
   (t/is (= "file.tar" (pathlib/stem "file.tar.gz"))))
+
+(t/deftest test-with-suffix-edge-cases
+  ;; Hidden file (dot-file) - adding suffix appends to whole name
+  (t/is (= "/foo/.hidden.bak" (pathlib/with-suffix "/foo/.hidden" ".bak")))
+  ;; File with no extension
+  (t/is (= "Makefile.bak" (pathlib/with-suffix "Makefile" ".bak")))
+  (t/is (= "Makefile" (pathlib/with-suffix "Makefile" "")))
+  ;; Multiple suffixes - only last one is replaced
+  (t/is (= "/foo/bar.tar.bak" (pathlib/with-suffix "/foo/bar.tar.gz" ".bak"))))
+
+(t/deftest test-name-edge-cases
+  ;; Empty path
+  (t/is (= "" (pathlib/name "")))
+  ;; Root path
+  (t/is (= "" (pathlib/name "/")))
+  ;; Trailing slash
+  (t/is (= "" (pathlib/name "/foo/"))))
+
+(t/deftest test-suffixes-multiple
+  (t/is (= [".tar" ".gz" ".bak"] (pathlib/suffixes "archive.tar.gz.bak")))
+  ;; Hidden file with suffix
+  (t/is (= [".conf"] (pathlib/suffixes ".hidden.conf"))))

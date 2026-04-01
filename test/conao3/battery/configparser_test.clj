@@ -107,3 +107,26 @@
     (t/is (= "2" (get kv "b")))
     (t/is (= "3" (get kv "c")))
     (t/is (= 3 (count kv)))))
+
+(t/deftest test-multiline-values
+  ;; Indented continuation lines are part of the value
+  (let [cfg (configparser/read-string "[s]\nkey=first line\n\tsecond line\n\tthird line\n")]
+    (t/is (= "first line\nsecond line\nthird line" (configparser/get cfg "s" "key")))))
+
+(t/deftest test-duplicate-section-merges
+  ;; Duplicate sections should merge (not overwrite)
+  (let [cfg (configparser/read-string "[section]\nkey1=value1\n[section]\nkey2=value2\n")]
+    (t/is (= "value1" (configparser/get cfg "section" "key1")))
+    (t/is (= "value2" (configparser/get cfg "section" "key2")))
+    (t/is (= 1 (count (configparser/sections cfg))))))
+
+(t/deftest test-inline-comment-stripping
+  (let [cfg (configparser/read-string "[s]\nkey1=value ; comment\nkey2=value # comment\n")]
+    (t/is (= "value" (configparser/get cfg "s" "key1")))
+    (t/is (= "value" (configparser/get cfg "s" "key2")))))
+
+(t/deftest test-key-case-insensitive
+  ;; Keys should be normalized to lowercase (Python behavior)
+  (let [cfg (configparser/read-string "[s]\nFOO=bar\nMixedCase=val\n")]
+    (t/is (= "bar" (configparser/get cfg "s" "foo")))
+    (t/is (= "val" (configparser/get cfg "s" "mixedcase")))))
