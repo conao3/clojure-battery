@@ -135,3 +135,33 @@
         b-bytes (b "world")
         ab (b "hello world")]
     (t/is (= (zlib/crc32 ab) (zlib/crc32 b-bytes (zlib/crc32 a))))))
+
+(t/deftest test-adler32-running-sum
+  ;; adler32(a+b) == adler32(b, adler32(a))
+  (let [a (b "hello ")
+        b-bytes (b "world")
+        ab (b "hello world")]
+    (t/is (= (zlib/adler32 ab) (zlib/adler32 b-bytes (zlib/adler32 a))))))
+
+(t/deftest test-compress-level-constants
+  (t/is (= 0 zlib/Z_NO_COMPRESSION))
+  (t/is (= 1 zlib/Z_BEST_SPEED))
+  (t/is (= 9 zlib/Z_BEST_COMPRESSION))
+  (t/is (= -1 zlib/Z_DEFAULT_COMPRESSION)))
+
+(t/deftest test-compress-no-compression-level
+  ;; Z_NO_COMPRESSION still produces valid deflate stream
+  (let [data (b "hello world")
+        compressed (zlib/compress data zlib/Z_NO_COMPRESSION)
+        decompressed (zlib/decompress compressed)]
+    (t/is (bytes= data decompressed))))
+
+(t/deftest test-compress-best-speed
+  (let [data test-data
+        compressed (zlib/compress data zlib/Z_BEST_SPEED)
+        decompressed (zlib/decompress compressed)]
+    (t/is (bytes= data decompressed))))
+
+(t/deftest test-crc32-known-value
+  ;; crc32 of "hello world" is a known constant
+  (t/is (= 222957957 (zlib/crc32 (b "hello world")))))
