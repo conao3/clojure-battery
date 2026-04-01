@@ -114,3 +114,33 @@
   ;; all values in a freshly defined enum are unique
   (t/is (= 3 (count (set (map enum/value (enum/members Color))))))
   (t/is (= 4 (count (set (map enum/value (enum/members Direction)))))))
+
+(t/deftest test-members-as-seq
+  ;; members returns a sequential collection that can be iterated
+  (let [ms (enum/members Color)]
+    (t/is (sequential? ms))
+    (t/is (= 3 (count ms)))))
+
+(t/deftest test-enum-member-equality
+  ;; the same key in the same enum map gives equal members
+  (t/is (= (:RED Color) (:RED Color)))
+  (t/is (not= (:RED Color) (:GREEN Color))))
+
+(t/deftest test-from-value-returns-enum-member
+  ;; from-value returns an EnumMember instance, not just a value
+  (let [m (enum/from-value Color 2)]
+    (t/is (instance? conao3.battery.enum.EnumMember m))
+    (t/is (= "GREEN" (enum/enum-name m)))))
+
+(t/deftest test-enum-member-as-map-key
+  ;; EnumMember instances are value objects and can serve as map keys
+  (let [m (:RED Color)
+        h {m :found}]
+    (t/is (= :found (get h (:RED Color))))))
+
+(t/deftest test-unique-returns-same-map
+  ;; unique returns a map identical in structure to the original
+  (let [result (enum/unique Color)]
+    (t/is (map? result))
+    (t/is (= (count Color) (count result)))
+    (t/is (contains? result :RED))))

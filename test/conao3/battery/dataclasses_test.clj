@@ -101,3 +101,37 @@
 (t/deftest test-defdata-instances-not-equal-when-different-types
   ;; Point and Person with same-arity data are different types
   (t/is (not= (->Point 1 2) (->Person "a" 1))))
+
+(dataclasses/defdata Triple [a b c])
+
+(t/deftest test-defdata-three-fields
+  (let [t (->Triple 10 20 30)]
+    (t/is (= 10 (:a t)))
+    (t/is (= 20 (:b t)))
+    (t/is (= 30 (:c t)))
+    (t/is (= [:a :b :c] (dataclasses/fields t)))))
+
+(t/deftest test-asdict-roundtrip
+  ;; asdict(instance) reconstructs to the same values as map
+  (let [p   (->Point 7 8)
+        d   (dataclasses/asdict p)]
+    (t/is (= {:x 7 :y 8} d))
+    (t/is (= (:x p) (:x d)))
+    (t/is (= (:y p) (:y d)))))
+
+(t/deftest test-astuple-destructuring
+  ;; astuple result can be destructured positionally
+  (let [[x y] (dataclasses/astuple (->Point 3 4))]
+    (t/is (= 3 x))
+    (t/is (= 4 y))))
+
+(t/deftest test-fields-count
+  (t/is (= 2 (count (dataclasses/fields (->Point 0 0)))))
+  (t/is (= 2 (count (dataclasses/fields (->Person "X" 0)))))
+  (t/is (= 3 (count (dataclasses/fields (->Triple 0 0 0))))))
+
+(t/deftest test-replace-no-change
+  ;; replacing all fields with the same values returns an equal object
+  (let [p     (->Point 5 6)
+        same  (dataclasses/replace p {:x 5 :y 6})]
+    (t/is (= p same))))

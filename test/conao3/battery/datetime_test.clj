@@ -325,3 +325,44 @@
   (let [t (dt-m/time 10 30 45)]
     (t/is (= "10:30:45" (dt-m/time-strftime t "%H:%M:%S")))
     (t/is (= "10" (dt-m/time-strftime t "%H")))))
+
+(t/deftest test-date-compare
+  ;; use date-sub to compare dates (days > 0 means d1 > d2)
+  (let [d1 (dt-m/date 2024 6 1)
+        d2 (dt-m/date 2024 1 15)
+        d3 (dt-m/date 2024 6 1)]
+    (t/is (pos? (:days (dt-m/date-sub d1 d2))))
+    (t/is (neg? (:days (dt-m/date-sub d2 d1))))
+    (t/is (= 0  (:days (dt-m/date-sub d1 d3))))))
+
+(t/deftest test-timedelta-abs-via-neg
+  ;; timedelta-neg of a negative timedelta returns positive
+  (let [td (dt-m/timedelta-neg (dt-m/timedelta 5))]
+    (t/is (= -5 (:days td)))
+    (let [abs (dt-m/timedelta-neg td)]
+      (t/is (= 5 (:days abs))))))
+
+(t/deftest test-time-equality
+  ;; same time values are equal
+  (t/is (= (dt-m/time 10 30 45) (dt-m/time 10 30 45)))
+  (t/is (not= (dt-m/time 10 30 45) (dt-m/time 10 30 46)))
+  (t/is (= (dt-m/time 0 0 0) (dt-m/time))))
+
+(t/deftest test-timedelta-microseconds-normalization
+  ;; 1000000 microseconds == 1 second
+  (let [td (dt-m/timedelta 0 0 1000000)]
+    (t/is (= 0 (:days td)))
+    (t/is (= 1 (:seconds td)))
+    (t/is (= 0 (:microseconds td))))
+  ;; 1000000000 microseconds == 1000 seconds
+  (let [td (dt-m/timedelta 0 0 1000000000)]
+    (t/is (= 0 (:days td)))
+    (t/is (= 1000 (:seconds td)))
+    (t/is (= 0 (:microseconds td)))))
+
+(t/deftest test-datetime-microsecond
+  ;; datetime with microsecond field
+  (let [dt (dt-m/datetime 2024 1 15 10 30 45 500000)]
+    (t/is (= 500000 (dt-m/get-microsecond dt)))
+    ;; isoformat includes fractional seconds (Java may trim trailing zeros)
+    (t/is (clojure.string/starts-with? (dt-m/datetime-isoformat dt) "2024-01-15T10:30:45."))))
