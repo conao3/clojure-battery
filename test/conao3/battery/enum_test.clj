@@ -87,3 +87,30 @@
 (t/deftest test-register-enum
   (let [my-enum {:A (enum/->EnumMember "MyEnum" "A" 1)}]
     (t/is (set? (enum/register-enum! my-enum)))))
+
+(t/deftest test-is-enum-true-for-enum
+  (t/is (true? (enum/is-enum? Color)))
+  (t/is (true? (enum/is-enum? Direction))))
+
+(t/deftest test-enum-member-print
+  ;; print-method produces readable output
+  (let [m (:RED Color)
+        s (pr-str m)]
+    (t/is (string? s))
+    (t/is (clojure.string/includes? s "RED"))))
+
+(t/deftest test-from-value-missing
+  ;; from-value returns nil for missing values
+  (t/is (nil? (enum/from-value Color 0)))
+  (t/is (nil? (enum/from-value Color -1)))
+  (t/is (nil? (enum/from-value Direction ""))))
+
+(t/deftest test-members-order-independent
+  ;; members returns all members as a set
+  (let [ms (set (map enum/enum-name (enum/members Color)))]
+    (t/is (= #{"RED" "GREEN" "BLUE"} ms))))
+
+(t/deftest test-defenum-all-values-unique
+  ;; all values in a freshly defined enum are unique
+  (t/is (= 3 (count (set (map enum/value (enum/members Color))))))
+  (t/is (= 4 (count (set (map enum/value (enum/members Direction)))))))

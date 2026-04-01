@@ -73,3 +73,31 @@
 (t/deftest test-register-dataclass
   (let [my-class {:fields [:a :b]}]
     (t/is (set? (dataclasses/register-dataclass! my-class)))))
+
+(t/deftest test-asdict-nested-stays-shallow
+  ;; asdict returns a flat map (no deep copy of values)
+  (let [inner [1 2 3]
+        p (->Point inner 4)
+        d (dataclasses/asdict p)]
+    (t/is (identical? inner (:x d)))))
+
+(t/deftest test-astuple-length
+  (t/is (= 2 (count (dataclasses/astuple (->Point 1 2)))))
+  (t/is (= 2 (count (dataclasses/astuple (->Person "Alice" 30))))))
+
+(t/deftest test-replace-preserves-original
+  (let [orig (->Point 1 2)
+        new-p (dataclasses/replace orig {:x 99})]
+    ;; original unchanged
+    (t/is (= 1 (:x orig)))
+    ;; new record has updated field
+    (t/is (= 99 (:x new-p)))
+    (t/is (= 2 (:y new-p)))))
+
+(t/deftest test-fields-returns-keywords
+  (let [fs (dataclasses/fields (->Point 3 4))]
+    (t/is (every? keyword? fs))))
+
+(t/deftest test-defdata-instances-not-equal-when-different-types
+  ;; Point and Person with same-arity data are different types
+  (t/is (not= (->Point 1 2) (->Person "a" 1))))

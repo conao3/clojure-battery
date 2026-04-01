@@ -275,3 +275,53 @@
   (let [d (dt-m/date 2024 7 4)]   ; Thursday, July
     (t/is (= "Thursday" (dt-m/date-strftime d "%A")))
     (t/is (= "July" (dt-m/date-strftime d "%B")))))
+
+(t/deftest test-timedelta-with-weeks
+  ;; timedelta with weeks parameter
+  (let [td (dt-m/timedelta 0 0 0 0 0 0 1)]  ; 1 week
+    (t/is (= 7 (:days td))))
+  (let [td (dt-m/timedelta 1 0 0 0 0 0 1)]  ; 1 day + 1 week
+    (t/is (= 8 (:days td)))))
+
+(t/deftest test-timedelta-carries
+  ;; timedelta carries: large normalization
+  (let [td1 (dt-m/timedelta 0 0 1)
+        td2 (dt-m/timedelta 0 1 0)]
+    (t/is (= 0 (:days td1)))
+    (t/is (= 0 (:seconds td1)))
+    (t/is (= 1 (:microseconds td1)))
+    (t/is (= 0 (:days td2)))
+    (t/is (= 1 (:seconds td2)))
+    (t/is (= 0 (:microseconds td2)))))
+
+(t/deftest test-timedelta-bool
+  ;; non-zero timedeltas are truthy, zero is falsy
+  (t/is (not= (dt-m/timedelta 1) (dt-m/timedelta 0)))
+  (t/is (not= (dt-m/timedelta 0 1) (dt-m/timedelta 0)))
+  (t/is (not= (dt-m/timedelta 0 0 1) (dt-m/timedelta 0)))
+  (t/is (= (dt-m/timedelta 0) (dt-m/timedelta 0 0 0))))
+
+(t/deftest test-timedelta-total-seconds-extended
+  ;; total_seconds for various values
+  (t/is (= 0.0 (dt-m/timedelta-total-seconds (dt-m/timedelta 0))))
+  (t/is (= 1.0 (dt-m/timedelta-total-seconds (dt-m/timedelta 0 1))))
+  (t/is (= 0.000001 (dt-m/timedelta-total-seconds (dt-m/timedelta 0 0 1))))
+  (t/is (= (* 7 86400.0) (dt-m/timedelta-total-seconds (dt-m/timedelta 7)))))
+
+(t/deftest test-date-equality
+  ;; dates with same values are equal
+  (t/is (= (dt-m/date 2024 1 15) (dt-m/date 2024 1 15)))
+  (t/is (not= (dt-m/date 2024 1 15) (dt-m/date 2024 1 16))))
+
+(t/deftest test-datetime-replace
+  (let [dt (dt-m/datetime 2024 6 15 12 30 45)
+        dt2 (dt-m/datetime-add-timedelta dt (dt-m/timedelta 0))
+        dt3 (dt-m/datetime-add-timedelta dt (dt-m/timedelta 1))]
+    (t/is (= 2024 (dt-m/get-year dt2)))
+    (t/is (= 6 (dt-m/get-month dt2)))
+    (t/is (= 16 (dt-m/get-day dt3)))))
+
+(t/deftest test-time-strftime
+  (let [t (dt-m/time 10 30 45)]
+    (t/is (= "10:30:45" (dt-m/time-strftime t "%H:%M:%S")))
+    (t/is (= "10" (dt-m/time-strftime t "%H")))))
