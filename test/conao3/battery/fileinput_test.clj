@@ -229,3 +229,20 @@
     (t/is (contains? publics "input"))
     (t/is (contains? publics "close"))
     (t/is (contains? publics "nextfile"))))
+
+(t/deftest test-FileInput-is-file-input
+  (let [path (write-tmp "hello\n")
+        fi (fileinput/FileInput :files [path] :encoding "utf-8")]
+    (t/is (= "r" (:mode fi)))
+    (t/is (= [path] (:files fi)))))
+
+(t/deftest test-lineno-filelineno-isfirstline-isstdin
+  (let [path (write-tmp "a\nb\n")]
+    (fileinput/input :files [path] :encoding "utf-8")
+    (try
+      (t/is (= 0 (fileinput/lineno)))
+      (t/is (= 0 (fileinput/filelineno)))
+      (t/is (false? (fileinput/isfirstline)))
+      (t/is (false? (fileinput/isstdin)))
+      (finally
+        (fileinput/close)))))

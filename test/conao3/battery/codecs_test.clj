@@ -106,3 +106,13 @@
 (t/deftest test-register-error
   (codecs-m/register-error "custom_ignore" (fn [_] nil))
   (t/is (fn? (codecs-m/lookup-error "custom_ignore"))))
+
+(t/deftest test-getincrementaldecoder
+  (let [cs (codecs-m/getincrementaldecoder "utf-8")]
+    (t/is (some? cs))
+    (t/is (instance? java.nio.charset.Charset cs))))
+
+(t/deftest test-getincrementalencoder
+  (let [cs (codecs-m/getincrementalencoder "utf-8")]
+    (t/is (some? cs))
+    (t/is (instance? java.nio.charset.Charset cs))))
