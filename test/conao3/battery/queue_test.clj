@@ -159,3 +159,34 @@
     (t/is (true? (q-m/queue-full? q)))
     (q-m/queue-get q)
     (t/is (false? (q-m/queue-full? q)))))
+
+(t/deftest test-queue-put-nowait-get-nowait
+  (let [q (q-m/make-queue)]
+    (q-m/queue-put-nowait q "a")
+    (q-m/queue-put-nowait q "b")
+    (t/is (= "a" (q-m/queue-get-nowait q)))
+    (t/is (= "b" (q-m/queue-get-nowait q)))))
+
+(t/deftest test-lifo-multiple-items
+  (let [q (q-m/make-lifo-queue)]
+    (q-m/lifo-put q 1)
+    (q-m/lifo-put q 2)
+    (q-m/lifo-put q 3)
+    (t/is (= 3 (q-m/lifo-get q)))
+    (t/is (= 2 (q-m/lifo-get q)))
+    (t/is (= 1 (q-m/lifo-get q)))))
+
+(t/deftest test-priority-queue-ordering
+  (let [pq (q-m/make-priority-queue)]
+    (q-m/priority-put pq 30)
+    (q-m/priority-put pq 10)
+    (q-m/priority-put pq 20)
+    (t/is (= 10 (q-m/priority-get pq)))
+    (t/is (= 20 (q-m/priority-get pq)))
+    (t/is (= 30 (q-m/priority-get pq)))))
+
+(t/deftest test-queue-empty-after-get-all
+  (let [q (q-m/make-queue)]
+    (q-m/queue-put q "x")
+    (q-m/queue-get q)
+    (t/is (true? (q-m/queue-empty? q)))))
