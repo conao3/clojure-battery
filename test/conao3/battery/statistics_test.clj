@@ -244,3 +244,16 @@
   (let [result (statistics/linear-regression [1 2 3] [2 4 6])]
     (t/is (< (Math/abs (- 2.0 (:slope result))) 1e-10))
     (t/is (< (Math/abs (- 0.0 (:intercept result))) 1e-10))))
+
+(t/deftest test-harmonicmean-with-zero
+  ;; Python returns 0 when data contains 0
+  (t/is (= 0 (statistics/harmonic-mean [1 0 2])))
+  (t/is (= 0 (statistics/harmonic-mean [10 0 5]))))
+
+(t/deftest test-statistics-no-modify-input
+  ;; Statistics functions should not modify input data
+  (let [data [3 1 4 1 5 9 2 6]
+        original (vec data)]
+    (statistics/mean data)
+    (statistics/median data)
+    (t/is (= original (vec data)))))

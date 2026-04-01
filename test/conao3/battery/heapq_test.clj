@@ -322,3 +322,30 @@
     (let [result (heapq/heapreplace-max! heap 10)]
       (t/is (= 5 result)))
     (t/is (= 10 (first @heap)))))
+
+(t/deftest test-nsmallest-nlargest-n-exceeds-length
+  (let [data [5 1 4 2 3]]
+    (t/is (= [1 2 3 4 5] (heapq/nsmallest 10 data)))
+    (t/is (= [5 4 3 2 1] (heapq/nlargest 10 data)))))
+
+(t/deftest test-heap-invariant-maintained
+  ;; Push 256 random elements and verify pop gives sorted order
+  (let [heap (atom [])
+        data (mapv #(mod % 100) (range 256))]
+    (doseq [item data]
+      (heapq/heappush! heap item))
+    (let [results (loop [acc []]
+                    (if (empty? @heap)
+                      acc
+                      (recur (conj acc (heapq/heappop! heap)))))]
+      (t/is (= (sort data) results)))))
+
+(t/deftest test-nsmallest-nlargest-empty
+  (t/is (= [] (heapq/nsmallest 5 [])))
+  (t/is (= [] (heapq/nlargest 5 []))))
+
+(t/deftest test-heap-merge-key
+  ;; heap-merge with :key option
+  (let [result (vec (heapq/heap-merge [[-1 0] [-2 1]] [[-3 2]] :key first))]
+    (t/is (= 3 (count result)))
+    (t/is (= -3 (first (first result))))))

@@ -31,13 +31,18 @@
    (check-nonempty data "harmonic-mean")
    (when (some neg? data)
      (throw (ex-info "harmonic-mean requires non-negative data" {})))
-   (/ (count data) (reduce + (map #(/ 1 %) data))))
+   ;; If any value is 0, harmonic mean is 0 (Python behavior)
+   (if (some zero? data)
+     0
+     (/ (count data) (reduce + (map #(/ 1 %) data)))))
   ([data weights]
    (check-nonempty data "harmonic-mean")
    (when (some neg? data)
      (throw (ex-info "harmonic-mean requires non-negative data" {})))
-   (/ (reduce + weights)
-      (reduce + (map (fn [w x] (/ w x)) weights data)))))
+   (if (some zero? data)
+     0
+     (/ (reduce + weights)
+        (reduce + (map (fn [w x] (/ w x)) weights data))))))
 
 (defn median [data]
   (check-nonempty data "median")
