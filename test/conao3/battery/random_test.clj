@@ -149,3 +149,9 @@
         _ (random-m/seed 42)
         v2 (random-m/random)]
     (t/is (= v1 v2))))
+
+(t/deftest test-setstate-numeric
+  (random-m/setstate 42)
+  (let [v1 (random-m/random)]
+    (random-m/setstate 42)
+    (t/is (= v1 (random-m/random)))))
