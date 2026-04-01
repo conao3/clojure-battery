@@ -72,3 +72,33 @@
         c9 (gzip-m/compress large-data 9)]
     (t/is (bytes= large-data (gzip-m/decompress c1)))
     (t/is (bytes= large-data (gzip-m/decompress c9)))))
+
+(t/deftest test-compress-known-text
+  ;; Verify compress+decompress with text content
+  (let [data (b "The quick brown fox jumps over the lazy dog")]
+    (t/is (bytes= data (gzip-m/decompress (gzip-m/compress data))))))
+
+(t/deftest test-compress-repeated-bytes
+  ;; Highly compressible data should produce smaller output
+  (let [data (byte-array (repeat 10000 (byte 0)))
+        compressed (gzip-m/compress data)]
+    (t/is (< (alength compressed) (/ (alength data) 10)))
+    (t/is (bytes= data (gzip-m/decompress compressed)))))
+
+(t/deftest test-compress-level-0
+  ;; Level 0 means no compression but still valid gzip
+  (let [data (b "hello world")
+        compressed (gzip-m/compress data 0)
+        decompressed (gzip-m/decompress compressed)]
+    (t/is (bytes= data decompressed))))
+
+(t/deftest test-decompress-preserves-content
+  (let [data-list [(b "") (b "a") (b "hello") (b "Hello, World!\n")
+                   (byte-array (concat (map int "binary") [0] (map int "data")))]]
+    (doseq [d data-list]
+      (t/is (bytes= d (gzip-m/decompress (gzip-m/compress d)))))))
+
+(t/deftest test-compress-utf8-bytes
+  ;; Compress and decompress UTF-8 encoded bytes
+  (let [data (.getBytes "日本語テスト" "UTF-8")]
+    (t/is (bytes= data (gzip-m/decompress (gzip-m/compress data))))))

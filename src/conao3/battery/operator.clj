@@ -126,6 +126,10 @@
 (defn countOf [a b]
   (count (filter #(= % b) a)))
 
+(defn is-none [a] (nil? a))
+(defn is-not-none [a] (not (nil? a)))
+(defn call [f & args] (apply f args))
+
 (defn iadd [a b] (add a b))
 (defn isub [a b] (sub a b))
 (defn imul [a b] (mul a b))

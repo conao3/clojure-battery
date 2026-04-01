@@ -118,3 +118,25 @@
 (t/deftest test-digest-size-sha1
   (t/is (= 20 (:digest-size (hmac/new (b "k") "sha1"))))
   (t/is (= 20 (alength (hmac/digest (hmac/new (b "k") "sha1" (b "msg")))))))
+
+;; RFC 2202 test vectors for HMAC-MD5
+(t/deftest test-md5-rfc2202
+  (letfn [(md5test [key msg expected]
+            (t/is (= expected (hmac/hexdigest (hmac/new key "md5" msg)))))]
+    (md5test (byte-array (repeat 16 (unchecked-byte 0x0b))) (b "Hi There")
+             "9294727a3638bb1c13f48ef8158bfc9d")
+    (md5test (b "Jefe") (b "what do ya want for nothing?")
+             "750c783e6ab0b503eaa86e310a5db738")
+    (md5test (byte-array (repeat 16 (unchecked-byte 0xaa))) (byte-array (repeat 50 (unchecked-byte 0xdd)))
+             "56be34521d144c88dbb8c733f0e8b3f6")))
+
+;; RFC 2202 test vectors for HMAC-SHA1
+(t/deftest test-sha1-rfc2202
+  (letfn [(shatest [key msg expected]
+            (t/is (= expected (hmac/hexdigest (hmac/new key "sha1" msg)))))]
+    (shatest (byte-array (repeat 20 (unchecked-byte 0x0b))) (b "Hi There")
+             "b617318655057264e28bc0b6fb378c8ef146be00")
+    (shatest (b "Jefe") (b "what do ya want for nothing?")
+             "effcdf6ae5eb2fa2d27416d5f184df9c259a7c79")
+    (shatest (byte-array (repeat 20 (unchecked-byte 0xaa))) (byte-array (repeat 50 (unchecked-byte 0xdd)))
+             "125d7342b9ac11cd91a39af48aa17b4f63f175d3")))

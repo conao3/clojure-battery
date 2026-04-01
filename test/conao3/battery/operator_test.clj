@@ -145,3 +145,20 @@
   (t/is (= 5 (op/index 5)))
   (t/is (= 0 (op/index 0)))
   (t/is (thrown? clojure.lang.ExceptionInfo (op/index "not-an-int"))))
+
+(t/deftest test-is-none
+  (t/is (true? (op/is-none nil)))
+  (t/is (false? (op/is-none "xyzpdq")))
+  (t/is (false? (op/is-none "")))
+  (t/is (false? (op/is-none 0))))
+
+(t/deftest test-is-not-none
+  (t/is (false? (op/is-not-none nil)))
+  (t/is (true? (op/is-not-none "xyzpdq")))
+  (t/is (true? (op/is-not-none "")))
+  (t/is (true? (op/is-not-none 0))))
+
+(t/deftest test-call
+  (t/is (= 5 (op/call + 2 3)))
+  (t/is (= "hello" (op/call str "hel" "lo")))
+  (t/is (= [1 2 3] (op/call vector 1 2 3))))

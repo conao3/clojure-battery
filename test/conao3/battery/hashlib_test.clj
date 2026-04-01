@@ -36,6 +36,11 @@
          (b "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")
          "84983e441c3bd26ebaae4aa1f95129e5e54670f1"))
 
+(t/deftest test-case-sha1-3
+  ;; 1 million 'a' characters
+  (check "sha1" (byte-array (repeat 1000000 (byte 97)))
+         "34aa973cd4c4daa4f61eeb2bdbad27316534016f"))
+
 (t/deftest test-case-sha256-0
   (check "sha256" (b "")
          "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
@@ -49,11 +54,21 @@
          (b "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")
          "248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1"))
 
+(t/deftest test-case-sha256-3
+  ;; 1 million 'a' characters
+  (check "sha256" (byte-array (repeat 1000000 (byte 97)))
+         "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0"))
+
 (t/deftest test-case-sha224-0
   (check "sha224" (b "") "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f"))
 
 (t/deftest test-case-sha224-1
   (check "sha224" (b "abc") "23097d223405d8228642a477bda255b32aadbce4bda0b3f7e36c9da7"))
+
+(t/deftest test-case-sha224-2
+  (check "sha224"
+         (b "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq")
+         "75388b16512776cc5dba5da1fd890150b0c6455cb4f58b1952522525"))
 
 (t/deftest test-case-sha384-0
   (check "sha384" (b "")
@@ -63,6 +78,11 @@
   (check "sha384" (b "abc")
          "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7"))
 
+(t/deftest test-case-sha384-2
+  (check "sha384"
+         (b "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
+         "09330c33f71147e83d192fc782cd1b4753111b173b3b05d22fa08086e3b0f712fcc7c71a557e2db966c3e9fa91746039"))
+
 (t/deftest test-case-sha512-0
   (check "sha512" (b "")
          "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"))
@@ -70,6 +90,11 @@
 (t/deftest test-case-sha512-1
   (check "sha512" (b "abc")
          "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"))
+
+(t/deftest test-case-sha512-2
+  (check "sha512"
+         (b "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu")
+         "8e959b75dae313da8cf4f72814fc143f8f7779c6eb9f7fa17299aeadb6889018501d289e4900f7e4331b99dec4b5433ac7d329eeb6dd26545e96e55b874be909"))
 
 (t/deftest test-case-sha3-256-0
   (check "sha3_256" (b "")
