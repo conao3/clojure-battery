@@ -151,3 +151,37 @@
         w  (csv-m/writer sw {:delimiter \tab})]
     (csv-m/writerow w ["a" "b" "c"])
     (t/is (= "a\tb\tc\r\n" (.toString sw)))))
+
+(t/deftest test-writer-empty-string-field
+  (let [sw (StringWriter.)
+        w  (csv-m/writer sw)]
+    (csv-m/writerow w ["" "b" ""])
+    (t/is (= ",b,\r\n" (.toString sw)))))
+
+(t/deftest test-reader-multiple-rows
+  ;; multiple rows are parsed independently
+  (let [rows (csv-m/reader ["1,2,3" "4,5,6" "7,8,9"])]
+    (t/is (= 3 (count rows)))
+    (t/is (= ["1" "2" "3"] (first rows)))
+    (t/is (= ["7" "8" "9"] (last rows)))))
+
+(t/deftest test-writer-number-fields
+  (let [sw (StringWriter.)
+        w  (csv-m/writer sw)]
+    (csv-m/writerow w [1 2 3])
+    (t/is (= "1,2,3\r\n" (.toString sw)))))
+
+(t/deftest test-dict-reader-missing-fieldnames
+  ;; dict-reader should use first row as fieldnames if not provided
+  (let [rows (csv-m/dict-reader ["name,age" "Alice,30" "Bob,25"])]
+    (t/is (= 2 (count rows)))
+    (t/is (= {"name" "Alice" "age" "30"} (first rows)))))
+
+(t/deftest test-roundtrip-with-quotes
+  (let [original [["hello world" "foo,bar" "a\"b"]]
+        sw (StringWriter.)
+        w  (csv-m/writer sw)
+        _ (csv-m/writerows w original)
+        s (.toString sw)
+        rows (csv-m/reader (clojure.string/split-lines s))]
+    (t/is (= original (vec rows)))))

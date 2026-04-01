@@ -86,3 +86,27 @@
   (t/is (true? (pprint/isreadable #{})))
   (t/is (true? (pprint/isreadable '(1 2))))
   (t/is (false? (pprint/isreadable {:key (Object.)}))))
+
+(t/deftest test-pformat-numbers
+  (t/is (= "0" (pprint/pformat 0)))
+  (t/is (= "-1" (pprint/pformat -1)))
+  (t/is (= "3.14" (pprint/pformat 3.14))))
+
+(t/deftest test-pformat-empty-collections
+  (t/is (= "{}" (pprint/pformat {})))
+  (t/is (= "[]" (pprint/pformat [])))
+  (t/is (= "()" (pprint/pformat '())))
+  (t/is (= "#{}" (pprint/pformat #{}))))
+
+(t/deftest test-saferepr-is-string
+  ;; saferepr always returns a string even for unreadable objects
+  (let [r (pprint/saferepr (Object.))]
+    (t/is (string? r))
+    (t/is (pos? (count r)))))
+
+(t/deftest test-isrecursive-false-for-basic
+  ;; Common collections are not recursive
+  (t/is (false? (pprint/isrecursive {})))
+  (t/is (false? (pprint/isrecursive [])))
+  (t/is (false? (pprint/isrecursive '(1 2))))
+  (t/is (false? (pprint/isrecursive #{1 2}))))

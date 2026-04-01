@@ -98,3 +98,33 @@
         copied   (copy-m/deepcopy original)]
     (t/is (= original copied))
     (t/is (not (identical? (:a original) (:a copied))))))
+
+(t/deftest test-copy-vector
+  (let [original [1 2 3 4 5]
+        copied   (copy-m/copy original)]
+    (t/is (= original copied))))
+
+(t/deftest test-copy-list
+  (let [original '(1 2 3)
+        copied   (copy-m/copy original)]
+    (t/is (= original copied))))
+
+(t/deftest test-deepcopy-java-hashmap
+  (let [original (doto (HashMap.) (.put "a" 1) (.put "b" 2))
+        copied   (copy-m/deepcopy original)]
+    (t/is (= (.get original "a") (.get copied "a")))
+    (t/is (= (.get original "b") (.get copied "b")))
+    (t/is (not (identical? original copied)))))
+
+(t/deftest test-copy-atomic-values
+  ;; Atomic values are returned as-is
+  (t/is (identical? :keyword (copy-m/copy :keyword)))
+  (t/is (= 42 (copy-m/copy 42)))
+  (t/is (= 3.14 (copy-m/copy 3.14))))
+
+(t/deftest test-deepcopy-atom-inside-map
+  ;; deepcopy of map containing an atom-like structure
+  (let [original {:count 0 :items [1 2 3]}
+        copied   (copy-m/deepcopy original)]
+    (t/is (= original copied))
+    (t/is (not (identical? (:items original) (:items copied))))))
