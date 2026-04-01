@@ -125,3 +125,32 @@
     (weakref/finalize-call fin)
     (weakref/finalize-call fin)
     (t/is (= 1 @call-count))))
+
+(t/deftest test-ref-alive-check
+  ;; a live reference returns true for alive?
+  (let [obj (atom {:value 42})
+        r (weakref/ref @obj)]
+    (t/is (boolean? (weakref/alive? r)))))
+
+(t/deftest test-weak-value-dict-empty
+  ;; empty weak-value-dict has no contents
+  (let [d (weakref/make-weak-value-dict)]
+    (t/is (nil? (weakref/weak-value-dict-get d "any")))
+    (t/is (not (weakref/weak-value-dict-contains? d "any")))))
+
+(t/deftest test-weak-dict-multiple-entries
+  (let [d (weakref/make-weak-dict)
+        k1 (Object.)
+        k2 (Object.)]
+    (.put d k1 "v1")
+    (.put d k2 "v2")
+    (t/is (= "v1" (.get d k1)))
+    (t/is (= "v2" (.get d k2)))
+    (t/is (= 2 (.size d)))))
+
+(t/deftest test-finalize-with-nil-func
+  ;; finalize with a no-op function works
+  (let [obj (Object.)
+        fin (weakref/finalize obj (fn []))]
+    (t/is (map? fin))
+    (t/is (true? (weakref/finalize-alive? fin)))))
