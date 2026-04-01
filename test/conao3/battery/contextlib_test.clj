@@ -118,3 +118,11 @@
     ((:push stack) (fn [] (swap! order conj :first)))
     ((:close stack))
     (t/is (= [:first :last] @order))))
+
+(t/deftest test-abstract-context-manager
+  (let [cls {:enter (fn [] nil) :exit (fn [] nil)}]
+    (t/is (identical? cls (contextlib/abstract-context-manager cls)))))
+
+(t/deftest test-context-decorator
+  (let [cls {:name "MyContext"}]
+    (t/is (identical? cls (contextlib/context-decorator cls)))))
