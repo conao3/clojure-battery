@@ -131,3 +131,28 @@
   ;; Try to unpack more bytes than provided
   (t/is (thrown? Exception (struct-m/unpack ">HH" (byte-array [0x01 0x02]))))
   (t/is (thrown? Exception (struct-m/unpack ">d" (byte-array [0x01 0x02 0x03])))))
+
+(t/deftest test-calcsize-formats
+  (t/is (= 1 (struct-m/calcsize ">B")))
+  (t/is (= 1 (struct-m/calcsize ">b")))
+  (t/is (= 2 (struct-m/calcsize ">H")))
+  (t/is (= 2 (struct-m/calcsize ">h")))
+  (t/is (= 4 (struct-m/calcsize ">I")))
+  (t/is (= 8 (struct-m/calcsize ">Q")))
+  (t/is (= 8 (struct-m/calcsize ">d")))
+  (t/is (= 4 (struct-m/calcsize ">f"))))
+
+(t/deftest test-pack-multiple-values
+  (let [packed (struct-m/pack ">BHI" 1 2 3)]
+    (t/is (= 7 (alength ^bytes packed)))
+    (t/is (= [1 2 3] (struct-m/unpack ">BHI" packed)))))
+
+(t/deftest test-pack-char
+  (let [packed (struct-m/pack ">4s" (.getBytes "abcd" "ISO-8859-1"))]
+    (t/is (= 4 (alength ^bytes packed)))))
+
+(t/deftest test-roundtrip-float
+  (let [v (float 3.14)
+        packed (struct-m/pack ">f" v)
+        [unpacked] (struct-m/unpack ">f" packed)]
+    (t/is (< (Math/abs (- v (float unpacked))) 0.001))))

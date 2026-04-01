@@ -158,3 +158,36 @@
   (t/is (approx= 0.0 (math-m/dist [1 2 3] [1 2 3])))
   ;; 3D distance
   (t/is (approx= (Math/sqrt 3.0) (math-m/dist [0 0 0] [1 1 1]))))
+
+(t/deftest test-gcd-multiple
+  (t/is (= 6 (math-m/gcd 12 18 24)))
+  (t/is (= 1 (math-m/gcd 7 11 13)))
+  (t/is (= 4 (math-m/gcd 4 4))))
+
+(t/deftest test-lcm-multiple
+  (t/is (= 12 (math-m/lcm 4 6)))
+  (t/is (= 60 (math-m/lcm 4 6 10)))
+  (t/is (= 5 (math-m/lcm 5 5))))
+
+(t/deftest test-isclose-defaults
+  (t/is (math-m/isclose 1.0 1.0))
+  (t/is (math-m/isclose 1.0 1.0000000001))
+  (t/is (not (math-m/isclose 1.0 2.0))))
+
+(t/deftest test-isfinite
+  (t/is (math-m/isfinite 1.0))
+  (t/is (math-m/isfinite 0.0))
+  (t/is (not (math-m/isfinite Double/POSITIVE_INFINITY)))
+  (t/is (not (math-m/isfinite Double/NaN))))
+
+(t/deftest test-comb-zero
+  (t/is (= 1 (math-m/comb 5 0)))
+  (t/is (= 1 (math-m/comb 5 5)))
+  (t/is (= 5 (math-m/comb 5 1)))
+  (t/is (= 10 (math-m/comb 5 2))))
+
+(t/deftest test-perm
+  (t/is (= 1 (math-m/perm 5 0)))
+  (t/is (= 5 (math-m/perm 5 1)))
+  (t/is (= 20 (math-m/perm 5 2)))
+  (t/is (= 120 (math-m/perm 5 5))))
