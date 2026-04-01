@@ -109,3 +109,24 @@
     (t/is (= "/path" (:path r)))
     (t/is (= "q=1" (:query r)))
     (t/is (= "frag" (:fragment r)))))
+
+(t/deftest test-quote-safe-chars
+  ;; safe chars not encoded
+  (t/is (= "hello/world" (up-m/quote "hello/world" "/")))
+  ;; spaces encoded as %20 by default
+  (t/is (= "hello%20world" (up-m/quote "hello world"))))
+
+(t/deftest test-parse-qsl
+  (let [result (up-m/parse-qsl "a=1&b=2&a=3")]
+    (t/is (= [["a" "1"] ["b" "2"] ["a" "3"]] result))))
+
+(t/deftest test-urlencode-seq
+  (let [encoded (up-m/urlencode [["a" "1"] ["b" "hello world"]])]
+    (t/is (string? encoded))
+    (t/is (clojure.string/includes? encoded "a=1"))))
+
+(t/deftest test-urlparse-no-query-no-fragment
+  (let [r (up-m/urlparse "https://example.com/path")]
+    (t/is (= "https" (:scheme r)))
+    (t/is (= "" (:query r)))
+    (t/is (= "" (:fragment r)))))

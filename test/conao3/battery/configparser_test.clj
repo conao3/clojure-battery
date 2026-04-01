@@ -130,3 +130,28 @@
   (let [cfg (configparser/read-string "[s]\nFOO=bar\nMixedCase=val\n")]
     (t/is (= "bar" (configparser/get cfg "s" "foo")))
     (t/is (= "val" (configparser/get cfg "s" "mixedcase")))))
+
+(t/deftest test-get-boolean-values
+  (let [cfg (configparser/read-string "[s]\nt1=true\nt2=yes\nt3=on\nt4=1\nf1=false\nf2=no\nf3=off\nf4=0\n")]
+    (t/is (true? (configparser/get-boolean cfg "s" "t1")))
+    (t/is (true? (configparser/get-boolean cfg "s" "t2")))
+    (t/is (true? (configparser/get-boolean cfg "s" "t3")))
+    (t/is (true? (configparser/get-boolean cfg "s" "t4")))
+    (t/is (false? (configparser/get-boolean cfg "s" "f1")))
+    (t/is (false? (configparser/get-boolean cfg "s" "f2")))))
+
+(t/deftest test-get-with-fallback
+  (let [cfg (configparser/read-string "[s]\nkey=value\n")]
+    (t/is (= "value" (configparser/get cfg "s" "key")))
+    (t/is (= "default" (configparser/get cfg "s" "missing" "default")))))
+
+(t/deftest test-get-int-and-float
+  (let [cfg (configparser/read-string "[s]\ni=42\nf=3.14\n")]
+    (t/is (= 42 (configparser/get-int cfg "s" "i")))
+    (t/is (< (Math/abs (- 3.14 (configparser/get-float cfg "s" "f"))) 0.0001))))
+
+(t/deftest test-has-option
+  (let [cfg (configparser/read-string "[s]\nkey=val\n")]
+    (t/is (true? (configparser/has-option cfg "s" "key")))
+    (t/is (false? (configparser/has-option cfg "s" "missing")))
+    (t/is (false? (configparser/has-option cfg "nosection" "key")))))
