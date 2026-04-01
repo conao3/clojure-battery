@@ -24,14 +24,41 @@
                  s2'' (mod (+ s2' s1'') MOD_ADLER)]
              (recur (inc i) s1'' s2''))))))))
 
+(defn- crc32-table []
+  (let [t    (int-array 256)
+        poly (long 3988292384)    ;; 0xEDB88320 as positive long
+        mask (long 4294967295)]   ;; 0xFFFFFFFF as long
+    (dotimes [n 256]
+      (aset t n
+            (unchecked-int
+             (loop [c (long n) k 0]
+               (if (= k 8)
+                 c
+                 (recur (if (odd? c)
+                          (bit-xor (unsigned-bit-shift-right c 1) poly)
+                          (unsigned-bit-shift-right c 1))
+                        (inc k)))))))
+    t))
+
+(def ^:private _crc32-table (crc32-table))
+
 (defn crc32
-  ([data] (.getValue (doto (CRC32.) (.update ^bytes data))))
+  ([data] (crc32 data 0))
   ([data value]
-   (if (zero? value)
-     (crc32 data)
-     (let [c (CRC32.)]
-       (.update c (byte-array 0))
-       (.getValue (doto (CRC32.) (.update ^bytes data)))))))
+   (let [mask     (long 4294967295)    ;; 0xFFFFFFFF
+         init-crc (bit-xor (bit-and (long value) mask) mask)]
+     (bit-and
+      (bit-xor
+       (loop [i 0 c init-crc]
+         (if (= i (alength ^bytes data))
+           c
+           (let [b   (bit-and (long (aget ^bytes data i)) 0xFF)
+                 idx (bit-and (bit-xor c b) 0xFF)
+                 tbl (bit-and (long (aget ^ints _crc32-table (int idx))) mask)
+                 nxt (bit-xor (unsigned-bit-shift-right c 8) tbl)]
+             (recur (inc i) nxt))))
+       mask)
+      mask))))
 
 (defn compress
   ([data] (compress data Z_DEFAULT_COMPRESSION))

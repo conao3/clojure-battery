@@ -112,3 +112,26 @@
 (t/deftest test-adler32-deterministic
   (let [data (b "hello world")]
     (t/is (= (zlib/adler32 data) (zlib/adler32 data)))))
+
+(t/deftest test-crc32-start
+  ;; crc32(empty, 0) == crc32(empty)
+  (t/is (= (zlib/crc32 (byte-array 0)) (zlib/crc32 (byte-array 0) 0))))
+
+(t/deftest test-crc32-empty-with-value
+  ;; crc32(b"", N) == N
+  (t/is (= 0 (zlib/crc32 (byte-array 0) 0)))
+  (t/is (= 1 (zlib/crc32 (byte-array 0) 1)))
+  (t/is (= 432 (zlib/crc32 (byte-array 0) 432))))
+
+(t/deftest test-adler32-empty-with-value
+  ;; adler32(b"", N) == N
+  (t/is (= 0 (zlib/adler32 (byte-array 0) 0)))
+  (t/is (= 1 (zlib/adler32 (byte-array 0) 1)))
+  (t/is (= 432 (zlib/adler32 (byte-array 0) 432))))
+
+(t/deftest test-crc32-running-sum
+  ;; crc32(a+b) == crc32(b, crc32(a))
+  (let [a (b "hello ")
+        b-bytes (b "world")
+        ab (b "hello world")]
+    (t/is (= (zlib/crc32 ab) (zlib/crc32 b-bytes (zlib/crc32 a))))))
