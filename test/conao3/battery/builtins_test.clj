@@ -163,3 +163,66 @@
   (let [result (b/vars (find-ns 'clojure.core))]
     (t/is (map? result))
     (t/is (pos? (count result)))))
+
+;; Python test_builtin.py 互換テスト
+(t/deftest test-divmod-negative
+  ;; Python uses floor division: divmod(-12, 7) = (-2, 2)
+  (t/is (= [-2 2] (b/divmod -12 7)))
+  (t/is (= [-2 -2] (b/divmod 12 -7)))
+  (t/is (= [1 -5] (b/divmod -12 -7)))
+  ;; verify: q*b + r == a
+  (doseq [[a b] [[-12 7] [12 -7] [-12 -7] [-5 3] [5 -3]]]
+    (let [[q r] (b/divmod a b)]
+      (t/is (= a (+ (* q b) r)) (str "divmod(" a "," b ")"))))
+  ;; float divmod
+  (t/is (= [3.0 0.25] (b/divmod 3.25 1.0)))
+  (t/is (= [-4.0 0.75] (b/divmod -3.25 1.0))))
+
+(t/deftest test-divmod-zero-remainder
+  (t/is (= [2 0] (b/divmod 10 5)))
+  (t/is (= [-2 0] (b/divmod -10 5)))
+  (t/is (= [-2 0] (b/divmod 10 -5))))
+
+(t/deftest test-pow-special
+  ;; pow(0, 0) = 1.0 in Clojure (Math/pow)
+  (t/is (= 1.0 (b/pow 0 0)))
+  (t/is (= 1.0 (b/pow -1 0)))
+  (t/is (= 0.0 (b/pow 0 1)))
+  ;; pow with 3 args (modular exponentiation)
+  (t/is (= 2 (b/pow 2 10 1022)))
+  (t/is (= 0 (b/pow 2 3 8))))
+
+(t/deftest test-max-min-empty
+  ;; max/min with empty collection throws
+  (t/is (thrown? Exception (b/max [])))
+  (t/is (thrown? Exception (b/min []))))
+
+(t/deftest test-max-min-key
+  (t/is (= "hello" (b/max ["hi" "hello" "hey"] :key count)))
+  (t/is (= "hi" (b/min ["hi" "hello" "hey"] :key count))))
+
+(t/deftest test-sum-edge-cases
+  (t/is (= 10 (b/sum [] 10)))
+  (t/is (= 0 (b/sum [])))
+  (t/is (= 0.0 (b/sum [0.0])))
+  (t/is (Double/isInfinite (b/sum [(Double/POSITIVE_INFINITY) 1.0]))))
+
+(t/deftest test-round-ndigits
+  (t/is (= 3.14 (b/round 3.14159 2)))
+  (t/is (= 3.142 (b/round 3.14159 3)))
+  (t/is (= 3.0 (b/round 3.14159 0)))
+  (t/is (= -3.14 (b/round -3.14159 2))))
+
+(t/deftest test-len-string
+  (t/is (= 0 (b/len "")))
+  (t/is (= 5 (b/len "hello"))))
+
+(t/deftest test-len-collections
+  (t/is (= 0 (b/len [])))
+  (t/is (= 3 (b/len [1 2 3])))
+  (t/is (= 2 (b/len {:a 1 :b 2})))
+  (t/is (= 3 (b/len #{1 2 3}))))
+
+(t/deftest test-sorted-key
+  (t/is (= ["hi" "hey" "hello"] (b/sorted ["hello" "hi" "hey"] {:key count})))
+  (t/is (= ["hello" "hey" "hi"] (b/sorted ["hello" "hi" "hey"] {:key count :reverse true}))))

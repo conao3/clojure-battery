@@ -323,3 +323,50 @@
 
 (t/deftest test-format-year-head
   (t/is (= [2 31] (calendar/monthrange 2010 12))))
+
+;; Python test_calendar.py 互換テスト
+(t/deftest test-isleap-century-years
+  ;; 100の倍数だが400の倍数でない年は閏年でない
+  (t/is (false? (calendar/isleap 1900)))
+  (t/is (false? (calendar/isleap 2100)))
+  (t/is (false? (calendar/isleap 2200)))
+  ;; 400の倍数は閏年
+  (t/is (true? (calendar/isleap 2000)))
+  (t/is (true? (calendar/isleap 1600)))
+  ;; 通常の閏年
+  (t/is (true? (calendar/isleap 1904)))
+  (t/is (true? (calendar/isleap 2024))))
+
+(t/deftest test-leapdays-large-range
+  ;; 1900-2100の間の閏年数
+  (t/is (= 49 (calendar/leapdays 1900 2100)))
+  ;; 同じ年は0
+  (t/is (= 0 (calendar/leapdays 2000 2000)))
+  ;; 1900年自体は閏年でない (leapdaysは含まれない)
+  (t/is (= 0 (calendar/leapdays 1900 1901)))
+  ;; 2000年は閏年
+  (t/is (= 1 (calendar/leapdays 2000 2001))))
+
+(t/deftest test-timegm-pre-epoch
+  ;; 1970年以前の日時は負のタイムスタンプ
+  (t/is (= -1 (calendar/timegm [1969 12 31 23 59 59])))
+  (t/is (neg? (calendar/timegm [1960 1 1 0 0 0])))
+  ;; 1970-01-01はエポック
+  (t/is (= 0 (calendar/timegm [1970 1 1 0 0 0]))))
+
+(t/deftest test-monthrange-boundary-years
+  ;; year=0 (有効な年として処理される)
+  (t/is (= [1 29] (calendar/monthrange 0 2)))   ; year 0 is a leap year in proleptic Gregorian
+  (t/is (= [0 31] (calendar/monthrange 1 1))))   ; year 1, Jan 1 AD = Monday
+
+(t/deftest test-setfirstweekday-boundary
+  ;; 境界値: 0 (月曜) と 6 (日曜) は有効
+  (let [original (calendar/firstweekday)]
+    (calendar/setfirstweekday 0)
+    (t/is (= 0 (calendar/firstweekday)))
+    (calendar/setfirstweekday 6)
+    (t/is (= 6 (calendar/firstweekday)))
+    (calendar/setfirstweekday original))
+  ;; 範囲外は例外
+  (t/is (thrown? ExceptionInfo (calendar/setfirstweekday -1)))
+  (t/is (thrown? ExceptionInfo (calendar/setfirstweekday 7))))

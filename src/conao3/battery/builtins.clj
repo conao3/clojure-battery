@@ -24,7 +24,10 @@
   (char i))
 
 (defn divmod [a b]
-  [(quot a b) (clojure.core/mod a b)])
+  (if (and (integer? a) (integer? b))
+    [(Math/floorDiv (long a) (long b)) (Math/floorMod (long a) (long b))]
+    (let [q (Math/floor (/ (double a) (double b)))]
+      [q (- a (* q b))])))
 
 (defn enumerate
   ([iterable] (enumerate iterable 0))
@@ -94,14 +97,26 @@
 (defn max
   ([iterable] (clojure.core/reduce (fn [a b] (if (pos? (compare a b)) a b)) iterable))
   ([iterable & args]
-   (let [all-args (cons iterable args)]
-     (clojure.core/reduce (fn [a b] (if (pos? (compare a b)) a b)) all-args))))
+   (if (keyword? (first args))
+     ;; keyword opts: treat iterable as the collection
+     (let [{:keys [key]} (apply hash-map args)]
+       (if key
+         (clojure.core/reduce (fn [a b] (if (pos? (compare (key a) (key b))) a b)) iterable)
+         (clojure.core/reduce (fn [a b] (if (pos? (compare a b)) a b)) iterable)))
+     ;; multiple positional args
+     (let [all-args (cons iterable args)]
+       (clojure.core/reduce (fn [a b] (if (pos? (compare a b)) a b)) all-args)))))
 
 (defn min
   ([iterable] (clojure.core/reduce (fn [a b] (if (neg? (compare a b)) a b)) iterable))
   ([iterable & args]
-   (let [all-args (cons iterable args)]
-     (clojure.core/reduce (fn [a b] (if (neg? (compare a b)) a b)) all-args))))
+   (if (keyword? (first args))
+     (let [{:keys [key]} (apply hash-map args)]
+       (if key
+         (clojure.core/reduce (fn [a b] (if (neg? (compare (key a) (key b))) a b)) iterable)
+         (clojure.core/reduce (fn [a b] (if (neg? (compare a b)) a b)) iterable)))
+     (let [all-args (cons iterable args)]
+       (clojure.core/reduce (fn [a b] (if (neg? (compare a b)) a b)) all-args)))))
 
 (defn next
   ([it] (first it))
