@@ -130,3 +130,18 @@
 
 (t/deftest test-concat-seq
   (t/is (= [1 2 3 4] (vec (op/concat '(1 2) [3 4])))))
+
+(t/deftest test-index-of
+  (t/is (= 1 (op/indexOf [10 20 30] 20)))
+  (t/is (= 0 (op/indexOf [1 2 3] 1)))
+  (t/is (thrown? clojure.lang.ExceptionInfo (op/indexOf [1 2 3] 99))))
+
+(t/deftest test-count-of
+  (t/is (= 2 (op/countOf [1 2 2 3] 2)))
+  (t/is (= 0 (op/countOf [1 2 3] 99)))
+  (t/is (= 3 (op/countOf [5 5 5] 5))))
+
+(t/deftest test-index-fn
+  (t/is (= 5 (op/index 5)))
+  (t/is (= 0 (op/index 0)))
+  (t/is (thrown? clojure.lang.ExceptionInfo (op/index "not-an-int"))))

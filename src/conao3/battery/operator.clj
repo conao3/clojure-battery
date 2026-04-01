@@ -113,6 +113,19 @@
     (let [m (.. obj getClass (getMethod name (into-array Class (map type args))))]
       (.invoke m obj (into-array Object args)))))
 
+(defn index [a]
+  (if (integer? a) (long a)
+      (throw (ex-info (str "'" (type a) "' object cannot be interpreted as an integer") {}))))
+
+(defn indexOf [a b]
+  (let [idx (first (keep-indexed #(when (= %2 b) %1) a))]
+    (if (nil? idx)
+      (throw (ex-info (str (pr-str b) " is not in sequence") {}))
+      idx)))
+
+(defn countOf [a b]
+  (count (filter #(= % b) a)))
+
 (defn iadd [a b] (add a b))
 (defn isub [a b] (sub a b))
 (defn imul [a b] (mul a b))
