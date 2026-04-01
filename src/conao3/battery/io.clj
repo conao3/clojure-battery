@@ -38,8 +38,8 @@
   (buf-read [_ n]
     (ensure-open state)
     (let [{:keys [^bytes buf pos len]} @state
-          available (- len pos)
-          to-read   (if (nil? n) available (min n available))
+          available (max 0 (- len pos))
+          to-read   (if (or (nil? n) (neg? n)) available (min n available))
           result    (byte-array to-read)]
       (when (pos? to-read)
         (System/arraycopy buf pos result 0 to-read))
@@ -108,8 +108,8 @@
     (ensure-open state)
     (let [{:keys [^StringBuilder buf pos]} @state
           len       (.length buf)
-          available (- len pos)
-          to-read   (if (nil? n) available (min n available))
+          available (max 0 (- len pos))
+          to-read   (if (or (nil? n) (neg? n)) available (min n available))
           result    (.substring buf pos (+ pos to-read))]
       (swap! state update :pos + to-read)
       result))

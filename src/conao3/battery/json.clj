@@ -174,12 +174,18 @@
         :else (throw (ex-info (str "Unexpected character: " c) {:pos i}))))))
 
 (defn loads [s]
-  (let [^String s (if (bytes? s) (String. ^bytes s "UTF-8") (str s))
-        [v i] (parse-value s 0)
-        i     (skip-ws s i)]
-    (when (< i (count s))
-      (throw (ex-info "Extra data after JSON" {:pos i})))
-    v))
+  (let [^String s (if (bytes? s) (String. ^bytes s "UTF-8") (str s))]
+    (when (zero? (count s))
+      (throw (ex-info "Expecting value: line 1 column 1 (char 0)" {})))
+    (try
+      (let [[v i] (parse-value s 0)
+            i     (skip-ws s i)]
+        (when (< i (count s))
+          (throw (ex-info "Extra data after JSON" {:pos i})))
+        v)
+      (catch clojure.lang.ExceptionInfo e (throw e))
+      (catch Exception e
+        (throw (ex-info (str "JSONDecodeError: " (.getMessage e)) {} e))))))
 
 (defn load [f]
   (loads (slurp f)))

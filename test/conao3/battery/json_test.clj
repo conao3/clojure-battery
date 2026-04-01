@@ -127,3 +127,28 @@
           in (java.io.StringReader. s)
           result (json-m/load in)]
       (t/is (= {"key" [1 2 3] "val" true} result)))))
+
+(t/deftest test-loads-bytes-input
+  (t/is (= 42 (json-m/loads (.getBytes "42" "UTF-8"))))
+  (t/is (= [1 2 3] (json-m/loads (.getBytes "[1, 2, 3]" "UTF-8"))))
+  (t/is (= {"a" 1} (json-m/loads (.getBytes "{\"a\": 1}" "UTF-8")))))
+
+(t/deftest test-loads-trailing-comma-errors
+  (t/is (thrown? clojure.lang.ExceptionInfo (json-m/loads "[1,]")))
+  (t/is (thrown? clojure.lang.ExceptionInfo (json-m/loads "{\"a\": 1,}")))
+  (t/is (thrown? clojure.lang.ExceptionInfo (json-m/loads "{")))
+  (t/is (thrown? clojure.lang.ExceptionInfo (json-m/loads "["))))
+
+(t/deftest test-loads-invalid-literal
+  (t/is (thrown? clojure.lang.ExceptionInfo (json-m/loads "undefined")))
+  (t/is (thrown? clojure.lang.ExceptionInfo (json-m/loads "nil")))
+  (t/is (thrown? clojure.lang.ExceptionInfo (json-m/loads ""))))
+
+(t/deftest test-dumps-ensure-ascii-default
+  ;; By default, non-ASCII chars should be escaped in JSON output
+  (let [result (json-m/dumps "\u00e9")]
+    (t/is (or (= "\"\\u00e9\"" result) (= "\"\u00e9\"" result)))))
+
+(t/deftest test-loads-nested-deeply
+  (let [data {"a" {"b" {"c" [1 2 {"d" true}]}}}]
+    (t/is (= data (json-m/loads (json-m/dumps data))))))

@@ -145,3 +145,56 @@
     (with-open [buf (io-m/string-io "test")]
       (reset! result (io-m/read buf)))
     (t/is (= "test" @result))))
+
+(t/deftest test-bytes-io-negative-read-all
+  ;; read(-1) should return all remaining data, same as read()
+  (let [buf (io-m/bytes-io (b "hello world"))]
+    (t/is (bytes= (b "hello world") (io-m/read buf -1)))))
+
+(t/deftest test-string-io-negative-read-all
+  (let [buf (io-m/string-io "hello world")]
+    (t/is (= "hello world" (io-m/read buf -1)))))
+
+(t/deftest test-bytes-io-invalid-whence
+  (let [buf (io-m/bytes-io (b "test"))]
+    (t/is (thrown? ExceptionInfo (io-m/seek buf 0 -1)))
+    (t/is (thrown? ExceptionInfo (io-m/seek buf 0 3)))))
+
+(t/deftest test-string-io-invalid-whence
+  (let [buf (io-m/string-io "test")]
+    (t/is (thrown? ExceptionInfo (io-m/seek buf 0 -1)))
+    (t/is (thrown? ExceptionInfo (io-m/seek buf 0 3)))))
+
+(t/deftest test-bytes-io-negative-seek
+  (let [buf (io-m/bytes-io (b "test"))]
+    (t/is (thrown? Exception (io-m/seek buf -1)))))
+
+(t/deftest test-string-io-negative-seek
+  (let [buf (io-m/string-io "test")]
+    (t/is (thrown? Exception (io-m/seek buf -1)))))
+
+(t/deftest test-bytes-io-overseek
+  (let [buf (io-m/bytes-io (b "hello"))]
+    (t/is (= 10 (io-m/seek buf 10)))
+    (t/is (bytes= (b "") (io-m/read buf)))))
+
+(t/deftest test-string-io-overseek
+  (let [buf (io-m/string-io "hello")]
+    (t/is (= 10 (io-m/seek buf 10)))
+    (t/is (= "" (io-m/read buf)))))
+
+(t/deftest test-bytes-io-closed-operations
+  (let [buf (io-m/bytes-io (b "test"))]
+    (io-m/close buf)
+    (t/is (thrown? ExceptionInfo (io-m/read buf)))
+    (t/is (thrown? ExceptionInfo (io-m/write buf (b "x"))))
+    (t/is (thrown? ExceptionInfo (io-m/seek buf 0)))
+    (t/is (thrown? ExceptionInfo (io-m/tell buf)))))
+
+(t/deftest test-string-io-closed-operations
+  (let [buf (io-m/string-io "test")]
+    (io-m/close buf)
+    (t/is (thrown? ExceptionInfo (io-m/read buf)))
+    (t/is (thrown? ExceptionInfo (io-m/write buf "x")))
+    (t/is (thrown? ExceptionInfo (io-m/seek buf 0)))
+    (t/is (thrown? ExceptionInfo (io-m/tell buf)))))
