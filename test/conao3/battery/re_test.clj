@@ -186,3 +186,46 @@
 (t/deftest test-re-split-limits
   (t/is (= ["a" "b" "c,d"] (re-m/split "," "a,b,c,d" 2)))
   (t/is (= ["a" "b" "c" "d"] (re-m/split "," "a,b,c,d"))))
+
+(t/deftest test-search-star-plus
+  (t/is (some? (re-m/search "x*" "axx")))
+  (t/is (some? (re-m/search "x+" "axx")))
+  (t/is (nil? (re-m/search "x+" "a"))))
+
+(t/deftest test-findall-no-groups
+  ;; without groups, findall returns list of strings
+  (t/is (= ["1" "2" "3"] (re-m/findall "\\d+" "a1b2c3"))))
+
+(t/deftest test-sub-backreference
+  ;; replace all words with their uppercase equivalents
+  (t/is (= "HELLO WORLD" (re-m/sub "\\w+" #(clojure.string/upper-case (re-m/group % 0)) "hello world")))
+  ;; replace with empty string removes pattern
+  (t/is (= " world" (re-m/sub "hello" "" "hello world"))))
+
+(t/deftest test-match-end
+  ;; match at end of string
+  (let [m (re-m/search "\\w+$" "hello world")]
+    (t/is (some? m))
+    (t/is (= "world" (re-m/group m 0)))))
+
+(t/deftest test-quantifiers
+  ;; {n,m} quantifiers
+  (t/is (= ["aaa"] (re-m/findall "a{3}" "aaaa")))
+  (t/is (= ["aa" "aaa" "aaa"] (re-m/findall "a{2,3}" "aa aaa aaaa")))
+  ;; ? quantifier
+  (t/is (some? (re-m/match "colou?r" "color")))
+  (t/is (some? (re-m/match "colou?r" "colour"))))
+
+(t/deftest test-character-classes
+  (t/is (= ["a" "b" "c"] (re-m/findall "[a-c]" "abcd")))
+  (t/is (= ["1" "2" "3"] (re-m/findall "[0-9]" "a1b2c3d")))
+  ;; negated character class
+  (t/is (= ["a" "b" "c"] (re-m/findall "[^0-9]" "a1b2c3"))))
+
+(t/deftest test-anchors
+  ;; ^ matches start
+  (t/is (some? (re-m/match "^hello" "hello world")))
+  (t/is (nil? (re-m/match "^world" "hello world")))
+  ;; $ matches end
+  (t/is (some? (re-m/search "world$" "hello world")))
+  (t/is (nil? (re-m/search "hello$" "hello world"))))

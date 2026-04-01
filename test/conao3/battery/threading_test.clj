@@ -154,3 +154,44 @@
     (th-m/semaphore-acquire s)
     (t/is (false? (th-m/semaphore-acquire s true 0.01)))
     (th-m/semaphore-release s)))
+
+(t/deftest test-thread-return-value
+  ;; Threads can write to shared state
+  (let [results (atom [])
+        threads (map (fn [i]
+                       (th-m/make-thread #(swap! results conj i)))
+                     (range 5))]
+    (doseq [t threads] (th-m/thread-start! t))
+    (doseq [t threads] (th-m/thread-join! t 5.0))
+    (t/is (= 5 (count @results)))
+    (t/is (= #{0 1 2 3 4} (set @results)))))
+
+(t/deftest test-event-set-and-wait
+  (let [e (th-m/event)
+        flag (atom false)
+        t (th-m/make-thread #(do (th-m/event-wait e 5.0)
+                                 (reset! flag true)))]
+    (th-m/thread-start! t)
+    (Thread/sleep 50)
+    (th-m/event-set! e)
+    (th-m/thread-join! t 5.0)
+    (t/is (true? @flag))))
+
+(t/deftest test-semaphore-multiple-permits
+  (let [s (th-m/semaphore 3)
+        count (atom 0)]
+    (t/is (true? (th-m/semaphore-acquire s)))
+    (t/is (true? (th-m/semaphore-acquire s)))
+    (t/is (true? (th-m/semaphore-acquire s)))
+    (th-m/semaphore-release s)
+    (th-m/semaphore-release s)
+    (th-m/semaphore-release s)))
+
+(t/deftest test-rlock-same-thread-reentrant
+  ;; Same thread can acquire RLock multiple times
+  (let [l (th-m/rlock)]
+    (th-m/rlock-acquire l)
+    (th-m/rlock-acquire l)
+    (th-m/rlock-release l)
+    (th-m/rlock-release l)
+    (t/is true)))
