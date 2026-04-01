@@ -168,3 +168,37 @@
   (let [orig (fn [x] (* x x))
         f (functools/lru-cache orig)]
     (t/is (identical? orig (f :wrapped)))))
+
+(t/deftest test-partial-no-extra-args
+  ;; partial with no extra args is still callable
+  (let [f (functools/partial + 0)]
+    (t/is (= 5 (f 5)))
+    (t/is (= 10 (f 10)))))
+
+(t/deftest test-partial-multiple-fixed
+  (let [f (functools/partial * 2 3)]
+    (t/is (= 24 (f 4)))
+    (t/is (= 30 (f 5)))))
+
+(t/deftest test-reduce-with-init-and-empty
+  (t/is (= 0 (functools/reduce + [] 0)))
+  (t/is (= 1 (functools/reduce * [] 1))))
+
+(t/deftest test-reduce-single-element
+  (t/is (= 5 (functools/reduce + [5])))
+  (t/is (= 5 (functools/reduce + [5] 0))))
+
+(t/deftest test-lru-cache-maxsize-evicts
+  (let [calls (atom 0)
+        f (functools/lru-cache 2 (fn [x] (swap! calls inc) (* x x)))]
+    (f 1) (f 2)
+    (t/is (= 2 @calls))
+    (f 1) ;; cache hit
+    (t/is (= 2 @calls))
+    (f 3) ;; evicts oldest (1 or 2), 1 miss
+    (t/is (= 3 @calls))))
+
+(t/deftest test-singledispatch-dispatch
+  (let [f (functools/singledispatch (fn [x] (str "default:" x)))]
+    ;; default dispatch
+    (t/is (clojure.string/starts-with? (f 42) "default:"))))

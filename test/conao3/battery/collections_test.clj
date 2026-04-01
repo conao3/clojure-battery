@@ -170,3 +170,34 @@
   (let [c {\a 3 \b 0 \c -1 \d 2}
         elems (sort (collections/counter-elements c))]
     (t/is (= [\a \a \a \d \d] elems))))
+
+(t/deftest test-counter-total
+  (t/is (= 0 (collections/counter-total {})))
+  (t/is (= 5 (collections/counter-total {\a 3 \b 2})))
+  (t/is (= 3 (collections/counter-total (collections/counter "abc")))))
+
+(t/deftest test-chain-map-empty-maps
+  ;; empty maps in chain-map
+  (t/is (= {:a 1} (collections/chain-map {} {:a 1})))
+  (t/is (= {:a 1} (collections/chain-map {:a 1} {})))
+  (t/is (= {} (collections/chain-map {} {}))))
+
+(t/deftest test-counter-string-words
+  (let [c (collections/counter ["red" "blue" "red" "green" "blue" "blue"])]
+    (t/is (= 2 (get c "red")))
+    (t/is (= 3 (get c "blue")))
+    (t/is (= 1 (get c "green")))
+    (t/is (nil? (get c "yellow")))))
+
+(t/deftest test-counter-subtract-all-keys
+  ;; subtract: keys from both dicts appear in result
+  (let [c (collections/counter-subtract {"a" 4} {"b" 2})]
+    (t/is (= 4 (get c "a")))
+    (t/is (= -2 (get c "b")))))
+
+(t/deftest test-chain-map-three-maps
+  (let [c (collections/chain-map {:a 1} {:a 2 :b 3} {:c 4})]
+    ;; first map wins
+    (t/is (= 1 (:a c)))
+    (t/is (= 3 (:b c)))
+    (t/is (= 4 (:c c)))))
