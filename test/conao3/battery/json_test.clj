@@ -152,3 +152,25 @@
 (t/deftest test-loads-nested-deeply
   (let [data {"a" {"b" {"c" [1 2 {"d" true}]}}}]
     (t/is (= data (json-m/loads (json-m/dumps data))))))
+
+(t/deftest test-dumps-array-of-mixed-types
+  (let [data [1 "two" true nil 3.14]]
+    (t/is (= data (json-m/loads (json-m/dumps data))))))
+
+(t/deftest test-loads-number-types
+  ;; integers stay integers, floats stay floats
+  (t/is (= 42 (json-m/loads "42")))
+  (t/is (= 3.14 (json-m/loads "3.14")))
+  (t/is (integer? (json-m/loads "42")))
+  (t/is (float? (json-m/loads "3.14"))))
+
+(t/deftest test-dumps-null
+  (t/is (= "null" (json-m/dumps nil))))
+
+(t/deftest test-dumps-booleans
+  (t/is (= "true" (json-m/dumps true)))
+  (t/is (= "false" (json-m/dumps false))))
+
+(t/deftest test-roundtrip-empty-collections
+  (t/is (= {} (json-m/loads (json-m/dumps {}))))
+  (t/is (= [] (json-m/loads (json-m/dumps [])))))
