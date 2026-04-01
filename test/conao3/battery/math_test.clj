@@ -140,3 +140,21 @@
   (t/is (= 8.0 (math-m/ldexp 0.5 4)))
   (t/is (= 3 (math-m/floor-div 10 3)))
   (t/is (= -4 (math-m/floor-div -10 3))))
+
+(t/deftest test-ulp
+  ;; ulp(1.0) == machine epsilon
+  (t/is (= (double (Math/ulp 1.0)) (math-m/ulp 1.0)))
+  ;; ulp(inf) == inf
+  (t/is (= Double/POSITIVE_INFINITY (math-m/ulp Double/POSITIVE_INFINITY)))
+  ;; ulp(-x) == ulp(x)
+  (t/is (= (math-m/ulp 1.0) (math-m/ulp -1.0)))
+  ;; ulp(nan) is NaN
+  (t/is (Double/isNaN (math-m/ulp Double/NaN))))
+
+(t/deftest test-dist
+  ;; 3-4-5 right triangle
+  (t/is (approx= 5.0 (math-m/dist [0 0] [3 4])))
+  ;; same point
+  (t/is (approx= 0.0 (math-m/dist [1 2 3] [1 2 3])))
+  ;; 3D distance
+  (t/is (approx= (Math/sqrt 3.0) (math-m/dist [0 0 0] [1 1 1]))))

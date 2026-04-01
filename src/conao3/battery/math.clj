@@ -127,3 +127,10 @@
 
 (defn nextafter [x y]
   (Math/nextAfter (double x) (double y)))
+
+(defn ulp [x]
+  (Math/ulp (double x)))
+
+(defn dist
+  ([p q]
+   (Math/sqrt (double (reduce + (map (fn [pi qi] (let [d (- (double pi) (double qi))] (* d d))) p q))))))
