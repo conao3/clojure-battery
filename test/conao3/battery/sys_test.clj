@@ -109,3 +109,25 @@
   (let [m (sys-m/modules)]
     (t/is (map? m))
     (t/is (contains? m "clojure.core"))))
+
+(t/deftest test-getsizeof-positive
+  (t/is (pos? (sys-m/getsizeof 42)))
+  (t/is (pos? (sys-m/getsizeof "hello")))
+  (t/is (pos? (sys-m/getsizeof []))))
+
+(t/deftest test-getdefaultencoding
+  (let [enc (sys-m/getdefaultencoding)]
+    (t/is (string? enc))
+    (t/is (pos? (count enc)))))
+
+(t/deftest test-modules-includes-loaded-ns
+  ;; modules returns known Clojure core namespaces
+  (let [m (sys-m/modules)]
+    (t/is (contains? m "clojure.string"))))
+
+(t/deftest test-exc-info-nil-outside-handler
+  ;; Outside exception handler, exc-info returns [nil nil nil]
+  (let [[t v tb] (sys-m/exc-info)]
+    (t/is (nil? t))
+    (t/is (nil? v))
+    (t/is (nil? tb))))

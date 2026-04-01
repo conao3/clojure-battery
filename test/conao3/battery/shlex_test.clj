@@ -154,3 +154,20 @@
 (t/deftest test-quote-special-chars
   (t/is (= "'foo bar'" (shlex/quote "foo bar")))
   (t/is (= "'it'\\''s'" (shlex/quote "it's"))))
+
+(t/deftest test-split-double-quotes
+  (t/is (= ["hello world"] (shlex/split "\"hello world\"")))
+  (t/is (= ["foo" "bar"] (shlex/split "\"foo\" \"bar\""))))
+
+(t/deftest test-join-basic
+  (t/is (= "foo bar baz" (shlex/join ["foo" "bar" "baz"])))
+  (t/is (= "'foo bar' baz" (shlex/join ["foo bar" "baz"]))))
+
+(t/deftest test-quote-safe-string
+  ;; Safe strings don't need quoting
+  (t/is (= "hello" (shlex/quote "hello")))
+  (t/is (= "hello123" (shlex/quote "hello123"))))
+
+(t/deftest test-split-multiple-spaces
+  (t/is (= ["foo" "bar"] (shlex/split "foo   bar")))
+  (t/is (= ["foo" "bar" "baz"] (shlex/split "  foo  bar  baz  "))))
