@@ -155,3 +155,29 @@
   (let [v1 (random-m/random)]
     (random-m/setstate 42)
     (t/is (= v1 (random-m/random)))))
+
+(t/deftest test-sample-no-duplicates
+  ;; sample without replacement: no duplicates
+  (let [population (range 100)
+        result (random-m/sample population 10)]
+    (t/is (= 10 (count result)))
+    (t/is (= 10 (count (distinct result))))))
+
+(t/deftest test-sample-full-population
+  ;; sample of full size should be a permutation
+  (let [pop [1 2 3 4 5]
+        result (random-m/sample pop 5)]
+    (t/is (= 5 (count result)))
+    (t/is (= (sort pop) (sort result)))))
+
+(t/deftest test-randrange-empty-raises
+  ;; empty range raises exception
+  (t/is (thrown? ExceptionInfo (random-m/randrange 3 3)))
+  (t/is (thrown? ExceptionInfo (random-m/randrange 5 3)))
+  (t/is (thrown? ExceptionInfo (random-m/randrange 0 42 0))))
+
+(t/deftest test-randrange-step
+  ;; with step, values should be multiples of step from start
+  (dotimes [_ 20]
+    (let [v (random-m/randrange 0 100 5)]
+      (t/is (zero? (mod v 5))))))
