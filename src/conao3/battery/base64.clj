@@ -24,6 +24,40 @@
                   (or (= b 9) (= b 10) (= b 11) (= b 12) (= b 13) (= b 32))))
        byte-array))
 
+(def ^:private b64-valid-set
+  (set (map byte "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")))
+
+(def ^:private b64-set-with-pad
+  (conj b64-valid-set (byte \=)))
+
+(defn- normalize-b64 [data]
+  "Normalize base64 data: discard non-base64 chars, keep = only at valid padding positions.
+   Returns normalized byte-array or throws on invalid length."
+  (let [result (java.util.ArrayList.)]
+    (doseq [b (seq data)]
+      (cond
+        (contains? b64-valid-set b)
+        (.add result b)
+
+        (= b (byte \=))
+        ;; = is valid only at positions 2 or 3 within a 4-char group
+        (let [pos (mod (.size result) 4)]
+          (when (>= pos 2)
+            (.add result b)))
+
+        ;; else: discard non-base64 character
+        ))
+    (let [n (.size result)
+          rem (mod n 4)]
+      (cond
+        (= rem 1)
+        (throw (ex-info (str "Invalid base64-encoded string: number of data characters ("
+                             n ") cannot be 1 more than a multiple of 4") {}))
+        (> rem 1)
+        (throw (ex-info "Incorrect padding" {}))
+        :else
+        (byte-array (map identity result))))))
+
 (defn- apply-altchars-decode [data alt]
   (let [r (aclone data)]
     (dotimes [i (alength r)]
@@ -60,12 +94,21 @@
   (let [data (to-bytes s)
         alt (when altchars (to-bytes altchars))]
     (cond
+      ;; ignorechars=b'' means strict mode (same as validate=true)
+      (and ignorechars (zero? (alength (to-bytes ignorechars))))
+      (let [normalized (if alt (apply-altchars-decode data alt) data)]
+        (try
+          (-> (Base64/getDecoder) (.decode normalized))
+          (catch IllegalArgumentException e
+            (throw (ex-info (.getMessage e) {})))))
+
       ignorechars
       (let [ignset (set (seq (to-bytes ignorechars)))
-            filtered (->> (seq data)
-                          (remove #(contains? ignset %))
-                          byte-array)
-            normalized (if alt (apply-altchars-decode filtered alt) filtered)]
+            after-ignore (->> (seq data)
+                              (remove #(contains? ignset %))
+                              byte-array)
+            after-alt (if alt (apply-altchars-decode after-ignore alt) after-ignore)
+            normalized (normalize-b64 after-alt)]
         (try
           (-> (Base64/getDecoder) (.decode normalized))
           (catch IllegalArgumentException e
@@ -79,12 +122,11 @@
             (throw (ex-info (.getMessage e) {})))))
 
       :else
-      (let [filtered (strip-whitespace data)
-            normalized (if alt (apply-altchars-decode filtered alt) filtered)]
-        (when (pos? (mod (alength normalized) 4))
-          (throw (ex-info "Incorrect padding" {})))
+      ;; Default: discard non-base64 chars, keep = only at valid padding positions
+      (let [pre-alt (if alt (apply-altchars-decode data alt) data)
+            normalized (normalize-b64 pre-alt)]
         (try
-          (-> (Base64/getMimeDecoder) (.decode normalized))
+          (-> (Base64/getDecoder) (.decode normalized))
           (catch IllegalArgumentException e
             (throw (ex-info (.getMessage e) {}))))))))
 
@@ -99,12 +141,38 @@
     (throw (ex-info "expected bytes-like object, not str" {})))
   (-> (Base64/getUrlEncoder) (.encode s)))
 
+(def ^:private b64url-valid-set
+  (set (map byte "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_")))
+
+(defn- normalize-b64url [data]
+  "Normalize URL-safe base64: discard non-alphabet chars, keep = only at valid positions."
+  (let [result (java.util.ArrayList.)]
+    (doseq [b (seq data)]
+      (cond
+        (contains? b64url-valid-set b)
+        (.add result b)
+
+        (= b (byte \=))
+        (let [pos (mod (.size result) 4)]
+          (when (>= pos 2)
+            (.add result b)))))
+    (let [n (.size result)
+          rem (mod n 4)]
+      (cond
+        (= rem 1)
+        (throw (ex-info (str "Invalid base64-encoded string: number of data characters ("
+                             n ") cannot be 1 more than a multiple of 4") {}))
+        (> rem 1)
+        (throw (ex-info "Incorrect padding" {}))
+        :else
+        (byte-array (map identity result))))))
+
 (defn urlsafe-b64decode [s]
   (when (and (not (byte-array? s)) (not (string? s)))
     (throw (ex-info "expected bytes-like object" {})))
-  (let [filtered (strip-whitespace (to-bytes s))]
+  (let [normalized (normalize-b64url (to-bytes s))]
     (try
-      (-> (Base64/getUrlDecoder) (.decode filtered))
+      (-> (Base64/getUrlDecoder) (.decode normalized))
       (catch IllegalArgumentException e
         (throw (ex-info (.getMessage e) {}))))))
 

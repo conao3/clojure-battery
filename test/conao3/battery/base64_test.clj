@@ -197,3 +197,51 @@
           out2 (java.io.ByteArrayOutputStream.)]
       (base64/decode in2 out2)
       (t/is (bytes= data (.toByteArray out2))))))
+
+;; test_b64decode_invalid_chars: Python's default behavior discards non-base64 chars
+(t/deftest test-b64decode-invalid-chars-default
+  ;; non-base64 chars like % and $ are discarded by default
+  (t/is (bytes= (base64/b64decode (b "%3d==")) (byte-array [(unchecked-byte 0xdd)])))
+  (t/is (bytes= (base64/b64decode (b "$3d==")) (byte-array [(unchecked-byte 0xdd)])))
+  ;; = at wrong positions is discarded
+  (t/is (bytes= (base64/b64decode (b "=YWJj")) (b "abc")))
+  (t/is (bytes= (base64/b64decode (b "Y=WJj")) (b "abc")))
+  (t/is (bytes= (base64/b64decode (b "Y==WJj")) (b "abc")))
+  (t/is (bytes= (base64/b64decode (b "Y===WJj")) (b "abc")))
+  (t/is (bytes= (base64/b64decode (b "YWJj=")) (b "abc")))
+  ;; newline and inline whitespace is discarded
+  (t/is (bytes= (base64/b64decode (b "YW\nJj")) (b "abc")))
+  (t/is (bytes= (base64/b64decode (b "YWJj\nYWI=")) (b "abcab")))
+  ;; string input also works
+  (t/is (bytes= (base64/b64decode "%3d==") (byte-array [(unchecked-byte 0xdd)])))
+  (t/is (bytes= (base64/b64decode "=YWJj") (b "abc")))
+  (t/is (bytes= (base64/b64decode "YW\nJj") (b "abc"))))
+
+(t/deftest test-b64decode-validate-rejects-invalid
+  ;; validate=true rejects any non-base64 chars
+  (t/is (thrown? ExceptionInfo (base64/b64decode (b "%3d==") :validate true)))
+  (t/is (thrown? ExceptionInfo (base64/b64decode (b "=YWJj") :validate true)))
+  (t/is (thrown? ExceptionInfo (base64/b64decode (b "YW\nJj") :validate true)))
+  (t/is (thrown? ExceptionInfo (base64/b64decode "%3d==" :validate true)))
+  (t/is (thrown? ExceptionInfo (base64/b64decode "=YWJj" :validate true)))
+  ;; validate=false (default) still works
+  (t/is (bytes= (base64/b64decode (b "YWJj") :validate false) (b "abc")))
+  (t/is (bytes= (base64/b64decode (b "YWJj\nYWI=") :validate false) (b "abcab"))))
+
+(t/deftest test-b64decode-ignorechars-empty-strict
+  ;; ignorechars=b"" is strict mode - rejects non-base64 chars
+  (t/is (thrown? ExceptionInfo (base64/b64decode (b "YW\nJj") :ignorechars (b ""))))
+  (t/is (thrown? ExceptionInfo (base64/b64decode (b "%3d==") :ignorechars (b ""))))
+  (t/is (thrown? ExceptionInfo (base64/b64decode (b "=YWJj") :ignorechars (b "")))))
+
+(t/deftest test-b64decode-ignorechars
+  ;; ignorechars specifies which chars to explicitly ignore
+  (t/is (bytes= (base64/b64decode (b "YW\nJj") :ignorechars (b "\n")) (b "abc")))
+  (t/is (bytes= (base64/b64decode (b "YWJj\nYWI=") :ignorechars (b "\n")) (b "abcab"))))
+
+(t/deftest test-urlsafe-b64decode-invalid-chars
+  ;; urlsafe also discards invalid chars by default
+  (t/is (bytes= (base64/urlsafe-b64decode (b "=01a-b_cd"))
+                (byte-array (map unchecked-byte [0xd3 0x56 0xbe 0x6f 0xf7 0x1d]))))
+  (t/is (bytes= (base64/urlsafe-b64decode (b "01a\n-b_cd"))
+                (byte-array (map unchecked-byte [0xd3 0x56 0xbe 0x6f 0xf7 0x1d])))))
