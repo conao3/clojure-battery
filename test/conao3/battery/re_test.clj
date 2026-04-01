@@ -136,3 +136,25 @@
     (t/is (= [1 2] (re-m/span (nth results 0))))
     (t/is (= [3 5] (re-m/span (nth results 1))))
     (t/is (= [6 9] (re-m/span (nth results 2))))))
+
+(t/deftest test-compiled-fullmatch
+  (let [cp (re-m/compile "\\d+")]
+    (t/is (some? (re-m/compiled-fullmatch cp "123")))
+    (t/is (nil? (re-m/compiled-fullmatch cp "123abc")))))
+
+(t/deftest test-compiled-finditer
+  (let [cp (re-m/compile "\\d+")
+        results (re-m/compiled-finditer cp "a1b22c333")]
+    (t/is (= 3 (count results)))
+    (t/is (= "1" (re-m/group (nth results 0))))))
+
+(t/deftest test-compiled-subn
+  (let [cp (re-m/compile "\\d+")
+        [result count] (re-m/compiled-subn cp "NUM" "abc123def456")]
+    (t/is (= "abcNUMdefNUM" result))
+    (t/is (= 2 count))))
+
+(t/deftest test-pattern-and-flags
+  (let [cp (re-m/compile "\\d+")]
+    (t/is (= "\\d+" (re-m/pattern cp)))
+    (t/is (integer? (re-m/re-flags cp)))))

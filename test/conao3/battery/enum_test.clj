@@ -76,3 +76,14 @@
 (t/deftest test-defenum-creates-map
   (t/is (map? Color))
   (t/is (map? Direction)))
+
+(t/deftest test-auto
+  (let [v1 (enum/auto)
+        v2 (enum/auto)]
+    (t/is (integer? v1))
+    (t/is (integer? v2))
+    (t/is (= 1 (- v2 v1)))))
+
+(t/deftest test-register-enum
+  (let [my-enum {:A (enum/->EnumMember "MyEnum" "A" 1)}]
+    (t/is (set? (enum/register-enum! my-enum)))))

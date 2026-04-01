@@ -69,3 +69,7 @@
 (t/deftest test-defdata-not-dataclass-plain-map
   (t/is (false? (dataclasses/is-dataclass? {:x 1 :y 2})))
   (t/is (false? (dataclasses/is-dataclass? nil))))
+
+(t/deftest test-register-dataclass
+  (let [my-class {:fields [:a :b]}]
+    (t/is (set? (dataclasses/register-dataclass! my-class)))))

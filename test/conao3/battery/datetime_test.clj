@@ -218,3 +218,25 @@
 (t/deftest test-timedelta-min-max
   (t/is (= -999999999 (:days dt-m/timedelta-min)))
   (t/is (= 999999999 (:days dt-m/timedelta-max))))
+
+(t/deftest test-date-fromtimestamp
+  (let [d (dt-m/date-fromtimestamp (* 365 86400))]
+    (t/is (= 1971 (dt-m/get-year d)))))
+
+(t/deftest test-date-replace
+  (let [d (dt-m/date 2024 6 15)
+        d2 (dt-m/date-replace d :year 2025)
+        d3 (dt-m/date-replace d :month 3 :day 20)]
+    (t/is (= 2025 (dt-m/get-year d2)))
+    (t/is (= 6 (dt-m/get-month d2)))
+    (t/is (= 3 (dt-m/get-month d3)))
+    (t/is (= 20 (dt-m/get-day d3)))))
+
+(t/deftest test-datetime-sub-timedelta
+  (let [dt (dt-m/datetime 2024 6 15 12 0 0)
+        td (dt-m/timedelta 1)
+        result (dt-m/datetime-sub-timedelta dt td)]
+    (t/is (= 2024 (dt-m/get-year result)))
+    (t/is (= 6 (dt-m/get-month result)))
+    (t/is (= 14 (dt-m/get-day result)))
+    (t/is (= 12 (dt-m/get-hour result)))))

@@ -116,3 +116,6 @@
   (t/is (= 1 time-m/CLOCK_MONOTONIC))
   (t/is (= 2 time-m/CLOCK_PROCESS_CPUTIME_ID))
   (t/is (= 3 time-m/CLOCK_THREAD_CPUTIME_ID)))
+
+(t/deftest test-altzone-is-integer
+  (t/is (integer? (time-m/altzone))))

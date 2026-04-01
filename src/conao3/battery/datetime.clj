@@ -123,9 +123,9 @@
   (.format ^LocalDate (:_ld d) (DateTimeFormatter/ofPattern (strftime-to-java fmt))))
 
 (defn date-replace [^Date d & {:keys [year month day]}]
-  (->Date (.withYear (.withMonthOfYear (.withDayOfMonth ^LocalDate (:_ld d)
-                                                        (or day (get-day d)))
-                                       (or month (get-month d)))
+  (->Date (.withYear (.withMonth (.withDayOfMonth ^LocalDate (:_ld d)
+                                                  (or day (get-day d)))
+                                 (or month (get-month d)))
                      (or year (get-year d)))))
 
 (defn date-sub [^Date d1 ^Date d2]
