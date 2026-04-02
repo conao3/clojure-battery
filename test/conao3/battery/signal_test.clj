@@ -83,3 +83,33 @@
 
 (t/deftest test-valid-signals-all-positive
   (t/is (every? pos? (signal-m/valid-signals))))
+
+(t/deftest test-valid-signals-all-integers
+  (t/is (every? integer? (signal-m/valid-signals))))
+
+(t/deftest test-signal-returns-previous-handler
+  ;; signal returns the previously registered handler
+  (let [h1 (fn [_] nil)
+        h2 (fn [_] nil)]
+    (signal-m/signal signal-m/SIGTERM signal-m/SIG_DFL)
+    (let [prev1 (signal-m/signal signal-m/SIGTERM h1)]
+      (t/is (= :SIG_DFL prev1)))
+    (let [prev2 (signal-m/signal signal-m/SIGTERM h2)]
+      (t/is (= h1 prev2)))
+    (signal-m/signal signal-m/SIGTERM signal-m/SIG_DFL)))
+
+(t/deftest test-raise-dfl-no-crash
+  ;; raising a signal with SIG_DFL (no registered handler) should not crash
+  (signal-m/signal signal-m/SIGTERM signal-m/SIG_DFL)
+  (t/is (nil? (signal-m/raise-signal signal-m/SIGTERM))))
+
+(t/deftest test-strsignal-always-string
+  ;; strsignal should return a string for any integer input
+  (doseq [sig [1 2 6 9 11 15 99]]
+    (t/is (string? (signal-m/strsignal sig)))))
+
+(t/deftest test-sighup-on-unix
+  ;; SIGHUP is defined on non-Windows
+  (when signal-m/SIGHUP
+    (t/is (= 1 signal-m/SIGHUP))
+    (t/is (integer? signal-m/SIGHUP))))

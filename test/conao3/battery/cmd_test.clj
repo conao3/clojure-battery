@@ -79,3 +79,44 @@
         c (cmd/make-cmd handlers (fn [] true))]
     (cmd/run-cmdloop c "tick\ntick")
     (t/is (= 2 @call-count))))
+
+(t/deftest test-handler-return-value-written
+  ;; A non-nil return from a handler is written to the output
+  (let [handlers {"greet" (fn [_ _] "hello!")
+                  "EOF"   (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))
+        output (cmd/run-cmdloop c "greet")]
+    (t/is (clojure.string/includes? output "hello!"))))
+
+(t/deftest test-cmd-whitespace-trimmed
+  ;; Leading/trailing whitespace in the command line is trimmed
+  (let [called (atom false)
+        handlers {"hi" (fn [_ _] (reset! called true) nil)
+                  "EOF" (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))]
+    (cmd/run-cmdloop c "  hi  ")
+    (t/is (true? @called))))
+
+(t/deftest test-cmd-args-multiple-words
+  ;; All tokens after the command name are passed as args string
+  (let [received (atom nil)
+        handlers {"say" (fn [args _] (reset! received args) nil)
+                  "EOF" (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))]
+    (cmd/run-cmdloop c "say one two three")
+    (t/is (= "one two three" @received))))
+
+(t/deftest test-cmd-empty-line-no-crash
+  ;; Sending empty lines should not crash
+  (let [handlers {"EOF" (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))]
+    (t/is (string? (cmd/run-cmdloop c "\n\n\n")))))
+
+(t/deftest test-handler-called-once-per-line
+  ;; Each input line invokes the handler exactly once
+  (let [call-log (atom [])
+        handlers {"log" (fn [args _] (swap! call-log conj args) nil)
+                  "EOF" (fn [_ _] true)}
+        c (cmd/make-cmd handlers (fn [] true))]
+    (cmd/run-cmdloop c "log a\nlog b\nlog c")
+    (t/is (= ["a" "b" "c"] @call-log))))

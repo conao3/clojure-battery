@@ -105,3 +105,36 @@
         dir-path (:name td)]
     (t/is (.startsWith (.getName (File. ^String dir-path)) "mytest"))
     ((:cleanup td))))
+
+(t/deftest test-mkstemp-in-explicit-dir
+  ;; mkstemp with an explicit dir places file in that dir
+  (let [tmpdir (tempfile/gettempdir)
+        [_ path] (tempfile/mkstemp nil nil tmpdir false)]
+    (t/is (.startsWith path tmpdir))
+    (.delete (File. ^String path))))
+
+(t/deftest test-gettempdir-is-existing-dir
+  (let [d (tempfile/gettempdir)]
+    (t/is (.isDirectory (File. ^String d)))))
+
+(t/deftest test-mkdtemp-unique-paths
+  ;; Two mkdtemp calls must return different paths
+  (let [d1 (tempfile/mkdtemp)
+        d2 (tempfile/mkdtemp)]
+    (t/is (not= d1 d2))
+    (.delete (File. ^String d1))
+    (.delete (File. ^String d2))))
+
+(t/deftest test-temporary-directory-cleanup-removes-dir
+  (let [td       (tempfile/TemporaryDirectory)
+        dir-path (:name td)]
+    (t/is (.exists (File. ^String dir-path)))
+    ((:cleanup td))
+    (t/is (not (.exists (File. ^String dir-path))))))
+
+(t/deftest test-mktemp-prefix-suffix
+  ;; mktemp with suffix and prefix honors both
+  (let [path (tempfile/mktemp ".log" "test-" nil)]
+    (t/is (string? path))
+    (t/is (clojure.string/ends-with? path ".log"))
+    (t/is (clojure.string/includes? (.getName (File. ^String path)) "test-"))))

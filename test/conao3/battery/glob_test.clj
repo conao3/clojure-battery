@@ -137,3 +137,42 @@
   (t/is (string? (glob/translate "*.txt")))
   (t/is (string? (glob/translate "?")))
   (t/is (string? (glob/translate "**" :recursive true))))
+
+(t/deftest test-escape-no-special
+  ;; A plain string with no glob metacharacters is unchanged
+  (t/is (= "hello" (glob/escape "hello")))
+  (t/is (= "foo.bar" (glob/escape "foo.bar")))
+  (t/is (= "" (glob/escape ""))))
+
+(t/deftest test-translate-question-mark
+  ;; ? matches exactly one non-separator character
+  (let [re (re-pattern (glob/translate "a?c" :seps "/"))]
+    (t/is (re-matches re "abc"))
+    (t/is (re-matches re "axc"))
+    (t/is (nil? (re-matches re "ac")))
+    (t/is (nil? (re-matches re "abbc")))))
+
+(t/deftest test-glob-single-file-match
+  (let [tmpdir (java.io.File/createTempFile "glob-single" "")
+        _ (.delete tmpdir)
+        _ (.mkdir tmpdir)
+        f (java.io.File. tmpdir "unique.txt")]
+    (.createNewFile f)
+    (try
+      (let [result (glob/glob "unique.txt" {:root-dir (.getAbsolutePath tmpdir)})]
+        (t/is (= 1 (count result)))
+        (t/is (str/ends-with? (first result) "unique.txt")))
+      (finally (.delete f) (.delete tmpdir)))))
+
+(t/deftest test-translate-literal-string
+  ;; A literal (no wildcards) pattern matches only the exact string
+  (let [re (re-pattern (glob/translate "hello.txt" :seps "/"))]
+    (t/is (re-matches re "hello.txt"))
+    (t/is (nil? (re-matches re "hello_txt")))
+    (t/is (nil? (re-matches re "hello.txt.bak")))))
+
+(t/deftest test-escape-bytes-no-special
+  ;; escape on bytes with no special chars returns bytes unchanged
+  (let [plain "hello"]
+    (t/is (= (seq (.getBytes plain "UTF-8"))
+             (seq (glob/escape (.getBytes plain "UTF-8")))))))

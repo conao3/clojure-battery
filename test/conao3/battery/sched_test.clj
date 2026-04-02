@@ -135,3 +135,44 @@
     (sched/enterabs! s now 1 (fn [a b] (swap! results conj [a b])) [10 20])
     (sched/run! s)
     (t/is (= [[10 20]] @results))))
+
+(t/deftest test-scheduler-custom-timefunc
+  ;; custom timefunc is stored in the scheduler state
+  (let [my-time (fn [] 42.0)
+        s (sched/scheduler my-time (fn [_] nil))]
+    (t/is (= 42.0 ((:timefunc @s))))))
+
+(t/deftest test-same-time-ordered-by-priority
+  ;; When times are equal, lower priority number runs first
+  (let [results (atom [])
+        s (sched/scheduler)
+        now (/ (System/currentTimeMillis) 1000.0)]
+    (sched/enterabs! s now 3 #(swap! results conj :C))
+    (sched/enterabs! s now 1 #(swap! results conj :A))
+    (sched/enterabs! s now 2 #(swap! results conj :B))
+    (sched/run! s)
+    (t/is (= [:A :B :C] @results))))
+
+(t/deftest test-sched-empty-after-all-cancelled
+  (let [s (sched/scheduler)
+        now (/ (System/currentTimeMillis) 1000.0)
+        e1 (sched/enterabs! s (+ now 0.1) 1 (fn []))
+        e2 (sched/enterabs! s (+ now 0.2) 1 (fn []))]
+    (t/is (not (sched/sched-empty? s)))
+    (sched/cancel! s e1)
+    (sched/cancel! s e2)
+    (t/is (sched/sched-empty? s))))
+
+(t/deftest test-run-blocking-empty-no-crash
+  ;; run! on an empty scheduler should complete without error
+  (let [s (sched/scheduler)]
+    (t/is (nil? (sched/run! s)))))
+
+(t/deftest test-enterabs-event-has-seq
+  ;; Each event gets a monotonically increasing :seq counter
+  (let [s (sched/scheduler)
+        now (/ (System/currentTimeMillis) 1000.0)
+        e1 (sched/enterabs! s now 1 (fn []))
+        e2 (sched/enterabs! s now 1 (fn []))
+        e3 (sched/enterabs! s now 1 (fn []))]
+    (t/is (< (:seq e1) (:seq e2) (:seq e3)))))

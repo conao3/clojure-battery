@@ -111,3 +111,28 @@
 (t/deftest test-yiq-black-white
   (assert-triple-equal [0.0 0.0 0.0] (colorsys/rgb-to-yiq 0.0 0.0 0.0))
   (assert-triple-equal [1.0 0.0 0.0] (colorsys/rgb-to-yiq 1.0 1.0 1.0)))
+
+(t/deftest test-hsv-saturation-zero-is-gray
+  ;; S=0 means achromatic (gray), V determines brightness
+  (assert-triple-equal [0.5 0.5 0.5] (colorsys/hsv-to-rgb 0.0 0.0 0.5))
+  (assert-triple-equal [0.5 0.5 0.5] (colorsys/hsv-to-rgb 0.5 0.0 0.5))
+  (assert-triple-equal [0.5 0.5 0.5] (colorsys/hsv-to-rgb 1.0 0.0 0.5)))
+
+(t/deftest test-hsv-value-zero-is-black
+  ;; V=0 produces black regardless of H and S
+  (assert-triple-equal [0.0 0.0 0.0] (colorsys/hsv-to-rgb 0.0 0.0 0.0))
+  (assert-triple-equal [0.0 0.0 0.0] (colorsys/hsv-to-rgb 0.5 1.0 0.0))
+  (assert-triple-equal [0.0 0.0 0.0] (colorsys/hsv-to-rgb 1.0 0.5 0.0)))
+
+(t/deftest test-hls-lightness-extremes
+  ;; L=0 is always black, L=1 is always white
+  (assert-triple-equal [0.0 0.0 0.0] (colorsys/hls-to-rgb 0.0 0.0 1.0))
+  (assert-triple-equal [0.0 0.0 0.0] (colorsys/hls-to-rgb 0.5 0.0 1.0))
+  (assert-triple-equal [1.0 1.0 1.0] (colorsys/hls-to-rgb 0.0 1.0 1.0))
+  (assert-triple-equal [1.0 1.0 1.0] (colorsys/hls-to-rgb 0.5 1.0 1.0)))
+
+(t/deftest test-yiq-components-three
+  ;; rgb-to-yiq always returns exactly 3 components
+  (doseq [[r g b] [[0.0 0.0 0.0] [1.0 0.0 0.0] [0.5 0.3 0.7]]]
+    (let [result (colorsys/rgb-to-yiq r g b)]
+      (t/is (= 3 (count result))))))
