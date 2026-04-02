@@ -136,3 +136,36 @@
   (t/is (false? (inspect-m/isframe? nil)))
   (t/is (false? (inspect-m/isframe? {})))
   (t/is (false? (inspect-m/isframe? 42))))
+
+(t/deftest test-getmembers-sorted
+  ;; getmembers result is sorted lexicographically by name
+  (let [members (inspect-m/getmembers (find-ns 'clojure.core))
+        names   (map first members)]
+    (t/is (= names (sort names)))))
+
+(t/deftest test-getfullargspec-required-keys
+  (let [f    (with-meta (fn [x y] (+ x y)) {:arglists '([x y])})
+        spec (inspect-m/getfullargspec f)]
+    (t/is (contains? spec :args))
+    (t/is (contains? spec :varargs))
+    (t/is (contains? spec :varkw))
+    (t/is (contains? spec :defaults))
+    (t/is (contains? spec :kwonlyargs))
+    (t/is (contains? spec :annotations))))
+
+(t/deftest test-stack-multiple-frames
+  ;; call stack has more than one frame
+  (let [s (inspect-m/stack)]
+    (t/is (> (count s) 1))
+    (t/is (every? #(integer? (:lineno %)) s))))
+
+(t/deftest test-getfile-nil-for-non-var
+  ;; getfile returns nil for non-var objects
+  (t/is (nil? (inspect-m/getfile 42)))
+  (t/is (nil? (inspect-m/getfile "string")))
+  (t/is (nil? (inspect-m/getfile nil))))
+
+(t/deftest test-isbuiltin-multimethod
+  (let [mm (clojure.lang.MultiFn.
+             "test-mm" identity :default #'clojure.core/global-hierarchy)]
+    (t/is (true? (inspect-m/isbuiltin? mm)))))

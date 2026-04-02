@@ -149,3 +149,32 @@
 (t/deftest test-parent-relative
   (t/is (= "." (pathlib/parent "foo")))
   (t/is (= "foo" (pathlib/parent "foo/bar"))))
+
+(t/deftest test-stem-multiple-dots
+  ;; stem of "file.tar.gz" should be "file.tar"
+  (t/is (= "file.tar" (pathlib/stem "file.tar.gz")))
+  (t/is (= "archive.tar" (pathlib/stem "/tmp/archive.tar.gz"))))
+
+(t/deftest test-suffix-hidden-file
+  ;; hidden file (starts with ".") has no suffix per pathlib convention
+  (t/is (= "" (pathlib/suffix ".hidden")))
+  (t/is (= ".conf" (pathlib/suffix ".hidden.conf"))))
+
+(t/deftest test-joinpath-self
+  ;; joining with empty string is a no-op
+  (t/is (= "/foo/bar" (pathlib/joinpath "/foo/bar"))))
+
+(t/deftest test-parts-deep
+  (let [p (pathlib/parts "/a/b/c/d")]
+    (t/is (= 5 (count p)))
+    (t/is (= "/" (first p)))
+    (t/is (= "d" (last p)))))
+
+(t/deftest test-parent-chain
+  ;; repeated parent calls eventually reach root or "."
+  (let [p1 (pathlib/parent "/a/b/c")
+        p2 (pathlib/parent p1)
+        p3 (pathlib/parent p2)]
+    (t/is (= "/a/b" p1))
+    (t/is (= "/a" p2))
+    (t/is (= "/" p3))))

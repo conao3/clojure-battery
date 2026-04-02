@@ -198,3 +198,35 @@
     (t/is (thrown? ExceptionInfo (io-m/write buf "x")))
     (t/is (thrown? ExceptionInfo (io-m/seek buf 0)))
     (t/is (thrown? ExceptionInfo (io-m/tell buf)))))
+
+(t/deftest test-bytes-io-write-at-offset
+  ;; seek + write overwrites bytes at that position
+  (let [buf (io-m/bytes-io (b "hello world"))]
+    (io-m/seek buf 6)
+    (io-m/write buf (b "Clojure"))
+    (io-m/seek buf 0)
+    (t/is (bytes= (b "hello Clojure") (io-m/read buf)))))
+
+(t/deftest test-bytes-io-readline-no-newline
+  ;; readline when no newline remains returns the rest
+  (let [buf (io-m/bytes-io (b "line1\nno-nl"))]
+    (io-m/readline buf)
+    (t/is (bytes= (b "no-nl") (io-m/readline buf)))))
+
+(t/deftest test-bytes-io-truncate-explicit-size
+  (let [buf (io-m/bytes-io (b "hello world"))]
+    (io-m/truncate buf 5)
+    (io-m/seek buf 0)
+    (t/is (bytes= (b "hello") (io-m/read buf)))))
+
+(t/deftest test-string-io-seek-from-end
+  ;; whence=2 seeks from end of buffer
+  (let [buf (io-m/string-io "hello world")]
+    (io-m/seek buf -5 2)
+    (t/is (= "world" (io-m/read buf)))))
+
+(t/deftest test-string-io-truncate-explicit-size
+  (let [buf (io-m/string-io "hello world")]
+    (io-m/truncate buf 5)
+    (io-m/seek buf 0)
+    (t/is (= "hello" (io-m/read buf)))))
