@@ -73,3 +73,21 @@
 
 (t/deftest test-edeadlock-is-edeadlk
   (t/is (= errno-m/EDEADLK errno-m/EDEADLOCK)))
+
+(t/deftest test-errorcode-vals-are-strings
+  (t/is (every? string? (vals errno-m/errorcode))))
+
+(t/deftest test-errorcode-keys-are-ints
+  (t/is (every? integer? (keys errno-m/errorcode))))
+
+(t/deftest test-strerror-epipe
+  (t/is (= "Broken pipe" (errno-m/strerror errno-m/EPIPE))))
+
+(t/deftest test-strerror-econnrefused
+  (t/is (= "Connection refused" (errno-m/strerror errno-m/ECONNREFUSED))))
+
+(t/deftest test-network-error-constants
+  (t/is (integer? errno-m/ECONNREFUSED))
+  (t/is (integer? errno-m/EADDRINUSE))
+  (t/is (integer? errno-m/ETIMEDOUT))
+  (t/is (integer? errno-m/EHOSTUNREACH)))

@@ -126,3 +126,38 @@
 (t/deftest test-context-decorator
   (let [cls {:name "MyContext"}]
     (t/is (identical? cls (contextlib/context-decorator cls)))))
+
+(t/deftest test-suppress-passes-non-matching
+  ;; Exceptions not in the suppress list propagate
+  (let [ctx (contextlib/suppress ArithmeticException)]
+    (t/is (thrown? RuntimeException
+                   (ctx (fn [] (throw (RuntimeException. "not suppressed"))))))))
+
+(t/deftest test-exit-stack-push-many-reverse-order
+  ;; All pushed callbacks fire, in LIFO order
+  (let [stack (contextlib/exit-stack)
+        log   (atom [])]
+    (doseq [i (range 5)]
+      (let [v i]
+        ((:push stack) (fn [] (swap! log conj v)))))
+    ((:close stack))
+    (t/is (= [4 3 2 1 0] @log))))
+
+(t/deftest test-nullcontext-with-nil
+  ;; nullcontext(nil) returns nil
+  (t/is (nil? (contextlib/nullcontext nil))))
+
+(t/deftest test-chdir-nested-restores
+  ;; Nested chdir calls each restore properly
+  (let [original (System/getProperty "user.dir")]
+    (contextlib/chdir "/tmp"
+                      (fn []
+                        (contextlib/chdir "/var"
+                                          (fn [] nil))))
+    (t/is (= original (System/getProperty "user.dir")))))
+
+(t/deftest test-suppress-all-exceptions-class
+  ;; suppress(Exception) catches all checked Java exceptions
+  (let [ctx (contextlib/suppress Exception)]
+    (t/is (nil? (ctx (fn [] (throw (RuntimeException. "any"))))))
+    (t/is (= 99 (ctx (fn [] 99))))))

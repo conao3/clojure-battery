@@ -109,3 +109,32 @@
     (.delete src)
     (.delete dst)))
 
+(t/deftest test-copy-creates-dst
+  ;; copy to a non-existent destination creates the file
+  (let [src (File/createTempFile "shutil-create-src" ".txt")
+        dst (File. (System/getProperty "java.io.tmpdir") (str "shutil-create-dst-" (System/currentTimeMillis) ".txt"))]
+    (spit (.getAbsolutePath src) "create test")
+    (.delete dst)
+    (shutil/copy (.getAbsolutePath src) (.getAbsolutePath dst))
+    (t/is (.exists dst))
+    (t/is (= "create test" (slurp (.getAbsolutePath dst))))
+    (.delete src)
+    (.delete dst)))
+
+(t/deftest test-disk-usage-free-plus-used-le-total
+  (let [{:keys [total used free]} (shutil/disk-usage "/")]
+    (t/is (>= total (+ used free)))
+    (t/is (>= free 0))
+    (t/is (>= used 0))))
+
+(t/deftest test-which-returns-string-or-nil
+  ;; which always returns either a string path or nil
+  (doseq [cmd ["ls" "cat" "this-does-not-exist-xyz123"]]
+    (let [result (shutil/which cmd)]
+      (t/is (or (nil? result) (string? result))))))
+
+(t/deftest test-which-absolute-path
+  ;; which returns an absolute path (starts with /)
+  (when-let [p (shutil/which "ls")]
+    (t/is (clojure.string/starts-with? p "/"))))
+
