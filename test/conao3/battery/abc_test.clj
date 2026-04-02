@@ -81,3 +81,35 @@
     "An abstract method")
   (t/is (map? (meta abstract-method)))
   (t/is (true? (abc-m/abstract? abstract-method))))
+
+(t/deftest test-abstract-throws-informative
+  ;; defabstract methods throw ExceptionInfo with a message
+  (abc-m/defabstract my-throw-fn [x]
+    "throws")
+  (try
+    (my-throw-fn 1)
+    (t/is false "should have thrown")
+    (catch clojure.lang.ExceptionInfo e
+      (t/is (string? (.getMessage e))))))
+
+(t/deftest test-issubclass-same-class
+  ;; issubclass?(X X) → true for any class
+  (t/is (true? (abc-m/issubclass? String String)))
+  (t/is (true? (abc-m/issubclass? Long Long)))
+  (t/is (true? (abc-m/issubclass? Object Object))))
+
+(t/deftest test-isinstance-multiple-checks
+  ;; Test multiple isinstance? checks in sequence
+  (t/is (true? (abc-m/isinstance? 42 Long)))
+  (t/is (false? (abc-m/isinstance? 42 String)))
+  (t/is (true? (abc-m/isinstance? "hi" CharSequence)))
+  (t/is (false? (abc-m/isinstance? [] String))))
+
+(t/deftest test-abstractmethod-callable-with-args
+  ;; abstract method still delegates to the underlying fn
+  (let [f  (fn [x y] (* x y))
+        af (abc-m/abstractmethod f)]
+    (t/is (= 12 (af 3 4)))))
+
+(t/deftest test-get-abstractmethods-empty-map
+  (t/is (empty? (abc-m/get-abstractmethods {}))))

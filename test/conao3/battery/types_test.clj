@@ -110,3 +110,27 @@
   (let [u (types-m/union-type Integer Long)]
     (t/is (true? (types-m/union-type? u)))
     (t/is (false? (types-m/union-type? {:x 1})))))
+
+(t/deftest test-new-type-returns-map
+  ;; Instances created by new-type are plain maps
+  (let [Rect (types-m/new-type "Rect" ["w" "h"])
+        r    (Rect 10 20)]
+    (t/is (map? r))
+    (t/is (= 10 (:w r)))
+    (t/is (= 20 (:h r)))))
+
+(t/deftest test-simple-namespace-get-nil-for-missing
+  (let [ns-obj (types-m/simple-namespace :a 1)]
+    (t/is (nil? (types-m/simple-namespace-get ns-obj :b)))))
+
+(t/deftest test-union-type-nil-no-match
+  (let [u (types-m/union-type String Long)]
+    (t/is (nil? (types-m/union-type-check u nil)))))
+
+(t/deftest test-new-type-is-callable
+  (let [Pair (types-m/new-type "Pair" ["fst" "snd"])]
+    (t/is (fn? Pair))))
+
+(t/deftest test-generator-type
+  ;; GeneratorType is Iterable; lazy seqs are iterable
+  (t/is (instance? types-m/GeneratorType (range 5))))

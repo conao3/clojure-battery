@@ -112,3 +112,32 @@
   (let [e (try (throw (RuntimeException. "test")) (catch RuntimeException ex ex))
         frames (traceback/walk-tb e)]
     (t/is (every? #(= 2 (count %)) frames))))
+
+(t/deftest test-format-exc-always-string
+  ;; format-exc returns a string for any Throwable
+  (doseq [e [(RuntimeException. "e1")
+             (IllegalArgumentException. "e2")
+             (Exception. "e3")]]
+    (t/is (string? (traceback/format-exc e)))))
+
+(t/deftest test-format-list-single-entry
+  (let [entries [{:filename "x.clj" :lineno 1 :name "f"}]
+        result  (traceback/format-list entries)]
+    (t/is (= 1 (count result)))
+    (t/is (str/includes? (first result) "x.clj"))))
+
+(t/deftest test-extract-stack-positive-linenos
+  (let [stack (traceback/extract-stack)]
+    (t/is (every? #(pos? (:lineno %)) stack))))
+
+(t/deftest test-format-exception-includes-classname
+  (let [e (IllegalArgumentException. "bad")
+        s (traceback/format-exception e)]
+    (t/is (str/includes? s "IllegalArgumentException"))))
+
+(t/deftest test-format-exc-no-cause
+  ;; Exception without cause still formats cleanly
+  (let [e (RuntimeException. "alone")
+        s (traceback/format-exc e)]
+    (t/is (string? s))
+    (t/is (not (str/includes? s "Caused by")))))
