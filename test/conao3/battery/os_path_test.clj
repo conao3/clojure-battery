@@ -3,7 +3,10 @@
 (ns conao3.battery.os-path-test
   (:require
    [clojure.test :as t]
-   [conao3.battery.os-path :as osp-m]))
+   [conao3.battery.os-path :as osp-m])
+  (:import
+   [java.io File]
+   [java.nio.file Files]))
 
 (t/deftest test-join-basic
   (t/is (= "/foo/bar/baz" (osp-m/join "/foo" "bar" "baz")))
@@ -106,8 +109,21 @@
   (t/is (pos? (osp-m/getmtime "/etc/hosts"))))
 
 (t/deftest test-islink
-  (t/is (false? (osp-m/islink "/etc/hosts")))
-  (t/is (false? (osp-m/islink "/nonexistent"))))
+  (let [target (File/createTempFile "osp-islink" ".txt")
+        link   (File. (.getParentFile target) (str (.getName target) "-link"))]
+    (try
+      (t/is (false? (osp-m/islink (.getAbsolutePath target))))
+      (t/is (false? (osp-m/islink "/nonexistent")))
+      (try
+        (Files/createSymbolicLink (.toPath link) (.toPath target) (make-array java.nio.file.attribute.FileAttribute 0))
+        (t/is (true? (osp-m/islink (.getAbsolutePath link))))
+        (catch UnsupportedOperationException _
+          (t/is true "symbolic links are not supported on this filesystem"))
+        (catch java.nio.file.FileSystemException _
+          (t/is true "symbolic links are not available in this environment")))
+      (finally
+        (.delete target)
+        (.delete link)))))
 
 (t/deftest test-lexists
   (t/is (true? (osp-m/lexists "/etc/hosts")))
