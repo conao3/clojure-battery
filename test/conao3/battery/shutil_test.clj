@@ -15,8 +15,17 @@
   (t/is (nil? (shutil/which "this-executable-does-not-exist-xyz"))))
 
 (t/deftest test-which-with-path
-  (t/is (nil? (shutil/which "ls" nil "/nonexistent/path")))
-  (t/is (string? (shutil/which "ls" nil "/bin:/usr/bin"))))
+  (let [dir  (.toFile (java.nio.file.Files/createTempDirectory "shutil-which" (make-array java.nio.file.attribute.FileAttribute 0)))
+        tool (File. dir "ls")]
+    (try
+      (spit tool "#!/bin/sh\nexit 0\n")
+      (.setExecutable tool true false)
+      (t/is (nil? (shutil/which "ls" nil "/nonexistent/path")))
+      (t/is (= (.getAbsolutePath tool)
+               (shutil/which "ls" nil (.getAbsolutePath dir))))
+      (finally
+        (.delete tool)
+        (.delete dir)))))
 
 (t/deftest test-get-terminal-size-default
   (let [size (shutil/get-terminal-size)]
