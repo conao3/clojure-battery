@@ -138,3 +138,32 @@
     (t/is (string? path))
     (t/is (clojure.string/ends-with? path ".log"))
     (t/is (clojure.string/includes? (.getName (File. ^String path)) "test-"))))
+
+(t/deftest test-named-temporary-file
+  (let [tf (tempfile/NamedTemporaryFile)
+        path (:name tf)]
+    (t/is (.exists (File. ^String path)))
+    ((:write tf) "named-temp")
+    (t/is (= "named-temp" ((:read tf))))
+    ((:close tf))
+    (t/is (not (.exists (File. ^String path))))))
+
+(t/deftest test-temporary-file
+  (let [tf (tempfile/TemporaryFile)
+        path (:name tf)]
+    ((:write tf) "temp-file")
+    (t/is (= "temp-file" ((:read tf))))
+    ((:close tf))
+    (t/is (not (.exists (File. ^String path))))))
+
+(t/deftest test-spooled-temporary-file
+  (let [tf (tempfile/SpooledTemporaryFile 4 nil nil nil)]
+    ((:write tf) "ab")
+    (t/is (= "ab" ((:read tf))))
+    (t/is (false? ((:rolled? tf))))
+    ((:write tf) "cdef")
+    (t/is (true? ((:rolled? tf))))
+    (t/is (= "abcdef" ((:read tf))))
+    (when-let [name ((:name tf))]
+      (t/is (.exists (File. ^String name))))
+    ((:close tf))))

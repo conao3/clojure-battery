@@ -1,6 +1,7 @@
 (ns conao3.battery.tempfile
+  (:require [clojure.java.io :as io])
   (:import
-   [java.io File]
+   [java.io ByteArrayOutputStream File]
    [java.nio.file Files]
    [java.nio.file.attribute FileAttribute]))
 
@@ -59,17 +60,77 @@
      (.delete f)
      path)))
 
+(defn- make-temp-handle [path delete-on-close]
+  (let [file (File. ^String path)]
+    {:name (.getAbsolutePath file)
+     :file file
+     :write (fn [content]
+              (spit file content :append true)
+              nil)
+     :read (fn []
+             (slurp file))
+     :close (fn []
+              (when delete-on-close
+                (.delete file))
+              nil)}))
+
 (defn NamedTemporaryFile
-  [& _]
-  (throw (ex-info "Not implemented" {})))
+  ([] (NamedTemporaryFile nil nil nil true))
+  ([{:keys [suffix prefix dir delete]
+     :or {delete true}}]
+   (NamedTemporaryFile suffix prefix dir delete))
+  ([suffix prefix dir delete]
+   (let [[_ path] (mkstemp suffix prefix dir false)]
+     (make-temp-handle path delete))))
 
 (defn TemporaryFile
-  [& _]
-  (throw (ex-info "Not implemented" {})))
+  ([] (TemporaryFile nil nil nil))
+  ([{:keys [suffix prefix dir]}]
+   (TemporaryFile suffix prefix dir))
+  ([suffix prefix dir]
+   (NamedTemporaryFile suffix prefix dir true)))
 
 (defn SpooledTemporaryFile
-  [& _]
-  (throw (ex-info "Not implemented" {})))
+  ([] (SpooledTemporaryFile 0 nil nil nil))
+  ([{:keys [max-size suffix prefix dir]
+     :or {max-size 0}}]
+   (SpooledTemporaryFile max-size suffix prefix dir))
+  ([max-size suffix prefix dir]
+   (let [buffer (atom (ByteArrayOutputStream.))
+         handle (atom nil)
+         ensure-handle! (fn []
+                          (when-not @handle
+                            (let [tmp (NamedTemporaryFile suffix prefix dir true)]
+                              ((:write tmp) (.toString ^ByteArrayOutputStream @buffer "UTF-8"))
+                              (reset! buffer (ByteArrayOutputStream.))
+                              (reset! handle tmp)))
+                          @handle)]
+     {:rolled? (fn [] (boolean @handle))
+      :write (fn [content]
+               (let [s (str content)]
+                 (if @handle
+                   ((:write @handle) s)
+                   (let [candidate-size (+ (.size ^ByteArrayOutputStream @buffer)
+                                           (alength (.getBytes s "UTF-8")))]
+                     (if (and (pos? max-size) (> candidate-size max-size))
+                       (do
+                         (ensure-handle!)
+                         ((:write @handle) s))
+                       (.write ^ByteArrayOutputStream @buffer (.getBytes s "UTF-8"))))))
+               nil)
+      :read (fn []
+              (if @handle
+                ((:read @handle))
+                (.toString ^ByteArrayOutputStream @buffer "UTF-8")))
+      :rollover (fn []
+                  (ensure-handle!)
+                  nil)
+      :close (fn []
+               (when @handle
+                 ((:close @handle)))
+               nil)
+      :name (fn []
+              (when @handle (:name @handle)))})))
 
 (defn TemporaryDirectory
   ([] (TemporaryDirectory nil nil nil))
