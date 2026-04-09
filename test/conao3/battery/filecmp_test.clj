@@ -249,12 +249,13 @@
     (t/is (= ["file"] (:same-files d)))
     (t/is (= [] (:diff-files d)))))
 
-(t/deftest ^:kaocha/skip test-dircmp-shallow-is-keyword-only
+(t/deftest test-dircmp-shallow-is-keyword-only
   (let [state (dir-compare-setup)]
-    (t/is (thrown-with-msg? ExceptionInfo #"dircmp.__init__() takes from 3 to 5 positional arguments but 6 were given"
+    (t/is (thrown-with-msg? ExceptionInfo #"dircmp.__init__\(\) takes from 3 to 5 positional arguments but 6 were given"
                            (filecmp/dircmp (:dir state) (:dir-same state) nil nil true)))
-    (t/is (instance? clojure.lang.IMapEntry (filecmp/dircmp (:dir state) (:dir-same state) nil nil :shallow true)))
-    (t/is (false? (instance? clojure.lang.IMapEntry (filecmp/dircmp (:dir state) (:dir-same state) nil nil :shallow true))))))
+    (t/is (map? (filecmp/dircmp (:dir state) (:dir-same state) nil nil :shallow true)))
+    (t/is (= ["file"]
+             (:same-files (filecmp/dircmp (:dir state) (:dir-same state) nil nil :shallow true))))))
 
 (t/deftest test-dircmp-subdirs-type
   (let [state (dir-compare-setup)

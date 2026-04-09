@@ -82,11 +82,28 @@
     (valAt [_ _k] (throw (ex-info err-msg {})))
     (valAt [_ _k _default] (throw (ex-info err-msg {})))))
 
+(defn- parse-dircmp-options [options]
+  (cond
+    (and (= 1 (count options)) (map? (first options)))
+    (first options)
+
+    :else
+    (let [[positional keywordish] (split-with (complement keyword?) options)]
+      (when (> (count positional) 2)
+        (throw (ex-info "dircmp.__init__() takes from 3 to 5 positional arguments but 6 were given" {})))
+      (when (odd? (count keywordish))
+        (throw (ex-info "keyword arguments must be key/value pairs" {})))
+      (when (some #(not (keyword? %)) (take-nth 2 keywordish))
+        (throw (ex-info "keyword arguments must start with keywords" {})))
+      (let [[ignore hide] positional]
+        (cond-> {}
+          (some? ignore) (assoc :ignore ignore)
+          (some? hide) (assoc :hide hide)
+          (seq keywordish) (merge (apply hash-map keywordish)))))))
+
 (defn dircmp
   [a b & options]
-  (let [opts (if (and (= 1 (count options)) (map? (first options)))
-               (first options)
-               (apply hash-map options))]
+  (let [opts (parse-dircmp-options options)]
     (if (or (not (valid-os-path? a)) (not (valid-os-path? b)))
       (make-error-dircmp (str "Invalid path: " (if (valid-os-path? a) b a)))
       (let [ignore (get opts :ignore default-ignores)
