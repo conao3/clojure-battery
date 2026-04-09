@@ -4182,4 +4182,4 @@
       (test-dispatch-part5 test-id)
       (test-dispatch-part6 test-id)
       (test-dispatch-part7 test-id)
-      (throw (ex-info (str "Not implemented: " test-id) {:test-id test-id}))))
+      (throw (ex-info (str "unknown argparse test id: " test-id) {:test-id test-id}))))
