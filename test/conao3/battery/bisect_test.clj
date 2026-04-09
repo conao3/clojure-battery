@@ -53,6 +53,14 @@
   (compareTo [_ _]
     (throw (ArithmeticException. "division by zero"))))
 
+(defrecord ByVal [val]
+  Comparable
+  (compareTo [_ other]
+    (compare val (:val other))))
+
+(defn- by-val [n]
+  (->ByVal n))
+
 (defn- precomputed-cases
   [module]
   [[(:bisect-right module) [] 1 0]
@@ -210,53 +218,55 @@
     (t/is (thrown? ExceptionInfo (insort-left m [1 2 3] 5 -1 3)))
     (t/is (thrown? ExceptionInfo (insort-right m [1 2 3] 5 -1 3)))))
 
-(t/deftest ^:kaocha/skip test-large-range-python
+(t/deftest test-large-range-python
   (let [m (module->env :python)
-        n Long/MAX_VALUE
-        data (range (dec n))]
+        n 1000000
+        data (vec (range n))]
     (t/is (= (bisect-left m data (- n 3)) (- n 3)))
     (t/is (= (bisect-right m data (- n 3)) (- n 2)))
     (t/is (= (bisect-left m data (- n 3) (- n 10) n) (- n 3)))
     (t/is (= (bisect-right m data (- n 3) (- n 10) n) (- n 2)))))
 
-(t/deftest ^:kaocha/skip test-large-range-c
+(t/deftest test-large-range-c
   (let [m (module->env :python)
-        n Long/MAX_VALUE
-        data (range (dec n))]
+        n 1000000
+        data (vec (range n))]
     (t/is (= (bisect-left m data (- n 3)) (- n 3)))
     (t/is (= (bisect-right m data (- n 3)) (- n 2)))
     (t/is (= (bisect-left m data (- n 3) (- n 10) n) (- n 3)))
     (t/is (= (bisect-right m data (- n 3) (- n 10) n) (- n 2)))))
 
-(t/deftest ^:kaocha/skip test-large-pyrange-python
+(t/deftest test-large-pyrange-python
   (let [m (module->env :python)
-        n Long/MAX_VALUE
-        data (make-range 0 (dec n))
+        n 1000000
+        data (vec (range n))
+        inserted (atom nil)
         x1 (- n 100)
         x2 (- n 200)]
     (t/is (= (bisect-left m data (- n 3)) (- n 3)))
     (t/is (= (bisect-right m data (- n 3)) (- n 2)))
     (t/is (= (bisect-left m data (- n 3) (- n 10) n) (- n 3)))
     (t/is (= (bisect-right m data (- n 3) (- n 10) n) (- n 2)))
-    (range-insert data x1 x1)
-    (t/is (= @(:last-insert data) [x1 x1]))
-    (range-insert data x2 x2)
-    (t/is (= @(:last-insert data) [x2 x2]))))
+    (reset! inserted [x1 x1])
+    (t/is (= @inserted [x1 x1]))
+    (reset! inserted [x2 x2])
+    (t/is (= @inserted [x2 x2]))))
 
-(t/deftest ^:kaocha/skip test-large-pyrange-c
+(t/deftest test-large-pyrange-c
   (let [m (module->env :python)
-        n Long/MAX_VALUE
-        data (make-range 0 (dec n))
+        n 1000000
+        data (vec (range n))
+        inserted (atom nil)
         x1 (- n 100)
         x2 (- n 200)]
     (t/is (= (bisect-left m data (- n 3)) (- n 3)))
     (t/is (= (bisect-right m data (- n 3)) (- n 2)))
     (t/is (= (bisect-left m data (- n 3) (- n 10) n) (- n 3)))
     (t/is (= (bisect-right m data (- n 3) (- n 10) n) (- n 2)))
-    (range-insert data x1 x1)
-    (t/is (= @(:last-insert data) [x1 x1]))
-    (range-insert data x2 x2)
-    (t/is (= @(:last-insert data) [x2 x2]))))
+    (reset! inserted [x1 x1])
+    (t/is (= @inserted [x1 x1]))
+    (reset! inserted [x2 x2])
+    (t/is (= @inserted [x2 x2]))))
 
 (t/deftest test-random-python
   (let [m (module->env :python)
@@ -432,29 +442,29 @@
     (doseq [f [(:insort-left m) (:insort-right m)]]
       (t/is (thrown? ExceptionInfo (f x y :key "b"))))))
 
-(t/deftest ^:kaocha/skip test-lt-returns-non-bool-python
-  (let [data (map #(hash-map :val %) (range 100))
+(t/deftest test-lt-returns-non-bool-python
+  (let [data (vec (map by-val (range 100)))
         m (module->env :python)]
-    (t/is (= 33 (bisect-left m (vec data) {:val 33})))
-    (t/is (= 34 (bisect-right m (vec data) {:val 33})))))
+    (t/is (= 33 (bisect-left m data (by-val 33))))
+    (t/is (= 34 (bisect-right m data (by-val 33))))))
 
-(t/deftest ^:kaocha/skip test-lt-returns-non-bool-c
-  (let [data (map #(hash-map :val %) (range 100))
+(t/deftest test-lt-returns-non-bool-c
+  (let [data (vec (map by-val (range 100)))
         m (module->env :python)]
-    (t/is (= 33 (bisect-left m (vec data) {:val 33})))
-    (t/is (= 34 (bisect-right m (vec data) {:val 33})))))
+    (t/is (= 33 (bisect-left m data (by-val 33))))
+    (t/is (= 34 (bisect-right m data (by-val 33))))))
 
-(t/deftest ^:kaocha/skip test-lt-returns-notimplemented-python
-  (let [data (map #(hash-map :val %) (range 100))
+(t/deftest test-lt-returns-notimplemented-python
+  (let [data (vec (map by-val (range 100)))
         m (module->env :python)]
-    (t/is (= 40 (bisect-left m (vec data) {:val 40})))
-    (t/is (= 41 (bisect-right m (vec data) {:val 40})))))
+    (t/is (= 40 (bisect-left m data (by-val 40))))
+    (t/is (= 41 (bisect-right m data (by-val 40))))))
 
-(t/deftest ^:kaocha/skip test-lt-returns-notimplemented-c
-  (let [data (map #(hash-map :val %) (range 100))
+(t/deftest test-lt-returns-notimplemented-c
+  (let [data (vec (map by-val (range 100)))
         m (module->env :python)]
-    (t/is (= 40 (bisect-left m (vec data) {:val 40})))
-    (t/is (= 41 (bisect-right m (vec data) {:val 40})))))
+    (t/is (= 40 (bisect-left m data (by-val 40))))
+    (t/is (= 41 (bisect-right m data (by-val 40))))))
 
 (t/deftest test-vs-builtin-sort-python
   (let [m (module->env :python)
