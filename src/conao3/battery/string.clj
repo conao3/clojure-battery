@@ -209,17 +209,69 @@
          [result _ _] (fmt-substitute fmt [] named)]
      result)))
 
-(defn formatter-get-value [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn formatter-get-value
+  ([] (throw (ex-info "formatter-get-value requires key, args, and kwargs" {})))
+  ([key args kwargs]
+   (cond
+     (integer? key)
+     (if (< key (count args))
+       (nth args key)
+       (throw (ex-info (str "Positional index out of range: " key) {:index key})))
 
-(defn formatter-format-field [& _]
-  (throw (ex-info "Not implemented" {})))
+     (and (string? key) (re-matches #"\d+" key))
+     (let [idx (Integer/parseInt key)]
+       (formatter-get-value idx args kwargs))
 
-(defn formatter-convert-field [& _]
-  (throw (ex-info "Not implemented" {})))
+     :else
+     (let [k (cond
+               (keyword? key) (name key)
+               :else (str key))]
+       (if (contains? kwargs k)
+         (get kwargs k)
+         (throw (ex-info (str "Missing key: " k) {:key k})))))))
 
-(defn formatter-parse [& _]
-  (throw (ex-info "Not implemented" {})))
+(defn formatter-format-field
+  ([] (throw (ex-info "formatter-format-field requires at least 1 arg" {})))
+  ([value] (str value))
+  ([value format-spec]
+   (if (or (nil? format-spec) (= "" format-spec))
+     (str value)
+     (format (str "%" format-spec) value))))
+
+(defn formatter-convert-field
+  ([] (throw (ex-info "formatter-convert-field requires value and conversion" {})))
+  ([value conversion]
+   (let [conv (cond
+                (nil? conversion) nil
+                (keyword? conversion) (name conversion)
+                :else (str conversion))]
+     (apply-conversion value conv))))
+
+(defn formatter-parse
+  ([] (throw (ex-info "formatter-parse requires a format string" {})))
+  ([fmt]
+   (let [m (.matcher fmt-pattern fmt)
+         parts (volatile! [])
+         last-end (volatile! 0)]
+     (while (.find m)
+       (let [full (.group m 0)
+             literal (.substring fmt @last-end (.start m))]
+         (cond
+           (= full "{{")
+           (do
+             (vswap! parts conj [literal nil nil nil])
+             (vswap! parts conj ["{" nil nil nil]))
+
+           (= full "}}")
+           (do
+             (vswap! parts conj [literal nil nil nil])
+             (vswap! parts conj ["}" nil nil nil]))
+
+           :else
+           (vswap! parts conj [literal (.group m 1) nil (.group m 4)]))
+         (vreset! last-end (.end m))))
+     (vswap! parts conj [(.substring fmt @last-end) nil nil nil])
+     @parts)))
 
 (defn formatter-check-unused-args
   ([] (throw (ex-info "formatter-check-unused-args requires at least 1 arg" {})))
