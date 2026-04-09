@@ -5,7 +5,7 @@
    [clojure.test :as t]
    [conao3.battery.shutil :as shutil])
   (:import
-   [java.io File]))
+   [java.io ByteArrayInputStream ByteArrayOutputStream File]))
 
 (t/deftest test-which-existing
   (t/is (string? (shutil/which "ls")))
@@ -146,4 +146,39 @@
   ;; which returns an absolute path (starts with /)
   (when-let [p (shutil/which "ls")]
     (t/is (clojure.string/starts-with? p "/"))))
+
+(t/deftest test-copyfileobj
+  (let [src (ByteArrayInputStream. (.getBytes "copy-me" "UTF-8"))
+        dst (ByteArrayOutputStream.)]
+    (shutil/copyfileobj src dst)
+    (t/is (= "copy-me" (.toString dst "UTF-8")))))
+
+(t/deftest test-make-archive-and-unpack-zip
+  (let [root (.toFile (java.nio.file.Files/createTempDirectory "shutil-archive-root" (make-array java.nio.file.attribute.FileAttribute 0)))
+        src-dir (File. root "src")
+        _ (.mkdir src-dir)
+        src-file (File. src-dir "hello.txt")
+        _ (spit src-file "hello archive")
+        archive-base (str (.getAbsolutePath root) "/bundle")
+        archive-path (shutil/make-archive archive-base "zip" (.getAbsolutePath root) "src")
+        unpack-dir (.toFile (java.nio.file.Files/createTempDirectory "shutil-unpack" (make-array java.nio.file.attribute.FileAttribute 0)))
+        unpacked (File. unpack-dir "hello.txt")]
+    (try
+      (t/is (.exists (File. archive-path)))
+      (shutil/unpack-archive archive-path (.getAbsolutePath unpack-dir))
+      (t/is (.exists unpacked))
+      (t/is (= "hello archive" (slurp unpacked)))
+      (finally
+        (shutil/rmtree (.getAbsolutePath root))
+        (shutil/rmtree (.getAbsolutePath unpack-dir))))))
+
+(t/deftest test-register-archive-format
+  (let [called (atom nil)
+        format-name "custom"
+        _ (shutil/register-archive-format format-name (fn [base-name root-dir base-dir]
+                                                        (reset! called [base-name root-dir base-dir])
+                                                        (str base-name ".custom")))
+        out (shutil/make-archive "/tmp/custom-archive" format-name "/tmp" "data")]
+    (t/is (= "/tmp/custom-archive.custom" out))
+    (t/is (= ["/tmp/custom-archive" "/tmp" "data"] @called))))
 
