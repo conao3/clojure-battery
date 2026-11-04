@@ -22,23 +22,12 @@
 
       perSystem =
         {
-          system,
+          pkgs,
           ...
         }:
         let
-          overlay =
-            final: prev:
-            let
-              jdk = prev.jdk25;
-              clojure = prev.clojure.override { inherit jdk; };
-            in
-            {
-              inherit jdk clojure;
-            };
-          pkgs = import inputs.nixpkgs {
-            inherit system;
-            overlays = [ overlay ];
-          };
+          jdk = pkgs.jdk25;
+          clojure = pkgs.clojure.override { inherit jdk; };
         in
         {
           treefmt.config = {
@@ -47,7 +36,7 @@
           };
 
           devShells.default = pkgs.mkShell {
-            packages = with pkgs; [
+            packages = [
               jdk
               clojure
             ];
